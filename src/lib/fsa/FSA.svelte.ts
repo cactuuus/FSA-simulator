@@ -1,55 +1,21 @@
-import type { Node, Edge, GraphData, Point, ActiveEdge } from '$lib/types';
-
+import { type Point, Node, Edge, DraftEdge } from '$lib/fsa';
 export class FSA {
-	private _graph = $state<GraphData>({
-		nodes: [],
-		edges: []
-	});
-
-	draftEdge = $state<ActiveEdge | null>(null);
-	selectedNode = $state<Node | null>(null);
-	selectedEdge = $state<Edge | null>(null);
-
-	get graph(): GraphData {
-		return this._graph;
-	}
+	readonly nodes = $state<Node[]>([]);
+	readonly edges = $state<Edge[]>([]);
+	draftEdge = $state<DraftEdge | null>(null);
 
 	addNode(pos: Point): void {
-		const newNode = {
-			id: `node-${self.crypto.randomUUID()}`,
-			pos: pos,
-			label: `q${this._graph.nodes.length}`,
-			isStart: this._graph.nodes.length === 0,
-			isAccepting: false
-		};
-		this._graph.nodes.push(newNode);
+		const label = `q${this.nodes.length}`;
+		const isStart = this.nodes.length === 0;
+		this.nodes.push(new Node(pos, label, isStart));
 	}
 
 	addEdge(from: Node, to: Node): void {
-		const newEdge: Edge = {
-			id: `edge-${self.crypto.randomUUID()}`,
-			from,
-			to,
-			label: ''
-		};
-		this._graph.edges.push(newEdge);
+		this.edges.push(new Edge(from, to));
 	}
 
-	getNodeAt(pos: Point): Node | null {
-		const node = this.graph.nodes.find((node) => {
-			const dx = node.pos.x - pos.x;
-			const dy = node.pos.y - pos.y;
-			return Math.sqrt(dx * dx + dy * dy) < 30;
-		});
-		return node ?? null;
-	}
-
-	selectNode(node: Node): void {
-		this.selectedNode = node;
-	}
-
-	unselectNode(): void {
-		this.selectedNode = null;
+	getNodeAt(point: Point): Node | null {
+		return this.nodes.find((node) => node.contains(point)) ?? null;
 	}
 
 	updateNodePosition(node: Node, newPoint: Point): void {
@@ -57,11 +23,11 @@ export class FSA {
 		node.pos.y = newPoint.y;
 	}
 
-	setDraftEdge(from: Node, toPoint: Point | null): void {
-		if (!from || !toPoint) {
+	setDraftEdge(from: Node, to: Point | null): void {
+		if (!from || !to) {
 			this.draftEdge = null;
 		} else {
-			this.draftEdge = { from, toPoint };
+			this.draftEdge = new DraftEdge(from, to);
 		}
 	}
 

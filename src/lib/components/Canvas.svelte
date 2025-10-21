@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { Point } from '$lib/types';
-	import type { FSA } from '$lib/fsa/FSA.svelte';
-	import type { StateManager } from '$lib/state-machine/StateManager.svelte';
+	import type { FSA, Point } from '$lib/fsa';
+	import type { CanvasState } from '$lib/state-machine';
 
 	let {
 		fsa,
-		stateManager
+		state
 	}: {
 		fsa: FSA;
-		stateManager: StateManager;
+		state: CanvasState | null;
 	} = $props();
 
 	let canvas: HTMLCanvasElement;
@@ -24,7 +23,7 @@
 		// Edges
 		ctx.strokeStyle = '#64748b';
 		ctx.lineWidth = 2;
-		fsa.graph.edges.forEach((edge) => {
+		fsa.edges.forEach((edge) => {
 			ctx.beginPath();
 			ctx.moveTo(edge.from.pos.x, edge.from.pos.y);
 			ctx.lineTo(edge.to.pos.x, edge.to.pos.y);
@@ -32,7 +31,7 @@
 		});
 
 		// Nodes
-		fsa.graph.nodes.forEach((node) => {
+		fsa.nodes.forEach((node) => {
 			ctx.strokeStyle = 'white';
 			ctx.beginPath();
 			ctx.arc(node.pos.x, node.pos.y, 30, 0, Math.PI * 2);
@@ -43,16 +42,16 @@
 			ctx.textAlign = 'center';
 			ctx.textBaseline = 'middle';
 			ctx.fillText(node.label, node.pos.x, node.pos.y);
-		});
 
-		// Selected node
-		if (fsa.selectedNode) {
-			ctx.strokeStyle = '#3b82f6';
-			ctx.lineWidth = 3;
-			ctx.beginPath();
-			ctx.arc(fsa.selectedNode.pos.x, fsa.selectedNode.pos.y, 32, 0, Math.PI * 2);
-			ctx.stroke();
-		}
+			if (node.isSelected) {
+				ctx.strokeStyle = '#3b82f6';
+				ctx.lineWidth = 3;
+				ctx.beginPath();
+				ctx.arc(node.pos.x, node.pos.y, 32, 0, Math.PI * 2);
+				ctx.stroke();
+				ctx.lineWidth = 2;
+			}
+		});
 
 		// Draft edge
 		if (fsa.draftEdge) {
@@ -61,8 +60,8 @@
 			ctx.setLineDash([5, 5]);
 
 			ctx.beginPath();
-			ctx.moveTo(fsa.draftEdge.from.pos.x, fsa.draftEdge.from.pos.y);
-			ctx.lineTo(fsa.draftEdge.toPoint.x, fsa.draftEdge.toPoint.y);
+			ctx.moveTo(fsa.draftEdge.sourcePoint.x, fsa.draftEdge.sourcePoint.y);
+			ctx.lineTo(fsa.draftEdge.targetPoint.x, fsa.draftEdge.targetPoint.y);
 			ctx.stroke();
 
 			ctx.setLineDash([]);
@@ -86,19 +85,19 @@
 	}
 
 	function handleMouseDown(e: MouseEvent) {
-		stateManager.handleMouseDown(getCanvasPoint(e));
+		state?.onMouseDown?.(getCanvasPoint(e));
 		render();
 	}
 	function handleMouseMove(e: MouseEvent) {
-		stateManager.handleMouseMove(getCanvasPoint(e));
+		state?.onMouseMove?.(getCanvasPoint(e));
 		render();
 	}
 	function handleMouseUp(e: MouseEvent) {
-		stateManager.handleMouseUp(getCanvasPoint(e));
+		state?.onMouseUp?.(getCanvasPoint(e));
 		render();
 	}
 	function handleClick(e: MouseEvent) {
-		stateManager.handleClick(getCanvasPoint(e));
+		state?.onClick?.(getCanvasPoint(e));
 		render();
 	}
 </script>
@@ -107,7 +106,7 @@
 	bind:this={canvas}
 	id="canvas"
 	class="h-full w-full rounded-box border border-base-300 bg-base-200"
-	style="cursor: {stateManager?.currentState?.cursor};"
+	style="cursor: {state?.cursor};"
 	onmousedown={handleMouseDown}
 	onmousemove={handleMouseMove}
 	onmouseup={handleMouseUp}

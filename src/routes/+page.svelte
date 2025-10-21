@@ -1,24 +1,23 @@
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
-	import { StateManager } from '$lib/state-machine/StateManager.svelte';
-	import { SelectState, DrawEdgeState, AddNodeState } from '$lib/state-machine/designer-states';
-	import { FSA } from '$lib/fsa/FSA.svelte';
-	import type { CanvasState } from '$lib/types';
 	import Canvas from '$lib/components/Canvas.svelte';
-
-	const tools = [
-		{ state: new SelectState(), kbShortcut: '1', icon: 'mdi--cursor-default-outline' },
-		{ state: new DrawEdgeState(), kbShortcut: '2', icon: 'hugeicons--orthogonal-edge' },
-		{ state: new AddNodeState(), kbShortcut: '3', icon: 'tabler--circle-plus' }
-	];
+	import { FSA } from '$lib/fsa';
+	import {
+		type CanvasState,
+		StateManager,
+		SelectState,
+		DrawEdgeState,
+		AddNodeState
+	} from '$lib/state-machine';
 
 	let fsa = $state(new FSA());
-	let stateManager = $state(
-		new StateManager(
-			fsa,
-			tools.map((tool) => tool.state)
-		)
-	);
+	const tools = [
+		{ state: new SelectState(fsa), kbShortcut: '1', icon: 'mdi--cursor-default-outline' },
+		{ state: new DrawEdgeState(fsa), kbShortcut: '2', icon: 'hugeicons--orthogonal-edge' },
+		{ state: new AddNodeState(fsa), kbShortcut: '3', icon: 'tabler--circle-plus' }
+	];
+
+	let stateManager = $state(new StateManager(tools.map((tool) => tool.state)));
 
 	setContext('stateManager', () => stateManager);
 
@@ -44,7 +43,7 @@
 </script>
 
 <section class="relative h-full w-full">
-	<Canvas {fsa} {stateManager} />
+	<Canvas {fsa} state={stateManager?.currentState} />
 
 	<ul
 		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100 px-2 py-1 shadow"
@@ -67,7 +66,6 @@
 	</ul>
 
 	<div class="absolute bottom-2 left-2 rounded-box bg-base-100 px-3 py-2 text-xs shadow">
-		Mode: {stateManager?.currentState?.name} | Nodes: {fsa.graph.nodes.length} | Edges: {fsa.graph
-			.edges.length}
+		Mode: {stateManager?.currentState?.name} | Nodes: {fsa.nodes.length} | Edges: {fsa.edges.length}
 	</div>
 </section>
