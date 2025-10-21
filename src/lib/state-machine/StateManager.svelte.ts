@@ -1,16 +1,16 @@
-import type { CanvasState } from '$lib/state-machine';
+import type { State } from '$lib/state-machine';
 
 export class StateManager {
-	private _currentState = $state.raw<CanvasState | null>(null);
-	private readonly _states: Map<string, CanvasState>;
+	private _currentState = $state.raw<State | null>(null);
+	private readonly _states: Map<string, State>;
 
-	constructor(states: CanvasState[]) {
+	constructor(states: State[]) {
 		// disable lint warning, our states map is readonly, no need for reactivity
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this._states = new Map(states.map((state) => [state.name, state]));
 	}
 
-	get currentState(): CanvasState | null {
+	get currentState(): State | null {
 		return this._currentState;
 	}
 
