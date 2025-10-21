@@ -40,13 +40,16 @@
 	}
 
 	onMount(() => {
-		const darkMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-		darkMediaQuery.addEventListener('change', loadStyle);
+		window.addEventListener('resize', render);
+		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', loadStyle);
 
 		ctx = canvas.getContext('2d')!;
 		loadStyle();
 
-		return () => darkMediaQuery.removeEventListener('change', loadStyle);
+		return () => {
+			window.removeEventListener('resize', render);
+			window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', loadStyle);
+		};
 	});
 
 	function getCanvasPoint(e: MouseEvent): Point {
