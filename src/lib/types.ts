@@ -30,12 +30,11 @@ export interface GraphData {
 	edges: Edge[];
 }
 
-export interface CanvasContext {
-	canvas: HTMLCanvasElement;
-	ctx: CanvasRenderingContext2D;
-	graph: GraphData;
-	selectedNode: Node | null;
-	selectedEdge: Edge | null;
+export interface State {
+	name: string;
+
+	onEnter?(): void;
+	onExit?(): void;
 }
 
 export interface CanvasState {

@@ -21,10 +21,6 @@
 
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-		// Panning
-		ctx.save();
-		ctx.translate(fsa.viewOffset.x, fsa.viewOffset.y);
-
 		// Edges
 		ctx.strokeStyle = '#64748b';
 		ctx.lineWidth = 2;

@@ -9,15 +9,9 @@ export class FSA {
 	draftEdge = $state<ActiveEdge | null>(null);
 	selectedNode = $state<Node | null>(null);
 	selectedEdge = $state<Edge | null>(null);
-	readonly viewOffset = $state<Point>({ x: 0, y: 0 });
 
 	get graph(): GraphData {
 		return this._graph;
-	}
-
-	updateViewOffset(dx: number, dy: number): void {
-		this.viewOffset.x += dx;
-		this.viewOffset.y += dy;
 	}
 
 	addNode(pos: Point): void {
