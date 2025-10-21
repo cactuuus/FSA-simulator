@@ -1,3 +1,4 @@
+import { canvasStyle } from '$lib';
 import type { Point, Node, Drawable } from '$lib/fsa';
 
 export interface BaseEdge extends Drawable {
@@ -31,7 +32,14 @@ export class Edge implements BaseEdge {
 	}
 
 	draw(ctx: CanvasRenderingContext2D): void {
-		// todo
+		ctx.save();
+		ctx.beginPath();
+		ctx.strokeStyle = canvasStyle.edgeStroke;
+		ctx.lineWidth = 2;
+		ctx.moveTo(this.sourcePoint.x, this.sourcePoint.y);
+		ctx.lineTo(this.targetPoint.x, this.targetPoint.y);
+		ctx.stroke();
+		ctx.restore();
 	}
 }
 
@@ -53,6 +61,14 @@ export class DraftEdge implements BaseEdge {
 	}
 
 	draw(ctx: CanvasRenderingContext2D): void {
-		// todo
+		ctx.save();
+		ctx.strokeStyle = canvasStyle.draftStroke;
+		ctx.lineWidth = 2;
+		ctx.setLineDash([5, 5]);
+		ctx.beginPath();
+		ctx.moveTo(this.sourcePoint.x, this.sourcePoint.y);
+		ctx.lineTo(this.targetPoint.x, this.targetPoint.y);
+		ctx.stroke();
+		ctx.restore();
 	}
 }

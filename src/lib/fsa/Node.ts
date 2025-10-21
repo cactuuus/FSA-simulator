@@ -1,6 +1,7 @@
-import type { Point } from '$lib/fsa';
+import { canvasStyle } from '$lib';
+import type { Drawable, Point } from '$lib/fsa';
 
-export class Node {
+export class Node implements Drawable {
 	id: string;
 	pos: Point;
 	label: string;
@@ -37,5 +38,29 @@ export class Node {
 
 	unselect() {
 		this.isSelected = false;
+	}
+
+	draw(ctx: CanvasRenderingContext2D): void {
+		ctx.save();
+		ctx.strokeStyle = canvasStyle.nodeStroke;
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+		ctx.arc(this.pos.x, this.pos.y, 30, 0, Math.PI * 2);
+		ctx.stroke();
+
+		ctx.fillStyle = canvasStyle.nodeText;
+		ctx.font = '16px sans-serif';
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		ctx.fillText(this.label, this.pos.x, this.pos.y);
+
+		if (this.isSelected) {
+			ctx.strokeStyle = canvasStyle.selectedStroke;
+			ctx.lineWidth = 3;
+			ctx.beginPath();
+			ctx.arc(this.pos.x, this.pos.y, 28, 0, Math.PI * 2);
+			ctx.stroke();
+		}
+		ctx.restore();
 	}
 }

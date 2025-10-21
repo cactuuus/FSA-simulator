@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import type { FSA, Point } from '$lib/fsa';
 	import type { CanvasState } from '$lib/state-machine';
+	import { canvasStyle } from '$lib';
 
 	let {
 		fsa,
@@ -14,65 +15,38 @@
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
 
-	// TODO -- update colors to reflect dark/light themes
 	function render() {
 		if (!ctx) return;
 
+		canvas.width = canvas.offsetWidth;
+		canvas.height = canvas.offsetHeight;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 		// Edges
-		ctx.strokeStyle = '#64748b';
-		ctx.lineWidth = 2;
 		fsa.edges.forEach((edge) => {
-			ctx.beginPath();
-			ctx.moveTo(edge.from.pos.x, edge.from.pos.y);
-			ctx.lineTo(edge.to.pos.x, edge.to.pos.y);
-			ctx.stroke();
+			edge.draw(ctx);
 		});
+		fsa.draftEdge?.draw(ctx);
 
 		// Nodes
 		fsa.nodes.forEach((node) => {
-			ctx.strokeStyle = 'white';
-			ctx.beginPath();
-			ctx.arc(node.pos.x, node.pos.y, 30, 0, Math.PI * 2);
-			ctx.stroke();
-
-			ctx.fillStyle = 'white';
-			ctx.font = '14px sans-serif';
-			ctx.textAlign = 'center';
-			ctx.textBaseline = 'middle';
-			ctx.fillText(node.label, node.pos.x, node.pos.y);
-
-			if (node.isSelected) {
-				ctx.strokeStyle = '#3b82f6';
-				ctx.lineWidth = 3;
-				ctx.beginPath();
-				ctx.arc(node.pos.x, node.pos.y, 32, 0, Math.PI * 2);
-				ctx.stroke();
-				ctx.lineWidth = 2;
-			}
+			node.draw(ctx);
 		});
+	}
 
-		// Draft edge
-		if (fsa.draftEdge) {
-			ctx.strokeStyle = '#f97316';
-			ctx.lineWidth = 2;
-			ctx.setLineDash([5, 5]);
-
-			ctx.beginPath();
-			ctx.moveTo(fsa.draftEdge.sourcePoint.x, fsa.draftEdge.sourcePoint.y);
-			ctx.lineTo(fsa.draftEdge.targetPoint.x, fsa.draftEdge.targetPoint.y);
-			ctx.stroke();
-
-			ctx.setLineDash([]);
-		}
+	function loadStyle() {
+		canvasStyle.loadFromCSS();
+		render();
 	}
 
 	onMount(() => {
-		canvas.width = canvas.offsetWidth;
-		canvas.height = canvas.offsetHeight;
+		const darkMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+		darkMediaQuery.addEventListener('change', loadStyle);
+
 		ctx = canvas.getContext('2d')!;
-		render();
+		loadStyle();
+
+		return () => darkMediaQuery.removeEventListener('change', loadStyle);
 	});
 
 	function getCanvasPoint(e: MouseEvent): Point {

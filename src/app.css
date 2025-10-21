@@ -12,3 +12,21 @@ html,
 body {
 	height: 100%;
 }
+
+:root {
+	--canvas-node-stroke: black;
+	--canvas-node-text: black;
+	--canvas-edge-stroke: black;
+	--canvas-selected-stroke: green;
+	--canvas-draft-stroke: darkorange;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--canvas-node-stroke: white;
+		--canvas-node-text: white;
+		--canvas-edge-stroke: white;
+		--canvas-selected-stroke: green;
+		--canvas-draft-stroke: darkorange;
+	}
+}
