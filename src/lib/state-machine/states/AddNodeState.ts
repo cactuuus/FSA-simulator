@@ -5,7 +5,9 @@ export class AddNodeState implements CanvasState {
 	readonly name = 'add-node';
 	readonly cursor = 'copy';
 
-	onClick(pos: Point, fsa: FSA) {
-		fsa.addNode(pos);
+	constructor(private _fsa: FSA) {}
+
+	onClick(pos: Point) {
+		this._fsa.addNode(pos);
 	}
 }

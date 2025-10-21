@@ -7,29 +7,31 @@ export class SelectState implements CanvasState {
 
 	private _draggedNode: Node | null = null;
 
-	onExit(fsa: FSA) {
+	constructor(private _fsa: FSA) {}
+
+	onExit() {
 		this._draggedNode = null;
-		fsa.unselectNode();
+		this._fsa.unselectNode();
 	}
 
-	onMouseDown(pos: Point, fsa: FSA) {
-		const clickedNode = fsa.getNodeAt(pos);
+	onMouseDown(pos: Point) {
+		const clickedNode = this._fsa.getNodeAt(pos);
 
 		if (clickedNode) {
-			fsa.selectNode(clickedNode);
+			this._fsa.selectNode(clickedNode);
 			this._draggedNode = clickedNode;
 		} else {
-			fsa.unselectNode();
+			this._fsa.unselectNode();
 		}
 	}
 
-	onMouseMove(pos: Point, fsa: FSA) {
+	onMouseMove(pos: Point) {
 		if (this._draggedNode) {
-			fsa.updateNodePosition(this._draggedNode, pos);
+			this._fsa.updateNodePosition(this._draggedNode, pos);
 		}
 	}
 
-	onMouseUp(pos: Point, fsa: FSA) {
+	onMouseUp(pos: Point) {
 		this._draggedNode = null;
 	}
 }

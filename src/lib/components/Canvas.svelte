@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { Point } from '$lib/types';
+	import type { CanvasState, Point } from '$lib/types';
 	import type { FSA } from '$lib/fsa/FSA.svelte';
 	import type { StateManager } from '$lib/state-machine/StateManager.svelte';
 
@@ -9,7 +9,7 @@
 		stateManager
 	}: {
 		fsa: FSA;
-		stateManager: StateManager;
+		stateManager: StateManager<CanvasState>;
 	} = $props();
 
 	let canvas: HTMLCanvasElement;
@@ -86,19 +86,19 @@
 	}
 
 	function handleMouseDown(e: MouseEvent) {
-		stateManager.handleMouseDown(getCanvasPoint(e));
+		stateManager.currentState?.onMouseDown?.(getCanvasPoint(e));
 		render();
 	}
 	function handleMouseMove(e: MouseEvent) {
-		stateManager.handleMouseMove(getCanvasPoint(e));
+		stateManager.currentState?.onMouseMove?.(getCanvasPoint(e));
 		render();
 	}
 	function handleMouseUp(e: MouseEvent) {
-		stateManager.handleMouseUp(getCanvasPoint(e));
+		stateManager.currentState?.onMouseUp?.(getCanvasPoint(e));
 		render();
 	}
 	function handleClick(e: MouseEvent) {
-		stateManager.handleClick(getCanvasPoint(e));
+		stateManager.currentState?.onClick?.(getCanvasPoint(e));
 		render();
 	}
 </script>

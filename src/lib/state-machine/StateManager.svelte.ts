@@ -1,20 +1,16 @@
-import type { FSA } from '$lib/fsa/FSA.svelte';
-import type { CanvasState, Point } from '../types';
+import type { State } from '../types';
 
-export class StateManager {
-	private _currentState = $state.raw<CanvasState | null>(null);
-	private readonly _states: Map<string, CanvasState>;
-	private _fsa: FSA;
+export class StateManager<TState extends State = State> {
+	private _currentState = $state.raw<TState | null>(null);
+	private readonly _states: Map<string, TState>;
 
-	constructor(fsa: FSA, states: CanvasState[]) {
-		this._fsa = fsa;
+	constructor(states: TState[]) {
 		// disable lint warning, our states map is readonly, no need for reactivity
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this._states = new Map(states.map((state) => [state.name, state]));
-		console.log(fsa);
 	}
 
-	get currentState(): CanvasState | null {
+	get currentState(): TState | null {
 		return this._currentState;
 	}
 
@@ -25,25 +21,9 @@ export class StateManager {
 			return;
 		}
 
-		this._currentState?.onExit?.(this._fsa);
+		this._currentState?.onExit?.();
 		this._currentState = newState;
-		this._currentState?.onEnter?.(this._fsa);
+		this._currentState?.onEnter?.();
 		console.debug(`entered state ${newState.name}`);
-	}
-
-	handleMouseDown(pos: Point) {
-		this._currentState?.onMouseDown?.(pos, this._fsa);
-	}
-
-	handleMouseMove(pos: Point) {
-		this._currentState?.onMouseMove?.(pos, this._fsa);
-	}
-
-	handleMouseUp(pos: Point) {
-		this._currentState?.onMouseUp?.(pos, this._fsa);
-	}
-
-	handleClick(pos: Point) {
-		this._currentState?.onClick?.(pos, this._fsa);
 	}
 }

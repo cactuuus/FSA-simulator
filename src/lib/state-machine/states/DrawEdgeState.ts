@@ -7,30 +7,32 @@ export class DrawEdgeState implements CanvasState {
 
 	private _sourceNode: Node | null = null;
 
-	onExit(fsa: FSA) {
+	constructor(private _fsa: FSA) {}
+
+	onExit() {
 		this._sourceNode = null;
-		fsa.clearDraftEdge();
+		this._fsa.clearDraftEdge();
 	}
 
-	onMouseDown(pos: Point, fsa: FSA) {
-		const clickedNode = fsa.getNodeAt(pos);
+	onMouseDown(pos: Point) {
+		const clickedNode = this._fsa.getNodeAt(pos);
 		if (clickedNode) {
 			this._sourceNode = clickedNode;
 		}
 	}
 
-	onMouseMove(pos: Point, fsa: FSA) {
+	onMouseMove(pos: Point) {
 		if (this._sourceNode) {
-			fsa.setDraftEdge(this._sourceNode, pos);
+			this._fsa.setDraftEdge(this._sourceNode, pos);
 		}
 	}
 
-	onMouseUp(pos: Point, fsa: FSA): void {
-		const targetNode = fsa.getNodeAt(pos);
+	onMouseUp(pos: Point): void {
+		const targetNode = this._fsa.getNodeAt(pos);
 		if (this._sourceNode && targetNode) {
-			fsa.addEdge(this._sourceNode, targetNode);
+			this._fsa.addEdge(this._sourceNode, targetNode);
 		}
 		this._sourceNode = null;
-		fsa.clearDraftEdge();
+		this._fsa.clearDraftEdge();
 	}
 }

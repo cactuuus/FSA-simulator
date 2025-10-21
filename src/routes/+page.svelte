@@ -1,24 +1,18 @@
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
 	import { StateManager } from '$lib/state-machine/StateManager.svelte';
-	import { SelectState, DrawEdgeState, AddNodeState } from '$lib/state-machine/designer-states';
+	import { SelectState, DrawEdgeState, AddNodeState } from '$lib/state-machine/states';
 	import { FSA } from '$lib/fsa/FSA.svelte';
 	import type { CanvasState } from '$lib/types';
 	import Canvas from '$lib/components/Canvas.svelte';
 
-	const tools = [
-		{ state: new SelectState(), kbShortcut: '1', icon: 'mdi--cursor-default-outline' },
-		{ state: new DrawEdgeState(), kbShortcut: '2', icon: 'hugeicons--orthogonal-edge' },
-		{ state: new AddNodeState(), kbShortcut: '3', icon: 'tabler--circle-plus' }
-	];
-
 	let fsa = $state(new FSA());
-	let stateManager = $state(
-		new StateManager(
-			fsa,
-			tools.map((tool) => tool.state)
-		)
-	);
+	const tools = [
+		{ state: new SelectState(fsa), kbShortcut: '1', icon: 'mdi--cursor-default-outline' },
+		{ state: new DrawEdgeState(fsa), kbShortcut: '2', icon: 'hugeicons--orthogonal-edge' },
+		{ state: new AddNodeState(fsa), kbShortcut: '3', icon: 'tabler--circle-plus' }
+	];
+	let stateManager = $state(new StateManager<CanvasState>(tools.map((tool) => tool.state)));
 
 	setContext('stateManager', () => stateManager);
 

@@ -37,14 +37,10 @@ export interface State {
 	onExit?(): void;
 }
 
-export interface CanvasState {
-	name: string;
+export interface CanvasState extends State {
 	cursor?: string;
-
-	onEnter?(fsa: FSA): void;
-	onExit?(fsa: FSA): void;
-	onMouseDown?(pos: Point, fsa: FSA): void;
-	onMouseMove?(pos: Point, fsa: FSA): void;
-	onMouseUp?(pos: Point, fsa: FSA): void;
-	onClick?(pos: Point, fsa: FSA): void;
+	onMouseDown?(pos: Point): void;
+	onMouseMove?(pos: Point): void;
+	onMouseUp?(pos: Point): void;
+	onClick?(pos: Point): void;
 }
