@@ -1,4 +1,4 @@
-import { canvasStyle } from '$lib';
+import { canvasTheme as ct } from '$lib/canvas';
 import type { Drawable, Point } from '$lib/fsa';
 
 export class Node implements Drawable {
@@ -42,20 +42,20 @@ export class Node implements Drawable {
 
 	draw(ctx: CanvasRenderingContext2D): void {
 		ctx.save();
-		ctx.strokeStyle = canvasStyle.nodeStroke;
+		ctx.strokeStyle = ct.styles.nodeStroke.value;
 		ctx.lineWidth = 2;
 		ctx.beginPath();
 		ctx.arc(this.pos.x, this.pos.y, 30, 0, Math.PI * 2);
 		ctx.stroke();
 
-		ctx.fillStyle = canvasStyle.nodeText;
+		ctx.fillStyle = ct.styles.nodeText.value;
 		ctx.font = '16px sans-serif';
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
 		ctx.fillText(this.label, this.pos.x, this.pos.y);
 
 		if (this.isSelected) {
-			ctx.strokeStyle = canvasStyle.selectedStroke;
+			ctx.strokeStyle = ct.styles.selectedStroke.value;
 			ctx.lineWidth = 3;
 			ctx.beginPath();
 			ctx.arc(this.pos.x, this.pos.y, 28, 0, Math.PI * 2);

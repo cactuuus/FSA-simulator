@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import type { FSA, Point } from '$lib/fsa';
 	import type { CanvasState } from '$lib/state-machine';
-	import { canvasStyle } from '$lib';
+	import { canvasTheme as ct } from '$lib/canvas';
 
 	let {
 		fsa,
@@ -34,22 +34,18 @@
 		});
 	}
 
-	function loadStyle() {
-		canvasStyle.loadFromCSS();
-		render();
-	}
-
 	onMount(() => {
 		window.addEventListener('resize', render);
-		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', loadStyle);
-
 		ctx = canvas.getContext('2d')!;
-		loadStyle();
 
 		return () => {
 			window.removeEventListener('resize', render);
-			window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', loadStyle);
 		};
+	});
+
+	$effect(() => {
+		ct.colorScheme; // create dependency on color scheme
+		render();
 	});
 
 	function getCanvasPoint(e: MouseEvent): Point {

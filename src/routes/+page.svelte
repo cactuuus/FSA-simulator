@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
-	import Canvas from '$lib/components/Canvas.svelte';
+	import { DrawingBoard } from '$lib/canvas';
 	import { FSA } from '$lib/fsa';
 	import {
 		type CanvasState,
@@ -43,7 +43,7 @@
 </script>
 
 <section class="relative h-full w-full">
-	<Canvas {fsa} state={stateManager?.currentState} />
+	<DrawingBoard {fsa} state={stateManager?.currentState} />
 
 	<ul
 		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100 px-2 py-1 shadow"
