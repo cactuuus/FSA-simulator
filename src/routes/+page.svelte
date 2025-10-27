@@ -1,40 +1,33 @@
 <script lang="ts">
-	import { onMount, setContext } from 'svelte';
-	import { DrawingBoard } from '$lib/canvas';
-	import { FSA } from '$lib/fsa';
-	import {
-		type CanvasState,
-		StateManager,
-		SelectState,
-		DrawEdgeState,
-		AddNodeState
-	} from '$lib/state-machine';
+	import { onMount } from 'svelte';
+	import { AddNodeState, SelectState, DrawEdgeState, type State } from '$lib/state-machine';
+	import DrawingBoard from '$lib/canvas/DrawingBoard.svelte';
+	import { editor } from '$lib/stores/editor.svelte';
 
-	let fsa = $state(new FSA());
 	const tools = [
-		{ state: new SelectState(fsa), kbShortcut: '1', icon: 'mdi--cursor-default-outline' },
-		{ state: new DrawEdgeState(fsa), kbShortcut: '2', icon: 'hugeicons--orthogonal-edge' },
-		{ state: new AddNodeState(fsa), kbShortcut: '3', icon: 'tabler--circle-plus' }
+		{ mode: 'select', state: SelectState, kbShortcut: '1', icon: 'mdi--cursor-default-outline' },
+		{
+			mode: 'draw-edge',
+			state: DrawEdgeState,
+			kbShortcut: '2',
+			icon: 'hugeicons--orthogonal-edge'
+		},
+		{ mode: 'add-node', state: AddNodeState, kbShortcut: '3', icon: 'tabler--circle-plus' }
 	];
 
-	let stateManager = $state(new StateManager(tools.map((tool) => tool.state)));
-
-	setContext('stateManager', () => stateManager);
-
-	function setActive(selectedState: CanvasState) {
-		stateManager.transition(selectedState.name);
+	function setActive(state: State) {
+		editor.stateManager.transitionTo(state);
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
-		const action = tools.find((a) => a.kbShortcut === e.key);
-		if (action) {
+		const tool = tools.find((a) => a.kbShortcut === e.key);
+		if (tool) {
 			e.preventDefault();
-			setActive(action.state);
+			setActive(new tool.state());
 		}
 	}
 
 	onMount(() => {
-		stateManager.transition('select');
 		window.addEventListener('keydown', handleKeyDown);
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
@@ -43,7 +36,7 @@
 </script>
 
 <section class="relative h-full w-full">
-	<DrawingBoard {fsa} state={stateManager?.currentState} />
+	<DrawingBoard />
 
 	<ul
 		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100 px-2 py-1 shadow"
@@ -51,10 +44,10 @@
 		{#each tools as tool (tool.state.name)}
 			<li>
 				<button
-					onclick={() => setActive(tool.state)}
+					onclick={() => setActive(new tool.state())}
 					aria-label={tool.kbShortcut}
-					class="btn relative btn-square btn-ghost btn-secondary {tool.state.name ===
-					stateManager?.currentState?.name
+					class="btn relative btn-square btn-ghost btn-secondary {tool.mode ===
+					editor.stateManager.currentState?.name
 						? 'btn-active'
 						: ''}"
 				>
@@ -66,6 +59,8 @@
 	</ul>
 
 	<div class="absolute bottom-2 left-2 rounded-box bg-base-100 px-3 py-2 text-xs shadow">
-		Mode: {stateManager?.currentState?.name} | Nodes: {fsa.nodes.length} | Edges: {fsa.edges.length}
+		Mode: {editor.stateManager.currentState?.name}
+		| Nodes: {editor.fsaGraph.nodes.length}
+		| Edges: {editor.fsaGraph.edges.length}
 	</div>
 </section>

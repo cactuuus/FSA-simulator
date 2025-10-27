@@ -3,6 +3,6 @@ export interface Point {
 	y: number;
 }
 
-export interface Drawable {
-	draw(ctx: CanvasRenderingContext2D): void;
+export interface FSAItem {
+	id: string;
 }

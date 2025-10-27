@@ -1,87 +1,77 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import type { FSA, Point } from '$lib/fsa';
-	import type { CanvasState } from '$lib/state-machine';
-	import { canvasTheme as ct } from '$lib/canvas';
+	import NodeSvg from './NodeSvg.svelte';
+	import EdgeSvg from './EdgeSvg.svelte';
+	import { Node, Edge } from '$lib/fsa';
+	import type { EventContext } from '$lib/state-machine';
+	import { editor } from '$lib/stores/editor.svelte';
 
-	let {
-		fsa,
-		state
-	}: {
-		fsa: FSA;
-		state: CanvasState | null;
-	} = $props();
+	let svgElement: SVGSVGElement;
 
-	let canvas: HTMLCanvasElement;
-	let ctx: CanvasRenderingContext2D;
+	function getEventContext(e: MouseEvent): EventContext {
+		const element = (e.target as Element).closest('[data-id]');
+		const elementId = element?.getAttribute('data-id') ?? null;
+		const fsaItem = elementId ? editor.fsaGraph.getItemFromId(elementId) : null;
 
-	function render() {
-		if (!ctx) return;
-
-		canvas.width = canvas.offsetWidth;
-		canvas.height = canvas.offsetHeight;
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-		// Edges
-		fsa.edges.forEach((edge) => {
-			edge.draw(ctx);
-		});
-		fsa.draftEdge?.draw(ctx);
-
-		// Nodes
-		fsa.nodes.forEach((node) => {
-			node.draw(ctx);
-		});
+		return {
+			event: e,
+			node: fsaItem instanceof Node ? fsaItem : undefined,
+			edge: fsaItem instanceof Edge ? fsaItem : undefined,
+			isCanvas: fsaItem === null,
+			mousePos: { x: e.offsetX, y: e.offsetY }
+		};
 	}
 
-	onMount(() => {
-		window.addEventListener('resize', render);
-		ctx = canvas.getContext('2d')!;
-
-		return () => {
-			window.removeEventListener('resize', render);
-		};
-	});
-
-	$effect(() => {
-		ct.colorScheme; // create dependency on color scheme
-		render();
-	});
-
-	function getCanvasPoint(e: MouseEvent): Point {
-		if (!canvas) return { x: 0, y: 0 };
-		const rect = canvas.getBoundingClientRect();
-		return {
-			x: e.clientX - rect.left,
-			y: e.clientY - rect.top
-		};
+	function handleClick(e: MouseEvent) {
+		editor.stateManager.currentState?.handleClick(getEventContext(e));
 	}
 
 	function handleMouseDown(e: MouseEvent) {
-		state?.onMouseDown?.(getCanvasPoint(e));
-		render();
+		editor.stateManager.currentState?.handleMouseDown?.(getEventContext(e));
 	}
-	function handleMouseMove(e: MouseEvent) {
-		state?.onMouseMove?.(getCanvasPoint(e));
-		render();
-	}
+
 	function handleMouseUp(e: MouseEvent) {
-		state?.onMouseUp?.(getCanvasPoint(e));
-		render();
+		editor.stateManager.currentState?.handleMouseUp?.(getEventContext(e));
 	}
-	function handleClick(e: MouseEvent) {
-		state?.onClick?.(getCanvasPoint(e));
-		render();
+
+	function handleMouseMove(e: MouseEvent) {
+		editor.stateManager.currentState?.handleMouseMove?.(getEventContext(e));
+	}
+
+	function handleMouseOver(e: MouseEvent) {
+		editor.stateManager.currentState?.handleMouseOver?.(getEventContext(e));
+	}
+
+	function handleMouseOut(e: MouseEvent) {
+		editor.stateManager.currentState?.handleMouseOut?.(getEventContext(e));
 	}
 </script>
 
-<canvas
-	bind:this={canvas}
-	id="canvas"
-	class="h-full w-full rounded-box border border-base-300 bg-base-200"
-	style="cursor: {state?.cursor};"
-	onmousedown={handleMouseDown}
-	onmousemove={handleMouseMove}
-	onmouseup={handleMouseUp}
-	onclick={handleClick}
-></canvas>
+<section class="h-full w-full rounded-box border border-base-300 bg-base-200">
+	<!--
+		svelte-ignore
+		a11y_click_events_have_key_events
+		a11y_no_static_element_interactions
+	 	a11y_mouse_events_have_key_events
+
+		Ignore the above warnings. For now, the drawing board won't be keyboard accessible.
+	-->
+	<svg
+		bind:this={svgElement}
+		id="fsa-diagram"
+		class="h-full w-full"
+		onclick={handleClick}
+		onmousedown={handleMouseDown}
+		onmouseup={handleMouseUp}
+		onmousemove={handleMouseMove}
+		onmouseover={handleMouseOver}
+		onmouseout={handleMouseOut}
+		data-state={editor.stateManager.currentState?.name}
+	>
+		{#each editor.fsaGraph.nodes as node (node.id)}
+			<NodeSvg {node} isSelected={editor.isSelected(node)} />
+		{/each}
+		{#each editor.fsaGraph.edges as edge (edge.id)}
+			<EdgeSvg {edge} isSelected={editor.isSelected(edge)} />
+		{/each}
+	</svg>
+</section>

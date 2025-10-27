@@ -1,37 +1,30 @@
-import type { CanvasState } from '$lib/state-machine';
-import type { Point, FSA, Node } from '$lib/fsa';
+import { Node } from '$lib/fsa';
+import { State, type EventContext } from '../types';
+import { editor } from '$lib/stores/editor.svelte';
 
-export class SelectState implements CanvasState {
+export class SelectState extends State {
 	readonly name = 'select';
-	readonly cursor = 'pointer';
-	private _selectedNode: Node | null = null;
-	private _isDragging: boolean = false;
+	#isDragging = false;
 
-	constructor(private _fsa: FSA) {}
-
-	clearSelection() {
-		this._selectedNode?.unselect();
-		this._selectedNode = null;
-	}
-
-	onExit() {
-		this.clearSelection();
-	}
-
-	onMouseDown(pos: Point) {
-		this.clearSelection();
-		this._selectedNode = this._fsa.getNodeAt(pos);
-		this._selectedNode?.select();
-		this._isDragging = true;
-	}
-
-	onMouseMove(pos: Point) {
-		if (this._isDragging) {
-			this._selectedNode?.moveTo(pos);
+	handleMouseDown(ctx: EventContext): void {
+		if (ctx.isCanvas) {
+			editor.clearSelection();
+		} else if (ctx.node) {
+			editor.selectItem(ctx.node);
+			this.#isDragging = true;
+		} else if (ctx.edge) {
+			console.log('Edge selected:', ctx.edge);
+			editor.selectItem(ctx.edge);
 		}
 	}
 
-	onMouseUp(pos: Point): void {
-		this._isDragging = false;
+	handleMouseMove(ctx: EventContext): void {
+		if (this.#isDragging && editor.selectedItem instanceof Node) {
+			editor.fsaGraph.updateNodePosition(editor.selectedItem as Node, ctx.mousePos);
+		}
+	}
+
+	handleMouseUp(_ctx: EventContext): void {
+		this.#isDragging = false;
 	}
 }

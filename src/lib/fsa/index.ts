@@ -1,4 +1,4 @@
-export { FSA } from './FSA.svelte';
-export { Node } from './Node';
-export { type BaseEdge, Edge, DraftEdge } from './Edge';
-export type { Point, Drawable } from './types';
+export { FSAGraph } from './FSAGraph.svelte';
+export { Node } from './Node.svelte';
+export { Edge, DraftEdge } from './Edge';
+export type { Point, FSAItem } from './types';

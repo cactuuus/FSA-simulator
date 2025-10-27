@@ -2,13 +2,8 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { headerActions } from '$lib/stores/header';
-	import { canvasTheme as ct } from '$lib/canvas';
-	import { onMount } from 'svelte';
 
 	let { children } = $props();
-	onMount(() => {
-		ct.init();
-	});
 </script>
 
 <svelte:head>
