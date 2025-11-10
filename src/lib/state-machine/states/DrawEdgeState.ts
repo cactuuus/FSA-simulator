@@ -11,7 +11,7 @@ export class DrawEdgeState extends State {
 
 	handleMouseDown(ctx: EventContext): void {
 		if (ctx.node) {
-			editor.setDraftEdge(ctx.node, ctx.mousePos);
+			editor.setDraftEdge(ctx.node, ctx.node);
 			this.#isDragging = true;
 		}
 	}

@@ -68,13 +68,18 @@
 		onmouseout={handleMouseOut}
 		data-state={editor.stateManager.currentState?.name}
 	>
-		{#if editor.draftEdge}
-			<DraftEdgeSvg draftEdge={editor.draftEdge} />
-		{/if}
+		<!--
+			Note: SVG renders elements in the order they appear in the code.
+		 -->
 
 		{#each editor.fsaGraph.edges as edge (edge.id)}
 			<EdgeSvg {edge} isSelected={editor.isSelected(edge)} />
 		{/each}
+
+		{#if editor.draftEdge}
+			<DraftEdgeSvg draftEdge={editor.draftEdge} />
+		{/if}
+
 		{#each editor.fsaGraph.nodes as node (node.id)}
 			<NodeSvg {node} isSelected={editor.isSelected(node)} />
 		{/each}

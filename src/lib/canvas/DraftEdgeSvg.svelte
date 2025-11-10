@@ -2,9 +2,21 @@
 	import { DraftEdge, Node } from '$lib/fsa';
 
 	const { draftEdge }: { draftEdge: DraftEdge } = $props();
+
+	const shape = $derived(
+		draftEdge.isLoopback()
+			? `M ${draftEdge.sourcePoint.x - 30} ${draftEdge.sourcePoint.y + 30}
+			A 50 50, 0, 1, 0, ${draftEdge.sourcePoint.x + 30} ${draftEdge.sourcePoint.y + 30}
+			L ${draftEdge.sourcePoint.x} ${draftEdge.sourcePoint.y}`
+			: `M ${draftEdge.sourcePoint.x} ${draftEdge.sourcePoint.y} L ${draftEdge.targetPoint.x} ${draftEdge.targetPoint.y}`
+	);
 </script>
 
-<g data-id="draft-edge" class="draft-edge" pointer-events="none">
+<g
+	data-id="draft-edge"
+	class="draft-edge {draftEdge.isDuplicate ? 'invalid' : ''}"
+	pointer-events="none"
+>
 	<defs>
 		<!-- arrowhead -->
 		<marker
@@ -22,10 +34,5 @@
 		</marker>
 	</defs>
 
-	<path
-		d={`M ${draftEdge.sourcePoint.x} ${draftEdge.sourcePoint.y}
-            L ${draftEdge.targetPoint.x} ${draftEdge.targetPoint.y}`}
-		class="line"
-		marker-end="url(#draft-arrow)"
-	/>
+	<path d={shape} class="line" marker-end="url(#draft-arrow)" />
 </g>

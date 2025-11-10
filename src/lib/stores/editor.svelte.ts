@@ -19,20 +19,31 @@ class EditorManager {
 		this.#selectedItem = null;
 	}
 
-	setDraftEdge(source: Node, target: Point) {
-		this.#draftEdge = new DraftEdge(source, target);
+	setDraftEdge(source: Node, target: Node) {
+		const duplicateEdge = this.#fsaGraph.edgeAlreadyExists(source, target);
+		this.#draftEdge = new DraftEdge(source, target, duplicateEdge);
 	}
 
 	updateDraftEdgeTarget(newTarget: Point | Node) {
 		if (this.#draftEdge) {
-			this.#draftEdge.updateTarget(newTarget);
+			let duplicateEdge = false;
+			if (newTarget instanceof Node) {
+				duplicateEdge = this.#fsaGraph.edgeAlreadyExists(this.#draftEdge.from, newTarget);
+			}
+			this.#draftEdge.updateTarget(newTarget, duplicateEdge);
 		}
 	}
 
 	commitDraftEdge(targetNode: Node) {
-		if (this.#draftEdge) {
-			this.#fsaGraph.addEdge(this.#draftEdge.from, targetNode);
+		if (!this.#draftEdge) {
+			throw new Error('No draft edge to commit');
 		}
+		if (this.#draftEdge.isDuplicate) {
+			console.error('Cannot commit to a duplicate edge');
+			return;
+		}
+
+		this.#fsaGraph.addEdge(this.#draftEdge.from, targetNode);
 	}
 
 	clearDraftEdge() {

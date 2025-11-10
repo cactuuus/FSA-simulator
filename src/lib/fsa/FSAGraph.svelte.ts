@@ -17,6 +17,10 @@ export class FSAGraph {
 		return newEdge;
 	}
 
+	edgeAlreadyExists(from: Node, to: Node): boolean {
+		return this.edges.some((e) => e.from.id === from.id && e.to.id === to.id);
+	}
+
 	updateNodePosition(node: Node, newPoint: Point): void {
 		node.pos.x = newPoint.x;
 		node.pos.y = newPoint.y;

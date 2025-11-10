@@ -2,8 +2,13 @@
 	import { Node, Edge } from '$lib/fsa';
 
 	const { edge, isSelected }: { edge: Edge; isSelected: boolean } = $props();
+
 	const shape = $derived(
-		`M ${edge.sourcePoint.x} ${edge.sourcePoint.y} L ${edge.targetPoint.x} ${edge.targetPoint.y}`
+		edge.isLoopback()
+			? `M ${edge.sourcePoint.x - 30} ${edge.sourcePoint.y + 30}
+			A 50 50, 0, 1, 0, ${edge.sourcePoint.x + 30} ${edge.sourcePoint.y + 30}
+			L ${edge.sourcePoint.x} ${edge.sourcePoint.y}`
+			: `M ${edge.sourcePoint.x} ${edge.sourcePoint.y} L ${edge.targetPoint.x} ${edge.targetPoint.y}`
 	);
 </script>
 
