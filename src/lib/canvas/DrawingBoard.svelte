@@ -1,6 +1,7 @@
 <script lang="ts">
 	import NodeSvg from './NodeSvg.svelte';
 	import EdgeSvg from './EdgeSvg.svelte';
+	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
 	import { Node, Edge } from '$lib/fsa';
 	import type { EventContext } from '$lib/state-machine';
 	import { editor } from '$lib/stores/editor.svelte';
@@ -67,11 +68,15 @@
 		onmouseout={handleMouseOut}
 		data-state={editor.stateManager.currentState?.name}
 	>
-		{#each editor.fsaGraph.nodes as node (node.id)}
-			<NodeSvg {node} isSelected={editor.isSelected(node)} />
-		{/each}
+		{#if editor.draftEdge}
+			<DraftEdgeSvg draftEdge={editor.draftEdge} />
+		{/if}
+
 		{#each editor.fsaGraph.edges as edge (edge.id)}
 			<EdgeSvg {edge} isSelected={editor.isSelected(edge)} />
+		{/each}
+		{#each editor.fsaGraph.nodes as node (node.id)}
+			<NodeSvg {node} isSelected={editor.isSelected(node)} />
 		{/each}
 	</svg>
 </section>

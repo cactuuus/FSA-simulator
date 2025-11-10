@@ -23,7 +23,7 @@ class EditorManager {
 		this.#draftEdge = new DraftEdge(source, target);
 	}
 
-	updateDraftEdgeTarget(newTarget: Point) {
+	updateDraftEdgeTarget(newTarget: Point | Node) {
 		if (this.#draftEdge) {
 			this.#draftEdge.updateTarget(newTarget);
 		}

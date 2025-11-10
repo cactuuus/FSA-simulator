@@ -14,19 +14,96 @@ body {
 }
 
 :root {
-	--canvas-node-stroke: black;
-	--canvas-node-text: black;
-	--canvas-edge-stroke: black;
-	--canvas-selected-stroke: green;
-	--canvas-draft-stroke: darkorange;
+	/* drawing board styling */
+	--board-bg-color: #f0f0f0;
+	--draw-color: black;
+	--selected-color: limegreen;
+	--hover-shadow: rgba(0, 0, 0, 0.705);
+	--drop-shadow: drop-shadow(0 0 5px var(--hover-shadow));
+
+	--text-size: 16px;
+	--text-style: monospace;
+	--text-weight: lighter;
+
+	/* node specific styling */
+	--node-radius: 30px;
+	--node-stroke-width: 2px;
+
+	/* edge specific styling */
+	--draft-edge-color: darkorange;
+	--edge-arrow-size: 7px;
+	--edge-stroke-width: 2px;
+	--edge-selectable-area-width: 30px;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--canvas-node-stroke: white;
-		--canvas-node-text: white;
-		--canvas-edge-stroke: white;
-		--canvas-selected-stroke: green;
-		--canvas-draft-stroke: darkorange;
+		/* drawing board styling */
+		--board-bg-color: #1a1a1a;
+		--draw-color: white;
+		--selected-color: limegreen;
+		--hover-shadow: white;
+
+		--draft-edge-color: darkorange;
 	}
+}
+
+.node {
+	stroke: var(--draw-color);
+	fill: var(--board-bg-color);
+	stroke-width: var(--node-stroke-width);
+
+	text {
+		pointer-events: none;
+		stroke: var(--draw-color);
+		font-weight: var(--text-weight);
+		font-family: var(--text-style);
+		font-size: var(--text-size);
+		text-anchor: middle;
+	}
+
+	&.selectable:hover circle {
+		cursor: pointer;
+		filter: var(--drop-shadow);
+	}
+
+	&.selected {
+		stroke: var(--selected-color);
+		&:active {
+			filter: brightness(150%);
+		}
+	}
+}
+
+.edge {
+	fill: var(--draw-color);
+	color: var(--draw-color);
+	stroke: var(--draw-color);
+	stroke-width: var(--edge-stroke-width);
+
+	.select-area {
+		stroke-width: var(--edge-selectable-area-width);
+		opacity: 0; /* invisible, used purely for easier selection */
+	}
+
+	&.selectable:hover {
+		cursor: pointer;
+		filter: var(--drop-shadow);
+	}
+
+	&.selected {
+		color: var(--selected-color);
+		fill: var(--selected-color);
+		stroke: var(--selected-color);
+		&:active {
+			filter: brightness(150%);
+		}
+	}
+}
+
+.draft-edge {
+	color: var(--draft-edge-color);
+	stroke: var(--draft-edge-color);
+	stroke-width: var(--edge-stroke-width);
+	stroke-dasharray: 5, 5;
 }

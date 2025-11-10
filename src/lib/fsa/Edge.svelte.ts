@@ -1,4 +1,4 @@
-import type { Point, Node, FSAItem } from '$lib/fsa';
+import { Node, type Point, type FSAItem } from '$lib/fsa';
 
 export class Edge implements FSAItem {
 	id: string;
@@ -29,14 +29,21 @@ export class Edge implements FSAItem {
 export class DraftEdge {
 	from: Node;
 	to: Point;
+	pointingAtNode: boolean = false;
 
 	constructor(from: Node, to: Point) {
 		this.from = from;
-		this.to = to;
+		this.to = $state(to);
 	}
 
-	updateTarget(to: Point): void {
-		this.to = to;
+	updateTarget(to: Point | Node): void {
+		if (to instanceof Node) {
+			this.to = to.pos;
+			this.pointingAtNode = true;
+		} else {
+			this.to = to;
+			this.pointingAtNode = false;
+		}
 	}
 
 	get sourcePoint(): Point {
