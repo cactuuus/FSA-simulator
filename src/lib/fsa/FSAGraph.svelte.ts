@@ -22,8 +22,7 @@ export class FSAGraph {
 	}
 
 	updateNodePosition(node: Node, newPoint: Point): void {
-		node.pos.x = newPoint.x;
-		node.pos.y = newPoint.y;
+		node.pos = newPoint;
 	}
 
 	getItemFromId(id: string): FSAItem | null {

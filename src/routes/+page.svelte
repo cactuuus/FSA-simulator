@@ -1,18 +1,28 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { AddNodeState, SelectState, DrawEdgeState, type State } from '$lib/state-machine';
+	import {
+		AddNodeState,
+		SelectState,
+		DrawEdgeState,
+		PanningState,
+		type State
+	} from '$lib/state-machine';
 	import DrawingBoard from '$lib/canvas/DrawingBoard.svelte';
 	import { editor } from '$lib/stores/editor.svelte';
 
+	/**
+	 * Toolbar tools configuration.
+	 */
 	const tools = [
-		{ mode: 'select', state: SelectState, kbShortcut: '1', icon: 'mdi--cursor-default-outline' },
+		{ mode: 'pan', state: PanningState, kbShortcut: '1', icon: 'fa7-regular--hand' },
+		{ mode: 'select', state: SelectState, kbShortcut: '2', icon: 'mdi--cursor-default-outline' },
 		{
 			mode: 'draw-edge',
 			state: DrawEdgeState,
-			kbShortcut: '2',
+			kbShortcut: '3',
 			icon: 'hugeicons--orthogonal-edge'
 		},
-		{ mode: 'add-node', state: AddNodeState, kbShortcut: '3', icon: 'tabler--circle-plus' }
+		{ mode: 'add-node', state: AddNodeState, kbShortcut: '4', icon: 'tabler--circle-plus' }
 	];
 
 	function setActive(state: State) {

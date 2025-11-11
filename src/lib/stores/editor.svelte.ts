@@ -6,6 +6,7 @@ class EditorManager {
 	#stateManager: StateManager = new StateManager();
 	#selectedItem = $state<FSAItem | null>(null);
 	#draftEdge = $state<DraftEdge | null>(null);
+	#panOffset = $state<Point>({ x: 0, y: 0 });
 
 	selectItem(item: FSAItem | null) {
 		this.#selectedItem = item;
@@ -50,6 +51,11 @@ class EditorManager {
 		this.#draftEdge = null;
 	}
 
+	panCanvas(delta: Point): void {
+		this.#panOffset.x -= delta.x;
+		this.#panOffset.y -= delta.y;
+	}
+
 	get draftEdge(): DraftEdge | null {
 		return this.#draftEdge;
 	}
@@ -62,6 +68,10 @@ class EditorManager {
 	}
 	get selectedItem(): FSAItem | null {
 		return this.#selectedItem;
+	}
+
+	get panOffset(): Point {
+		return this.#panOffset;
 	}
 }
 

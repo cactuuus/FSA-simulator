@@ -13,7 +13,6 @@ export class SelectState extends State {
 			editor.selectItem(ctx.node);
 			this.#isDragging = true;
 		} else if (ctx.edge) {
-			console.log('Edge selected:', ctx.edge);
 			editor.selectItem(ctx.edge);
 		}
 	}
