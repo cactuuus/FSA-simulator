@@ -7,10 +7,6 @@
 	import { editor } from '$lib/stores/editor.svelte';
 
 	let svgElement: SVGSVGElement;
-	let viewportSize = $state({ width: 1000, height: 1000 }); // actual values are set by ResizeObserver
-	const viewBox = $derived(
-		`${editor.panOffset.x} ${editor.panOffset.y} ${viewportSize.width} ${viewportSize.height}`
-	);
 
 	/**
 	 * Observe size changes of the SVG element to update viewport size.
@@ -21,7 +17,7 @@
 		if (svgElement) {
 			const resizeObserver = new ResizeObserver((entries) => {
 				const { width, height } = entries[0].contentRect;
-				viewportSize = { width, height };
+				editor.canvasSize = { width, height };
 			});
 
 			resizeObserver.observe(svgElement);
@@ -52,6 +48,18 @@
 			isCanvas: fsaItem === null,
 			mousePos: mousePos
 		};
+	}
+
+	/**
+	 * Handle mouse wheel events.
+	 * Ctrl + Wheel to zoom in/out.
+	 */
+	function handleWheel(e: WheelEvent) {
+		if (e.ctrlKey) {
+			e.preventDefault();
+			const zoomAmount = e.deltaY < 0 ? editor.CANVAS_ZOOM_STEP : -editor.CANVAS_ZOOM_STEP;
+			editor.adjustZoom(zoomAmount, getEventContext(e).mousePos);
+		}
 	}
 
 	function handleClick(e: MouseEvent) {
@@ -87,7 +95,7 @@
 	<!-- Ignore the above warnings. For now, the drawing board won't be keyboard accessible.-->
 	<svg
 		bind:this={svgElement}
-		{viewBox}
+		viewBox={editor.viewBox}
 		id="fsa-diagram"
 		class="h-full w-full"
 		onclick={handleClick}
@@ -96,6 +104,7 @@
 		onmousemove={handleMouseMove}
 		onmouseover={handleMouseOver}
 		onmouseout={handleMouseOut}
+		onwheel={handleWheel}
 		data-state={editor.stateManager.currentState?.name}
 	>
 		<!--

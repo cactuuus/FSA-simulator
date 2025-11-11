@@ -7,7 +7,7 @@
 		PanningState,
 		type State
 	} from '$lib/state-machine';
-	import DrawingBoard from '$lib/canvas/DrawingBoard.svelte';
+	import DrawingBoard from '$lib/UI/canvas/DrawingBoard.svelte';
 	import { editor } from '$lib/stores/editor.svelte';
 
 	/**
@@ -68,9 +68,29 @@
 		{/each}
 	</ul>
 
-	<div class="absolute bottom-2 left-2 rounded-box bg-base-100 px-3 py-2 text-xs shadow">
+	<div class="absolute bottom-2 left-2 rounded-box bg-base-100 px-3 py-2 text-sm shadow">
 		Mode: {editor.stateManager.currentState?.name}
 		| Nodes: {editor.fsaGraph.nodes.length}
 		| Edges: {editor.fsaGraph.edges.length}
+	</div>
+	<div
+		class="absolute right-2 bottom-2 flex items-center gap-0.5 rounded-box bg-base-100 px-3 py-2 text-sm shadow"
+	>
+		<span class="mx-1">{editor.prettyZoomLevel}</span>
+
+		<button
+			class="btn btn-square text-xl btn-ghost btn-xs"
+			onclick={() => editor.adjustZoom(0.1)}
+			aria-label="Zoom In"
+		>
+			+
+		</button>
+		<button
+			class="btn btn-square text-xl btn-ghost btn-xs"
+			onclick={() => editor.adjustZoom(-0.1)}
+			aria-label="Zoom Out"
+		>
+			-
+		</button>
 	</div>
 </section>
