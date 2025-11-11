@@ -19,6 +19,6 @@
 	</div>
 </header>
 
-<main class="h-10/12 py-4">
+<main class="h-10/12 min-h-[800px] py-4">
 	{@render children?.()}
 </main>

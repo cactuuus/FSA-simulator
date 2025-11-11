@@ -1,13 +1,13 @@
-import type { CanvasState, Point } from '$lib/types';
-import type { FSA } from '$lib/fsa/FSA.svelte';
+import { State, type EventContext } from '$lib/state-machine';
+import { editor } from '$lib/stores/editor.svelte';
 
-export class AddNodeState implements CanvasState {
+export class AddNodeState extends State {
 	readonly name = 'add-node';
-	readonly cursor = 'copy';
 
-	constructor(private _fsa: FSA) {}
-
-	onClick(pos: Point) {
-		this._fsa.addNode(pos);
+	handleClick(ctx: EventContext): void {
+		if (ctx.isCanvas) {
+			const newNode = editor.fsaGraph.addNode(ctx.mousePos);
+			editor.selectItem(newNode);
+		}
 	}
 }

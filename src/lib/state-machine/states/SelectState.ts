@@ -1,37 +1,29 @@
-import type { CanvasState, Node, Point } from '$lib/types';
-import type { FSA } from '$lib/fsa/FSA.svelte';
+import { Node } from '$lib/fsa';
+import { State, type EventContext } from '../types';
+import { editor } from '$lib/stores/editor.svelte';
 
-export class SelectState implements CanvasState {
+export class SelectState extends State {
 	readonly name = 'select';
-	readonly cursor = 'pointer';
+	#isDragging = false;
 
-	private _draggedNode: Node | null = null;
-
-	constructor(private _fsa: FSA) {}
-
-	onExit() {
-		this._draggedNode = null;
-		this._fsa.unselectNode();
-	}
-
-	onMouseDown(pos: Point) {
-		const clickedNode = this._fsa.getNodeAt(pos);
-
-		if (clickedNode) {
-			this._fsa.selectNode(clickedNode);
-			this._draggedNode = clickedNode;
-		} else {
-			this._fsa.unselectNode();
+	handleMouseDown(ctx: EventContext): void {
+		if (ctx.isCanvas) {
+			editor.clearSelection();
+		} else if (ctx.node) {
+			editor.selectItem(ctx.node);
+			this.#isDragging = true;
+		} else if (ctx.edge) {
+			editor.selectItem(ctx.edge);
 		}
 	}
 
-	onMouseMove(pos: Point) {
-		if (this._draggedNode) {
-			this._fsa.updateNodePosition(this._draggedNode, pos);
+	handleMouseMove(ctx: EventContext): void {
+		if (this.#isDragging && editor.selectedItem instanceof Node) {
+			editor.fsaGraph.updateNodePosition(editor.selectedItem as Node, ctx.mousePos);
 		}
 	}
 
-	onMouseUp(pos: Point) {
-		this._draggedNode = null;
+	handleMouseUp(_ctx: EventContext): void {
+		this.#isDragging = false;
 	}
 }

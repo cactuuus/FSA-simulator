@@ -1,38 +1,36 @@
-import type { CanvasState, Node, Point } from '$lib/types';
-import type { FSA } from '$lib/fsa/FSA.svelte';
+import { editor } from '$lib/stores/editor.svelte';
+import { State, type EventContext } from '../types';
 
-export class DrawEdgeState implements CanvasState {
+export class DrawEdgeState extends State {
 	readonly name = 'draw-edge';
-	readonly cursor = 'crosshair';
-
-	private _sourceNode: Node | null = null;
-
-	constructor(private _fsa: FSA) {}
+	#isDragging = false;
 
 	onExit() {
-		this._sourceNode = null;
-		this._fsa.clearDraftEdge();
+		editor.clearDraftEdge();
 	}
 
-	onMouseDown(pos: Point) {
-		const clickedNode = this._fsa.getNodeAt(pos);
-		if (clickedNode) {
-			this._sourceNode = clickedNode;
+	handleMouseDown(ctx: EventContext): void {
+		if (ctx.node) {
+			editor.setDraftEdge(ctx.node, ctx.node);
+			this.#isDragging = true;
 		}
 	}
 
-	onMouseMove(pos: Point) {
-		if (this._sourceNode) {
-			this._fsa.setDraftEdge(this._sourceNode, pos);
+	handleMouseMove(ctx: EventContext): void {
+		if (this.#isDragging) {
+			if (ctx.node) {
+				editor.updateDraftEdgeTarget(ctx.node);
+			} else {
+				editor.updateDraftEdgeTarget(ctx.mousePos);
+			}
 		}
 	}
 
-	onMouseUp(pos: Point): void {
-		const targetNode = this._fsa.getNodeAt(pos);
-		if (this._sourceNode && targetNode) {
-			this._fsa.addEdge(this._sourceNode, targetNode);
+	handleMouseUp(ctx: EventContext): void {
+		this.#isDragging = false;
+		if (ctx.node && editor.draftEdge) {
+			editor.commitDraftEdge(ctx.node);
 		}
-		this._sourceNode = null;
-		this._fsa.clearDraftEdge();
+		editor.clearDraftEdge();
 	}
 }

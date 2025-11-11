@@ -1,35 +1,43 @@
 <script lang="ts">
-	import { onMount, setContext } from 'svelte';
-	import { StateManager } from '$lib/state-machine/StateManager.svelte';
-	import { SelectState, DrawEdgeState, AddNodeState } from '$lib/state-machine/states';
-	import { FSA } from '$lib/fsa/FSA.svelte';
-	import type { CanvasState } from '$lib/types';
-	import Canvas from '$lib/components/Canvas.svelte';
+	import { onMount } from 'svelte';
+	import {
+		AddNodeState,
+		SelectState,
+		DrawEdgeState,
+		PanningState,
+		type State
+	} from '$lib/state-machine';
+	import DrawingBoard from '$lib/UI/canvas/DrawingBoard.svelte';
+	import { editor } from '$lib/stores/editor.svelte';
 
-	let fsa = $state(new FSA());
+	/**
+	 * Toolbar tools configuration.
+	 */
 	const tools = [
-		{ state: new SelectState(fsa), kbShortcut: '1', icon: 'mdi--cursor-default-outline' },
-		{ state: new DrawEdgeState(fsa), kbShortcut: '2', icon: 'hugeicons--orthogonal-edge' },
-		{ state: new AddNodeState(fsa), kbShortcut: '3', icon: 'tabler--circle-plus' }
+		{ mode: 'pan', state: PanningState, kbShortcut: '1', icon: 'fa7-regular--hand' },
+		{ mode: 'select', state: SelectState, kbShortcut: '2', icon: 'mdi--cursor-default-outline' },
+		{
+			mode: 'draw-edge',
+			state: DrawEdgeState,
+			kbShortcut: '3',
+			icon: 'hugeicons--orthogonal-edge'
+		},
+		{ mode: 'add-node', state: AddNodeState, kbShortcut: '4', icon: 'tabler--circle-plus' }
 	];
-	let stateManager = $state(new StateManager<CanvasState>(tools.map((tool) => tool.state)));
 
-	setContext('stateManager', () => stateManager);
-
-	function setActive(selectedState: CanvasState) {
-		stateManager.transition(selectedState.name);
+	function setActive(state: State) {
+		editor.stateManager.transitionTo(state);
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
-		const action = tools.find((a) => a.kbShortcut === e.key);
-		if (action) {
+		const tool = tools.find((a) => a.kbShortcut === e.key);
+		if (tool) {
 			e.preventDefault();
-			setActive(action.state);
+			setActive(new tool.state());
 		}
 	}
 
 	onMount(() => {
-		stateManager.transition('select');
 		window.addEventListener('keydown', handleKeyDown);
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
@@ -38,7 +46,7 @@
 </script>
 
 <section class="relative h-full w-full">
-	<Canvas {fsa} {stateManager} />
+	<DrawingBoard />
 
 	<ul
 		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100 px-2 py-1 shadow"
@@ -46,10 +54,10 @@
 		{#each tools as tool (tool.state.name)}
 			<li>
 				<button
-					onclick={() => setActive(tool.state)}
+					onclick={() => setActive(new tool.state())}
 					aria-label={tool.kbShortcut}
-					class="btn relative btn-square btn-ghost btn-secondary {tool.state.name ===
-					stateManager?.currentState?.name
+					class="btn relative btn-square btn-ghost btn-secondary {tool.mode ===
+					editor.stateManager.currentState?.name
 						? 'btn-active'
 						: ''}"
 				>
@@ -60,8 +68,29 @@
 		{/each}
 	</ul>
 
-	<div class="absolute bottom-2 left-2 rounded-box bg-base-100 px-3 py-2 text-xs shadow">
-		Mode: {stateManager?.currentState?.name} | Nodes: {fsa.graph.nodes.length} | Edges: {fsa.graph
-			.edges.length}
+	<div class="absolute bottom-2 left-2 rounded-box bg-base-100 px-3 py-2 text-sm shadow">
+		Mode: {editor.stateManager.currentState?.name}
+		| Nodes: {editor.fsaGraph.nodes.length}
+		| Edges: {editor.fsaGraph.edges.length}
+	</div>
+	<div
+		class="absolute right-2 bottom-2 flex items-center gap-0.5 rounded-box bg-base-100 px-3 py-2 text-sm shadow"
+	>
+		<span class="mx-1">{editor.prettyZoomLevel}</span>
+
+		<button
+			class="btn btn-square text-xl btn-ghost btn-xs"
+			onclick={() => editor.adjustZoom(0.1)}
+			aria-label="Zoom In"
+		>
+			+
+		</button>
+		<button
+			class="btn btn-square text-xl btn-ghost btn-xs"
+			onclick={() => editor.adjustZoom(-0.1)}
+			aria-label="Zoom Out"
+		>
+			-
+		</button>
 	</div>
 </section>
