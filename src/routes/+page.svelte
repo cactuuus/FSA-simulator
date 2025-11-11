@@ -9,6 +9,7 @@
 	} from '$lib/state-machine';
 	import DrawingBoard from '$lib/UI/canvas/DrawingBoard.svelte';
 	import { editor } from '$lib/stores/editor.svelte';
+	import SelectedItemPanel from '$lib/UI/SelectedItemPanel.svelte';
 
 	/**
 	 * Toolbar tools configuration.
@@ -67,6 +68,10 @@
 			</li>
 		{/each}
 	</ul>
+
+	<div class="absolute top-2 right-2">
+		<SelectedItemPanel item={editor.selectedItem} />
+	</div>
 
 	<div class="absolute bottom-2 left-2 rounded-box bg-base-100 px-3 py-2 text-sm shadow">
 		Mode: {editor.stateManager.currentState?.name}
