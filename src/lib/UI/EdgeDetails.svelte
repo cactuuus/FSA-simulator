@@ -10,7 +10,7 @@
 		<h2 class="font-semibold">Symbols</h2>
 		<div class="flex max-h-120 flex-col gap-2 overflow-y-auto">
 			{#each edge.transitionSymbols as symbol, index}
-				<fieldset class="fieldset flex items-center gap-1 rounded-box bg-base-300 p-2">
+				<fieldset class="fieldset flex items-center gap-2 rounded-box bg-base-300 p-2">
 					<legend class="fieldset-legend w-full py-0">
 						<span class="badge border-0 bg-base-300 badge-sm">
 							[{index + 1}] {symbol.toString()}
@@ -24,7 +24,7 @@
 							Remove
 						</button>
 					</legend>
-					<label for="consume-{index}" class="flex-1">
+					<label for="consume-{index}" class="mr-3 flex-1">
 						Consume
 						<input
 							id="consume-{index}"
@@ -34,7 +34,7 @@
 						/>
 					</label>
 					<label for="pop-{index}" class="flex-1">
-						Pop
+						Pop (PDA)
 						<input
 							id="pop-{index}"
 							type="text"
@@ -44,7 +44,7 @@
 						/>
 					</label>
 					<label for="push-{index}" class="flex-1">
-						Push
+						Push (PDA)
 						<input
 							id="push-{index}"
 							type="text"

@@ -6,7 +6,7 @@
 	const shape = $derived(
 		draftEdge.isLoopback()
 			? `M ${draftEdge.sourcePoint.x - 30} ${draftEdge.sourcePoint.y + 30}
-			A 50 50, 0, 1, 0, ${draftEdge.sourcePoint.x + 30} ${draftEdge.sourcePoint.y + 30}
+			A 40 40, 0, 1, 0, ${draftEdge.sourcePoint.x + 30} ${draftEdge.sourcePoint.y + 30}
 			L ${draftEdge.sourcePoint.x} ${draftEdge.sourcePoint.y}`
 			: `M ${draftEdge.sourcePoint.x} ${draftEdge.sourcePoint.y} L ${draftEdge.targetPoint.x} ${draftEdge.targetPoint.y}`
 	);

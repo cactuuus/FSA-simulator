@@ -6,7 +6,7 @@
 	const shape = $derived(
 		edge.isLoopback()
 			? `M ${edge.sourcePoint.x - 30} ${edge.sourcePoint.y + 30}
-			A 50 50, 0, 1, 0, ${edge.sourcePoint.x + 30} ${edge.sourcePoint.y + 30}
+			A 40 40, 0, 1, 0, ${edge.sourcePoint.x + 30} ${edge.sourcePoint.y + 30}
 			L ${edge.sourcePoint.x} ${edge.sourcePoint.y}`
 			: `M ${edge.sourcePoint.x} ${edge.sourcePoint.y}
 			L ${edge.targetPoint.x} ${edge.targetPoint.y}`
@@ -22,7 +22,7 @@
 	);
 
 	const labelOffset = 4;
-	const textSpacing = 25;
+	const textSpacing = 20;
 </script>
 
 <g data-id={edge.id} class="edge selectable {isSelected ? 'selected' : ''}">

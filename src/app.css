@@ -23,7 +23,7 @@ body {
 
 	--text-size: 16px;
 	--text-style: monospace;
-	--text-stroke-width: 5px;
+	--text-stroke-width: 15px;
 	--text-weight: bold;
 
 	/* node specific styling */
@@ -58,9 +58,9 @@ body {
 	text {
 		pointer-events: none;
 		paint-order: stroke fill;
+		stroke-linejoin: round;
 		stroke: var(--board-bg-color);
 		fill: var(--draw-color);
-		stroke-width: var(--text-stroke-width);
 		font-weight: var(--text-weight);
 		font-family: var(--text-style);
 		font-size: var(--text-size);
@@ -88,6 +88,7 @@ body {
 
 	.edge-label {
 		paint-order: stroke fill;
+		stroke-linejoin: round;
 		stroke: var(--board-bg-color);
 		fill: var(--draw-color);
 		stroke-width: var(--text-stroke-width);
