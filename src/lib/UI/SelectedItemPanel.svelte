@@ -16,10 +16,14 @@
 	</summary>
 
 	<div class="collapse-content p-4">
-		{#if item instanceof Node}
-			<NodeDetails node={item} {fsa} />
-		{:else if item instanceof Edge}
-			<EdgeDetails edge={item} />
+		{#if item}
+			{#if item instanceof Node}
+				<NodeDetails node={item} {fsa} />
+			{:else if item instanceof Edge}
+				<EdgeDetails edge={item} />
+			{/if}
+			<hr class="my-4 border-base-content/70" />
+			<button class="btn w-full btn-error" onclick={() => fsa.deleteItem(item)}> Delete </button>
 		{:else}
 			<p class="text-center text-sm text-base-content/70">Nothing selected</p>
 		{/if}

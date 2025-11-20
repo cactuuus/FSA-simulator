@@ -41,7 +41,15 @@ export class FSAGraph {
 		return null;
 	}
 
-	removeNode(node: Node): void {
+	deleteItem(item: FSAItem): void {
+		if (item instanceof Node) {
+			this.deleteNode(item);
+		} else if (item instanceof Edge) {
+			this.edgesMap.delete(item.id);
+		}
+	}
+
+	deleteNode(node: Node): void {
 		this.nodesMap.delete(node.id);
 		// remove associated edges
 		for (const edge of this.edgesMap.values()) {
