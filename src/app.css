@@ -2,7 +2,7 @@
 @import './icons.css';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
-@plugin "daisyui";
+@plugin 'daisyui';
 
 * {
 	box-sizing: border-box;
@@ -15,7 +15,7 @@ body {
 
 :root {
 	/* drawing board styling */
-	--board-bg-color: #f0f0f0;
+	--board-bg-color: oklch(98% 0 0);
 	--draw-color: black;
 	--selected-color: limegreen;
 	--hover-shadow: rgba(0, 0, 0, 0.705);
@@ -23,7 +23,8 @@ body {
 
 	--text-size: 16px;
 	--text-style: monospace;
-	--text-weight: lighter;
+	--text-stroke-width: 15px;
+	--text-weight: bold;
 
 	/* node specific styling */
 	--node-radius: 30px;
@@ -40,7 +41,7 @@ body {
 @media (prefers-color-scheme: dark) {
 	:root {
 		/* drawing board styling */
-		--board-bg-color: #1a1a1a;
+		--board-bg-color: oklch(23.26% 0.014 253.1);
 		--draw-color: white;
 		--selected-color: limegreen;
 		--hover-shadow: white;
@@ -56,7 +57,10 @@ body {
 
 	text {
 		pointer-events: none;
-		stroke: var(--draw-color);
+		paint-order: stroke fill;
+		stroke-linejoin: round;
+		stroke: var(--board-bg-color);
+		fill: var(--draw-color);
 		font-weight: var(--text-weight);
 		font-family: var(--text-style);
 		font-size: var(--text-size);
@@ -82,6 +86,18 @@ body {
 	stroke: var(--draw-color);
 	stroke-width: var(--edge-stroke-width);
 
+	.edge-label {
+		paint-order: stroke fill;
+		stroke-linejoin: round;
+		stroke: var(--board-bg-color);
+		fill: var(--draw-color);
+		stroke-width: var(--text-stroke-width);
+		font-weight: var(--text-weight);
+		font-family: var(--text-style);
+		font-size: var(--text-size);
+		text-anchor: middle;
+	}
+
 	.select-area {
 		stroke-width: var(--edge-selectable-area-width);
 		opacity: 0; /* invisible, used purely for easier selection */
@@ -89,14 +105,17 @@ body {
 
 	&.selectable:hover {
 		cursor: pointer;
-		filter: var(--drop-shadow);
+		.edge-path {
+			filter: var(--drop-shadow);
+		}
 	}
 
 	&.selected {
 		color: var(--selected-color);
 		stroke: var(--selected-color);
-		&:active {
-			filter: brightness(150%);
+
+		&:active.edge-path {
+			filter: var(--drop-shadow);
 		}
 	}
 }

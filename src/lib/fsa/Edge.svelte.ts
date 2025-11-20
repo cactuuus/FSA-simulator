@@ -1,16 +1,56 @@
 import { Node, type Point, type FSAItem } from '$lib/fsa';
 
+export class TransitionSymbol {
+	static readonly EPSILON = 'ε';
+
+	consume = $state<string>(TransitionSymbol.EPSILON);
+	pop = $state<string>('');
+	push = $state<string>('');
+
+	constructor(consume: string, push: string = '', pop: string = '') {
+		this.consume = consume;
+		this.push = push;
+		this.pop = pop;
+	}
+
+	hasPop(): boolean {
+		return this.pop !== '';
+	}
+
+	hasPush(): boolean {
+		return this.push !== '';
+	}
+
+	requiresStackOp(): boolean {
+		return this.hasPop() || this.hasPush();
+	}
+
+	toString(): string {
+		if (this.requiresStackOp()) {
+			const popOperation = this.hasPop() ? this.pop : '?';
+			const pushOperation = this.hasPush() ? this.push : '?';
+			return `${this.consume}, ${popOperation} ⟶ ${pushOperation}`;
+		}
+		return `${this.consume}`;
+	}
+}
+
 export class Edge implements FSAItem {
 	id: string;
 	from: Node;
 	to: Node;
-	label: string;
+	transitionSymbols: TransitionSymbol[] = $state<TransitionSymbol[]>([]);
+	label = $derived<string[]>(this.transitionSymbols.map((ts) => ts.toString()));
 
-	constructor(from: Node, to: Node, label: string = '') {
+	constructor(from: Node, to: Node) {
 		this.from = from;
 		this.to = to;
-		this.id = `${from.id}-->${to.id}`;
-		this.label = label;
+		this.id = Edge.createId(from, to);
+		this.addTransition();
+	}
+
+	public static createId(from: Node, to: Node): string {
+		return `${from.id}-->${to.id}`;
 	}
 
 	get sourcePoint(): Point {
@@ -23,6 +63,16 @@ export class Edge implements FSAItem {
 
 	isLoopback(): boolean {
 		return this.from.id === this.to.id;
+	}
+
+	addTransition(): void {
+		this.transitionSymbols.push(new TransitionSymbol(TransitionSymbol.EPSILON));
+	}
+
+	removeTransition(index: number): void {
+		if (index >= 0 && index < this.transitionSymbols.length) {
+			this.transitionSymbols.splice(index, 1);
+		}
 	}
 }
 

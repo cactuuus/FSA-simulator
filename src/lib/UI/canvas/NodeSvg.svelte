@@ -2,9 +2,19 @@
 	import { Node } from '$lib/fsa';
 
 	const { node, isSelected }: { node: Node; isSelected: boolean } = $props();
+	const textOffsetY = 5; // Vertical adjustment for text inside the node
+	const acceptingCircleDiff = -5; // Difference in radius for accepting state circle
 </script>
 
 <g data-id={node.id} class="node {isSelected ? 'selected' : ''} selectable">
 	<circle cx={node.pos.x} cy={node.pos.y} r={Node.RADIUS} />
-	<text x={node.pos.x} y={node.pos.y + 5}>{node.label} </text>
+	{#if node.isAccepting}
+		<circle
+			cx={node.pos.x}
+			cy={node.pos.y}
+			r={Node.RADIUS + acceptingCircleDiff}
+			class="accepting-circle"
+		/>
+	{/if}
+	<text x={node.pos.x} y={node.pos.y + textOffsetY}>{node.label} </text>
 </g>

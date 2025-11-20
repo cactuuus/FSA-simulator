@@ -1,6 +1,7 @@
 <script lang="ts">
 	import NodeSvg from './NodeSvg.svelte';
 	import EdgeSvg from './EdgeSvg.svelte';
+	import StartEdgeSvg from './StartEdgeSvg.svelte';
 	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
 	import { Node, Edge } from '$lib/fsa';
 	import type { EventContext } from '$lib/state-machine';
@@ -110,6 +111,9 @@
 		<!--
 			Note: SVG renders elements in the order they appear in the code.
 		 -->
+		{#if editor.fsaGraph.startNode}
+			<StartEdgeSvg startingNode={editor.fsaGraph.startNode} />
+		{/if}
 
 		{#each editor.fsaGraph.edges as edge (edge.id)}
 			<EdgeSvg {edge} isSelected={editor.isSelected(edge)} />

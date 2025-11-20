@@ -1,11 +1,14 @@
-import { type Point, Node, DraftEdge, FSAGraph, type FSAItem } from '$lib/fsa';
+import { type Point, Node, Edge, DraftEdge, FSAGraph, type FSAItem } from '$lib/fsa';
 import { StateManager } from '$lib/state-machine';
 
 class EditorManager {
 	#fsaGraph = new FSAGraph();
 	#stateManager: StateManager = new StateManager();
-	#selectedItem = $state<FSAItem | null>(null);
+	#selectedItemId = $state<string | null>(null);
 	#draftEdge = $state<DraftEdge | null>(null);
+	selectedItem = $derived(
+		this.#selectedItemId ? this.#fsaGraph.getItemFromId(this.#selectedItemId) : null
+	);
 
 	// canvas
 	CANVAS_ZOOM_STEP = 0.1;
@@ -20,15 +23,15 @@ class EditorManager {
 	);
 
 	selectItem(item: FSAItem | null) {
-		this.#selectedItem = item;
+		this.#selectedItemId = item?.id || null;
 	}
 
 	isSelected(item: FSAItem): boolean {
-		return this.#selectedItem?.id === item.id;
+		return this.#selectedItemId === item.id;
 	}
 
 	clearSelection() {
-		this.#selectedItem = null;
+		this.#selectedItemId = null;
 	}
 
 	setDraftEdge(source: Node, target: Node) {
@@ -46,16 +49,16 @@ class EditorManager {
 		}
 	}
 
-	commitDraftEdge(targetNode: Node) {
+	commitDraftEdge(targetNode: Node): Edge | null {
 		if (!this.#draftEdge) {
 			throw new Error('No draft edge to commit');
 		}
 		if (this.#draftEdge.isDuplicate) {
 			console.error('Cannot commit to a duplicate edge');
-			return;
+			return null;
 		}
 
-		this.#fsaGraph.addEdge(this.#draftEdge.from, targetNode);
+		return this.#fsaGraph.addEdge(this.#draftEdge.from, targetNode);
 	}
 
 	clearDraftEdge() {
@@ -100,11 +103,9 @@ class EditorManager {
 	get fsaGraph(): FSAGraph {
 		return this.#fsaGraph;
 	}
+
 	get stateManager(): StateManager {
 		return this.#stateManager;
-	}
-	get selectedItem(): FSAItem | null {
-		return this.#selectedItem;
 	}
 
 	get panOffset(): Point {
