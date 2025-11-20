@@ -1,4 +1,4 @@
-import { type Point, Node, DraftEdge, FSAGraph, type FSAItem } from '$lib/fsa';
+import { type Point, Node, Edge, DraftEdge, FSAGraph, type FSAItem } from '$lib/fsa';
 import { StateManager } from '$lib/state-machine';
 
 class EditorManager {
@@ -49,16 +49,16 @@ class EditorManager {
 		}
 	}
 
-	commitDraftEdge(targetNode: Node) {
+	commitDraftEdge(targetNode: Node): Edge | null {
 		if (!this.#draftEdge) {
 			throw new Error('No draft edge to commit');
 		}
 		if (this.#draftEdge.isDuplicate) {
 			console.error('Cannot commit to a duplicate edge');
-			return;
+			return null;
 		}
 
-		this.#fsaGraph.addEdge(this.#draftEdge.from, targetNode);
+		return this.#fsaGraph.addEdge(this.#draftEdge.from, targetNode);
 	}
 
 	clearDraftEdge() {
