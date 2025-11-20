@@ -4,14 +4,17 @@
 	import EdgeDetails from './EdgeDetails.svelte';
 
 	const { item, fsa }: { item: FSAItem | null; fsa: FSAGraph } = $props();
+	const itemType = $derived(item ? (item instanceof Node ? 'Node' : 'Edge') : 'None');
 	let showContent = $state(true);
 </script>
 
 <details
 	bind:open={showContent}
-	class="collapse-arrow collapse w-72 rounded-2xl bg-base-100 shadow-lg"
+	class="collapse-arrow collapse w-88 rounded-2xl bg-base-100 shadow-lg"
 >
-	<summary class="collapse-title border-b border-base-300 p-4 font-semibold">
+	<summary
+		class="collapse-title flex items-baseline gap-4 border-b border-base-300 p-4 font-semibold"
+	>
 		Selected Item
 	</summary>
 
@@ -22,8 +25,10 @@
 			{:else if item instanceof Edge}
 				<EdgeDetails edge={item} />
 			{/if}
-			<hr class="my-4 border-base-content/70" />
-			<button class="btn w-full btn-error" onclick={() => fsa.deleteItem(item)}> Delete </button>
+			<hr class="my-6 border-base-content/70" />
+			<button class="btn w-full btn-error" onclick={() => fsa.deleteItem(item)}>
+				Delete {itemType}</button
+			>
 		{:else}
 			<p class="text-center text-sm text-base-content/70">Nothing selected</p>
 		{/if}
