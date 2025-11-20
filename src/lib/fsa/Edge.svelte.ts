@@ -40,7 +40,7 @@ export class Edge implements FSAItem {
 	from: Node;
 	to: Node;
 	transitionSymbols: TransitionSymbol[] = $state<TransitionSymbol[]>([]);
-	label = $derived<string>(this.transitionSymbols.map((ts) => ts.toString()).join('\n'));
+	label = $derived<string[]>(this.transitionSymbols.map((ts) => ts.toString()));
 
 	constructor(from: Node, to: Node) {
 		this.from = from;
