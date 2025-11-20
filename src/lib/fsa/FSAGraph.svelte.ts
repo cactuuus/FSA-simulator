@@ -1,24 +1,30 @@
 import { type Point, Node, Edge, type FSAItem } from '$lib/fsa';
+import { SvelteMap } from 'svelte/reactivity';
+
 export class FSAGraph {
-	readonly nodes = $state<Node[]>([]);
-	readonly edges = $state<Edge[]>([]);
+	readonly nodesMap = new SvelteMap<string, Node>();
+	readonly edgesMap = new SvelteMap<string, Edge>();
+	private _startNode = $state<Node | null>(null);
 
 	addNode(pos: Point): Node {
-		const label = `q${this.nodes.length}`;
-		const isStart = this.nodes.length === 0;
-		const newNode = new Node(pos, label, isStart);
-		this.nodes.push(newNode);
+		const label = `q${this.nodesMap.size}`;
+		const newNode = new Node(pos, label);
+		if (this.nodesMap.size === 0) {
+			this.startNode = newNode;
+		}
+		this.nodesMap.set(newNode.id, newNode);
 		return newNode;
 	}
 
 	addEdge(from: Node, to: Node): Edge {
 		const newEdge = new Edge(from, to);
-		this.edges.push(newEdge);
+		this.edgesMap.set(newEdge.id, newEdge);
 		return newEdge;
 	}
 
 	edgeAlreadyExists(from: Node, to: Node): boolean {
-		return this.edges.some((e) => e.from.id === from.id && e.to.id === to.id);
+		const edgeId = Edge.createId(from, to);
+		return this.edgesMap.has(edgeId);
 	}
 
 	updateNodePosition(node: Node, newPoint: Point): void {
@@ -26,12 +32,42 @@ export class FSAGraph {
 	}
 
 	getItemFromId(id: string): FSAItem | null {
-		const node = this.nodes.find((n) => n.id === id);
+		const node = this.nodesMap.get(id);
 		if (node) return node;
 
-		const edge = this.edges.find((e) => e.id === id);
+		const edge = this.edgesMap.get(id);
 		if (edge) return edge;
 
 		return null;
+	}
+
+	removeNode(node: Node): void {
+		this.nodesMap.delete(node.id);
+		// remove associated edges
+		for (const edge of this.edgesMap.values()) {
+			if (edge.from.id === node.id || edge.to.id === node.id) {
+				this.edgesMap.delete(edge.id);
+			}
+		}
+		// unset start node if needed
+		if (this.startNode?.id === node.id) {
+			this.startNode = null;
+		}
+	}
+
+	get startNode(): Node | null {
+		return this._startNode;
+	}
+
+	set startNode(node: Node | null) {
+		this._startNode = node;
+	}
+
+	get nodes(): Node[] {
+		return Array.from(this.nodesMap.values());
+	}
+
+	get edges(): Edge[] {
+		return Array.from(this.edgesMap.values());
 	}
 }

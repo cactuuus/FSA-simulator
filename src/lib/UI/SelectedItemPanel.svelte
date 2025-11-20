@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { type FSAItem, Node, Edge } from '$lib/fsa';
+	import { type FSAItem, type FSAGraph, Node, Edge } from '$lib/fsa';
 	import NodeDetails from './NodeDetails.svelte';
 	import EdgeDetails from './EdgeDetails.svelte';
 
-	const { item }: { item: FSAItem | null } = $props();
+	const { item, fsa }: { item: FSAItem | null; fsa: FSAGraph } = $props();
 	let showContent = $state(true);
 </script>
 
@@ -17,7 +17,7 @@
 
 	<div class="collapse-content p-4">
 		{#if item instanceof Node}
-			<NodeDetails node={item} />
+			<NodeDetails node={item} {fsa} />
 		{:else if item instanceof Edge}
 			<EdgeDetails edge={item} />
 		{:else}

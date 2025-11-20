@@ -9,8 +9,12 @@ export class Edge implements FSAItem {
 	constructor(from: Node, to: Node, label: string = '') {
 		this.from = from;
 		this.to = to;
-		this.id = `${from.id}-->${to.id}`;
+		this.id = Edge.createId(from, to);
 		this.label = label;
+	}
+
+	public static createId(from: Node, to: Node): string {
+		return `${from.id}-->${to.id}`;
 	}
 
 	get sourcePoint(): Point {

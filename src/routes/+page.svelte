@@ -70,7 +70,7 @@
 	</ul>
 
 	<div class="absolute top-2 right-2">
-		<SelectedItemPanel item={editor.selectedItem} />
+		<SelectedItemPanel item={editor.selectedItem} fsa={editor.fsaGraph} />
 	</div>
 
 	<div class="absolute bottom-2 left-2 rounded-box bg-base-100 px-3 py-2 text-sm shadow">

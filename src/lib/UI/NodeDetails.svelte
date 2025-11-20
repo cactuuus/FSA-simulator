@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Node } from '$lib/fsa';
+	import { Node, type FSAGraph } from '$lib/fsa';
 
-	const { node }: { node: Node } = $props();
+	const { node, fsa }: { node: Node; fsa: FSAGraph } = $props();
 </script>
 
 <div class="flex flex-col gap-6">
@@ -29,7 +29,11 @@
 			id="isStarting"
 			type="checkbox"
 			class="checkbox checkbox-success"
-			bind:checked={node.isStart}
+			checked={fsa.startNode?.id === node.id}
+			onchange={(event) => {
+				const checked = event.currentTarget.checked;
+				fsa.startNode = checked ? node : null;
+			}}
 		/>
 	</label>
 </div>

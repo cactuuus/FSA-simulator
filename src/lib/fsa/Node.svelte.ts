@@ -6,19 +6,12 @@ export class Node implements FSAItem {
 	id: string;
 	pos: Point;
 	label: string;
-	isStart: boolean;
 	isAccepting: boolean;
 
-	constructor(
-		pos: Point,
-		label: string = '',
-		isStart: boolean = false,
-		isAccepting: boolean = false
-	) {
+	constructor(pos: Point, label: string = '', isAccepting: boolean = false) {
 		this.id = crypto.randomUUID();
 		this.pos = $state(pos);
 		this.label = $state(label);
-		this.isStart = $state(isStart);
 		this.isAccepting = $state(isAccepting);
 	}
 
