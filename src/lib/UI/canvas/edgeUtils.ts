@@ -1,0 +1,231 @@
+import { type Edge, type Point, type Vector, type UnitVector, Node } from '$lib/fsa';
+
+// vector helpers //
+
+/**
+ * Calculates the vector from one point to another.
+ * @param from The starting point.
+ * @param to The ending point.
+ * @returns The vector from the starting point to the ending point.
+ */
+function vectorBetween(from: Point, to: Point): Vector {
+	const x = to.x - from.x;
+	const y = to.y - from.y;
+	const magnitude = Math.sqrt(x ** 2 + y ** 2);
+	return { x, y, magnitude };
+}
+
+/**
+ * Calculates the perpendicular, normalised vector of a given vector, rotated 90 degrees clockwise.
+ * @param vector The input vector.
+ * @return The perpendicular, normalised vector.
+ */
+function perpendicular(vector: Vector): UnitVector {
+	return {
+		x: -vector.y / vector.magnitude,
+		y: vector.x / vector.magnitude
+	};
+}
+
+/**
+ * Calculates the dot product of two vectors.
+ * @param v1 The first vector.
+ * @param v2 The second vector.
+ * @returns The dot product of the two vectors.
+ */
+function dotProduct(v1: UnitVector, v2: UnitVector): number {
+	return v1.x * v2.x + v1.y * v2.y;
+}
+
+// point helpers //
+
+/**
+ * Finds the midpoint between two points.
+ * @param p1 The first point.
+ * @param p2 The second point.
+ * @returns The midpoint between the two points.
+ */
+function midPoint(p1: Point, p2: Point): Point {
+	return {
+		x: (p1.x + p2.x) / 2,
+		y: (p1.y + p2.y) / 2
+	};
+}
+
+/**
+ * Finds a point along a line defined by a starting point and a vector, at a specified distance.
+ * @param from The starting point.
+ * @param vector The direction vector.
+ * @param distance The distance from the starting point.
+ * @returns The point along the line at the specified distance.
+ */
+function pointAlongLine(from: Point, vector: Vector, distance: number): Point {
+	const ratio = distance / vector.magnitude;
+	return {
+		x: from.x + vector.x * ratio,
+		y: from.y + vector.y * ratio
+	};
+}
+
+/**
+ * Calculates a point on the circumference of a circle given its center, radius, and angle.
+ * @param center The center point of the circle.
+ * @param radius The radius of the circle.
+ * @param angle The angle in radians.
+ * @returns The point on the circumference of the circle.
+ */
+function pointOnCircle(center: Point, radius: number, angle: number): Point {
+	return {
+		x: center.x + radius * Math.cos(angle),
+		y: center.y + radius * Math.sin(angle)
+	};
+}
+
+/**
+ * Calculates the angle in radians from one point to another.
+ * @param from The starting point.
+ * @param to The ending point.
+ * @returns The angle in radians from the starting point to the ending point.
+ */
+function angleTo(from: Point, to: Point): number {
+	return Math.atan2(to.y - from.y, to.x - from.x);
+}
+
+// curvature calculations //
+
+/**
+ * Helper interface representing the geometry of an arc.
+ */
+interface ArcGeometry {
+	center: Point;
+	radius: number;
+	sweepFlag: 0 | 1;
+}
+
+/**
+ * Calculates the geometry of an arc for a given edge and vector.
+ * @param edge The edge for which to calculate the arc geometry.
+ * @param vector The vector representing the direction and magnitude between the edge's source and
+ *  target points.
+ * @returns The geometry of the arc including its center, radius, and sweep flag.
+ */
+function calculateArcGeometry(edge: Edge, vector: Vector): ArcGeometry {
+	const h = Math.abs(edge.curvature);
+	const maxCurvature = vector.magnitude / 2;
+	const clampedH = Math.min(h, maxCurvature);
+
+	const radius = (vector.magnitude ** 2 / 4 + clampedH ** 2) / (2 * clampedH);
+
+	const mid = midPoint(edge.sourcePoint, edge.targetPoint);
+	const perp = perpendicular(vector);
+	const centerOffset = Math.sqrt(radius ** 2 - (vector.magnitude / 2) ** 2);
+	const centerDirection = edge.curvature > 0 ? 1 : -1;
+
+	const center: Point = {
+		x: mid.x + perp.x * centerOffset * centerDirection,
+		y: mid.y + perp.y * centerOffset * centerDirection
+	};
+
+	const sweepFlag: 0 | 1 = edge.curvature > 0 ? 1 : 0;
+
+	return { center, radius, sweepFlag };
+}
+
+/**
+ * Calculates the curvature for an edge based on a given mouse position.
+ * @param edge The edge for which to calculate the curvature.
+ * @param mousePos The position of the mouse (in SVG coordinates).
+ * @returns The calculated curvature.
+ */
+export function calculateCurvatureFromPoint(edge: Edge, mousePos: Point): number {
+	if (edge.isLoopback()) {
+		const angle = angleTo(edge.from.pos, mousePos);
+		return angle;
+	}
+
+	const vector = vectorBetween(edge.from.pos, edge.to.pos);
+	const mid = midPoint(edge.sourcePoint, edge.targetPoint);
+
+	// vector from midpoint to mouse
+	const toMouse = vectorBetween(mid, mousePos);
+
+	// perpendicular direction (normalized)
+	const perp = perpendicular(vector);
+	const curvature = dotProduct(toMouse, perp);
+
+	return -curvature;
+}
+
+// SVG path calculations //
+
+/**
+ * Calculates the SVG path for a loopback edge.
+ * @param edge The loopback edge.
+ * @returns The SVG path string representing the loopback edge.
+ */
+export function getLoopbackPath(edge: Edge): string {
+	const offset = 40; // fixed offset for loopback size
+	const start = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.curvature + Math.PI / 4);
+	const end = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.curvature - Math.PI / 4);
+
+	return `M ${start.x} ${start.y} A ${offset} ${offset}, 0, 1, 0, ${end.x} ${end.y}`;
+}
+
+/**
+ * Calculates the SVG path for a straight edge.
+ * @param edge The straight edge.
+ * @returns The SVG path string representing the straight edge.
+ */
+export function getStraightPath(edge: Edge): string {
+	const vector = vectorBetween(edge.sourcePoint, edge.targetPoint);
+
+	const start = pointAlongLine(edge.sourcePoint, vector, Node.RADIUS);
+	const end = pointAlongLine(edge.sourcePoint, vector, vector.magnitude - Node.RADIUS);
+
+	return `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
+}
+
+/**
+ * Calculates the SVG path for a curved edge.
+ * @param edge The curved edge.
+ * @returns The SVG path string representing the curved edge.
+ */
+export function getCurvedPath(edge: Edge): string {
+	const vector = vectorBetween(edge.sourcePoint, edge.targetPoint);
+	const { center, radius, sweepFlag } = calculateArcGeometry(edge, vector);
+
+	// calculate new start/end points offset by node radius
+	const angleToSource = angleTo(center, edge.sourcePoint);
+	const angleToTarget = angleTo(center, edge.targetPoint);
+
+	// shorten by node radius on both ends
+	const angleToRemove = Node.RADIUS / radius;
+	let newSourceAngle, newTargetAngle;
+	if (edge.curvature > 0) {
+		newSourceAngle = angleToSource + angleToRemove;
+		newTargetAngle = angleToTarget - angleToRemove;
+	} else {
+		newSourceAngle = angleToSource - angleToRemove;
+		newTargetAngle = angleToTarget + angleToRemove;
+	}
+
+	const start = pointOnCircle(center, radius, newSourceAngle);
+	const end = pointOnCircle(center, radius, newTargetAngle);
+
+	return `M ${start.x} ${start.y} A ${radius} ${radius} 0 0 ${sweepFlag} ${end.x} ${end.y}`;
+}
+
+/**
+ * Calculates the SVG path for an edge based on its type (loopback, straight, or curved).
+ * @param edge The edge for which to calculate the SVG path.
+ * @returns The SVG path string representing the edge.
+ */
+export function getEdgePath(edge: Edge): string {
+	if (edge.isLoopback()) {
+		return getLoopbackPath(edge);
+	} else if (edge.curvature === 0) {
+		return getStraightPath(edge);
+	} else {
+		return getCurvedPath(edge);
+	}
+}

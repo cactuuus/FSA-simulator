@@ -50,6 +50,9 @@ export class Edge implements FSAItem {
 		this.to = to;
 		this.id = Edge.createId(from, to);
 		this.addTransition();
+		if (this.isLoopback()) {
+			this.curvature = Math.PI / 2;
+		}
 	}
 
 	public static createId(from: Node, to: Node): string {
@@ -79,6 +82,10 @@ export class Edge implements FSAItem {
 	}
 
 	adjustCurvature(newCurvature: number): void {
+		if (this.isLoopback()) {
+			this.curvature = newCurvature;
+			return;
+		}
 		const overThreshold = Math.abs(newCurvature) >= Edge.MIN_CURVATURE;
 		this.curvature = overThreshold ? newCurvature : 0;
 	}
