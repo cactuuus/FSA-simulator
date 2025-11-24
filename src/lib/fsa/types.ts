@@ -1,10 +1,16 @@
+/**
+ * Represents a point in 2D space with x and y coordinates.
+ */
 export interface Point {
 	x: number;
 	y: number;
 }
 
+/**
+ * Basic interface for items in the FSA.
+ */
 export interface FSAItem {
-	id: string;
+	readonly id: string;
 }
 
 /**

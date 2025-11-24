@@ -1,21 +1,29 @@
 import type { Point, FSAItem } from '$lib/fsa';
 
+/**
+ * Represents a state in the finite state automaton (FSA). Each node has a position, label,
+ * and acceptance status. Whether a node is starting or not is managed by the FSAGraph class.
+ */
 export class Node implements FSAItem {
 	static readonly RADIUS = 30;
 
-	id: string;
-	pos: Point;
-	label: string;
-	isAccepting: boolean;
+	readonly id: string;
+	private _pos = $state<Point>({ x: 0, y: 0 });
+	label = $state<string>('');
+	isAccepting = $state<boolean>(false);
 
 	constructor(pos: Point, label: string = '', isAccepting: boolean = false) {
 		this.id = crypto.randomUUID();
-		this.pos = $state(pos);
-		this.label = $state(label);
-		this.isAccepting = $state(isAccepting);
+		this._pos = pos;
+		this.label = label;
+		this.isAccepting = isAccepting;
 	}
 
-	moveTo(point: Point) {
-		this.pos = point;
+	get pos(): Point {
+		return this._pos;
+	}
+
+	moveTo(newPos: Point): void {
+		this._pos = newPos;
 	}
 }

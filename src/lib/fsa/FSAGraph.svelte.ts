@@ -1,10 +1,14 @@
 import { type Point, Node, Edge, type FSAItem } from '$lib/fsa';
 import { SvelteMap } from 'svelte/reactivity';
 
+/**
+ * Overall representation of a finite state automaton (FSA) graph. It manages nodes and edges,
+ * providing methods to add, update, and delete them.
+ */
 export class FSAGraph {
 	readonly nodesMap = new SvelteMap<string, Node>();
 	readonly edgesMap = new SvelteMap<string, Edge>();
-	private _startNode = $state<Node | null>(null);
+	startNode = $state<Node | null>(null);
 
 	addNode(pos: Point): Node {
 		const label = `q${this.nodesMap.size}`;
@@ -65,14 +69,6 @@ export class FSAGraph {
 		if (this.startNode?.id === node.id) {
 			this.startNode = null;
 		}
-	}
-
-	get startNode(): Node | null {
-		return this._startNode;
-	}
-
-	set startNode(node: Node | null) {
-		this._startNode = node;
 	}
 
 	get nodes(): Node[] {
