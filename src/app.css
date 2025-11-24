@@ -52,7 +52,7 @@ body {
 
 .node {
 	stroke: var(--draw-color);
-	fill: var(--board-bg-color);
+	fill: transparent;
 	stroke-width: var(--node-stroke-width);
 
 	text {

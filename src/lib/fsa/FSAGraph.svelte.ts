@@ -28,7 +28,11 @@ export class FSAGraph {
 	}
 
 	updateNodePosition(node: Node, newPoint: Point): void {
-		node.pos = newPoint;
+		node.moveTo(newPoint);
+	}
+
+	updateEdgeCurvature(edge: Edge, newCurvature: number): void {
+		edge.adjustCurvature(newCurvature);
 	}
 
 	getItemFromId(id: string): FSAItem | null {

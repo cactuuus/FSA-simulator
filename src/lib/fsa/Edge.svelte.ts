@@ -36,11 +36,14 @@ export class TransitionSymbol {
 }
 
 export class Edge implements FSAItem {
+	static readonly MIN_CURVATURE = 5; // helps snapping back to straight
+
 	id: string;
 	from: Node;
 	to: Node;
 	transitionSymbols: TransitionSymbol[] = $state<TransitionSymbol[]>([]);
 	label = $derived<string[]>(this.transitionSymbols.map((ts) => ts.toString()));
+	curvature = $state<number>(0);
 
 	constructor(from: Node, to: Node) {
 		this.from = from;
@@ -73,6 +76,11 @@ export class Edge implements FSAItem {
 		if (index >= 0 && index < this.transitionSymbols.length) {
 			this.transitionSymbols.splice(index, 1);
 		}
+	}
+
+	adjustCurvature(newCurvature: number): void {
+		const overThreshold = Math.abs(newCurvature) >= Edge.MIN_CURVATURE;
+		this.curvature = overThreshold ? newCurvature : 0;
 	}
 }
 
