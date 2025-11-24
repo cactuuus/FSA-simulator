@@ -44,7 +44,6 @@ export class TransitionSymbol {
  * edges for convenience when drawing them.
  */
 export interface BaseEdge {
-	readonly id: string;
 	isLoopback(): boolean;
 	get sourcePoint(): Point;
 	get targetPoint(): Point;
@@ -125,7 +124,6 @@ export class Edge implements BaseEdge, FSAItem {
  * edge creation before the actual edge is drawn.
  */
 export class DraftEdge implements BaseEdge {
-	readonly id: string = 'draft-edge';
 	readonly from: Node;
 	private _to = $state<Point | Node>({ x: 0, y: 0 });
 	private _pointingAtNode = $state<boolean>(false);

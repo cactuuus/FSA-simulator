@@ -1,4 +1,12 @@
-import { type Edge, type Point, type Vector, type UnitVector, Node } from '$lib/fsa';
+import {
+	type BaseEdge,
+	type Point,
+	type Vector,
+	type UnitVector,
+	Node,
+	Edge,
+	DraftEdge
+} from '$lib/fsa';
 
 // vector helpers //
 
@@ -45,7 +53,7 @@ function dotProduct(v1: UnitVector, v2: UnitVector): number {
  * @param p2 The second point.
  * @returns The midpoint between the two points.
  */
-function midPoint(p1: Point, p2: Point): Point {
+export function midPoint(p1: Point, p2: Point): Point {
 	return {
 		x: (p1.x + p2.x) / 2,
 		y: (p1.y + p2.y) / 2
@@ -109,7 +117,7 @@ interface ArcGeometry {
  *  target points.
  * @returns The geometry of the arc including its center, radius, and sweep flag.
  */
-function calculateArcGeometry(edge: Edge, vector: Vector): ArcGeometry {
+function calculateArcGeometry(edge: BaseEdge, vector: Vector): ArcGeometry {
 	const h = Math.abs(edge.curvature);
 	const maxCurvature = vector.magnitude / 2;
 	const clampedH = Math.min(h, maxCurvature);
@@ -137,13 +145,13 @@ function calculateArcGeometry(edge: Edge, vector: Vector): ArcGeometry {
  * @param mousePos The position of the mouse (in SVG coordinates).
  * @returns The calculated curvature.
  */
-export function calculateCurvatureFromPoint(edge: Edge, mousePos: Point): number {
+export function calculateCurvatureFromPoint(edge: BaseEdge, mousePos: Point): number {
 	if (edge.isLoopback()) {
-		const angle = angleTo(edge.from.pos, mousePos);
+		const angle = angleTo(edge.sourcePoint, mousePos);
 		return angle;
 	}
 
-	const vector = vectorBetween(edge.from.pos, edge.to.pos);
+	const vector = vectorBetween(edge.sourcePoint, edge.targetPoint);
 	const mid = midPoint(edge.sourcePoint, edge.targetPoint);
 
 	// vector from midpoint to mouse
@@ -163,7 +171,7 @@ export function calculateCurvatureFromPoint(edge: Edge, mousePos: Point): number
  * @param edge The loopback edge.
  * @returns The SVG path string representing the loopback edge.
  */
-export function getLoopbackPath(edge: Edge): string {
+export function getLoopbackPath(edge: BaseEdge): string {
 	const offset = 40; // fixed offset for loopback size
 	const start = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.curvature + Math.PI / 4);
 	const end = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.curvature - Math.PI / 4);
@@ -172,16 +180,25 @@ export function getLoopbackPath(edge: Edge): string {
 }
 
 /**
- * Calculates the SVG path for a straight edge.
+ * Calculates the SVG path for a straight edge. Specifies whether there should be an offset at
+ * the start and end points, to account for all types of straight edges (point-to-node,
+ * node-to-node, and node-to-point).
+ * @param from The starting point of the straight edge.
  * @param edge The straight edge.
+ * @param startOffset Whether to apply an offset at the start point.
+ * @param endOffset Whether to apply an offset at the end point.
  * @returns The SVG path string representing the straight edge.
  */
-export function getStraightPath(edge: Edge): string {
-	const vector = vectorBetween(edge.sourcePoint, edge.targetPoint);
+export function getStraightPath(
+	from: Point,
+	to: Point,
+	startOffset: boolean = true,
+	endOffset: boolean = true
+): string {
+	const vector = vectorBetween(from, to);
 
-	const start = pointAlongLine(edge.sourcePoint, vector, Node.RADIUS);
-	const end = pointAlongLine(edge.sourcePoint, vector, vector.magnitude - Node.RADIUS);
-
+	const start = startOffset ? pointAlongLine(from, vector, Node.RADIUS) : from;
+	const end = endOffset ? pointAlongLine(from, vector, vector.magnitude - Node.RADIUS) : to;
 	return `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
 }
 
@@ -190,7 +207,7 @@ export function getStraightPath(edge: Edge): string {
  * @param edge The curved edge.
  * @returns The SVG path string representing the curved edge.
  */
-export function getCurvedPath(edge: Edge): string {
+export function getCurvedPath(edge: BaseEdge): string {
 	const vector = vectorBetween(edge.sourcePoint, edge.targetPoint);
 	const { center, radius, sweepFlag } = calculateArcGeometry(edge, vector);
 
@@ -220,12 +237,44 @@ export function getCurvedPath(edge: Edge): string {
  * @param edge The edge for which to calculate the SVG path.
  * @returns The SVG path string representing the edge.
  */
-export function getEdgePath(edge: Edge): string {
+export function getRegularEdgePath(edge: Edge): string {
 	if (edge.isLoopback()) {
 		return getLoopbackPath(edge);
 	} else if (edge.curvature === 0) {
-		return getStraightPath(edge);
+		return getStraightPath(edge.sourcePoint, edge.targetPoint);
 	} else {
 		return getCurvedPath(edge);
 	}
+}
+
+/**
+ * Calculates the SVG path for a draft edge based on its type (loopback or straight).
+ * This function is basically equivalent to getRegularEdgePath, it is only implemented to avoid
+ * unnecessary complex conditionals.
+ * @param draftEdge The draft edge for which to calculate the SVG path.
+ * @returns The SVG path string representing the draft edge.
+ */
+export function getDraftEdgePath(draftEdge: DraftEdge): string {
+	if (draftEdge.isLoopback()) {
+		return getLoopbackPath(draftEdge);
+	} else {
+		return getStraightPath(
+			draftEdge.sourcePoint,
+			draftEdge.targetPoint,
+			true,
+			draftEdge.pointingAtNode
+		);
+	}
+}
+
+/**
+ * Calculates the SVG path for a start edge pointing to a given point (the center of the starting
+ * node).
+ * @param toPoint The center of the starting node.
+ * @returns The SVG path string representing the start edge.
+ */
+export function getStartEdgePath(toPoint: Point): string {
+	const length = 100;
+	const start: Point = { x: toPoint.x - length, y: toPoint.y };
+	return getStraightPath(start, toPoint, false, true);
 }
