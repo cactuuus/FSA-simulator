@@ -46,6 +46,12 @@
 		if (tool) {
 			e.preventDefault();
 			setActive(new tool.state());
+		} else if (e.key === 'Escape') {
+			e.preventDefault();
+			editor.clearSelection();
+		} else if (e.key === 'Delete') {
+			e.preventDefault();
+			editor.deleteSelectedItem();
 		}
 	}
 
