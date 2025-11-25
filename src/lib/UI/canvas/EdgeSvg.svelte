@@ -1,20 +1,13 @@
 <script lang="ts">
 	import { Edge } from '$lib/fsa';
-	import { getRegularEdgePath } from '$lib/UI/canvas';
-	import { midPoint } from '$lib/UI/canvas';
+	import { getRegularEdgePath, getEdgeLabelPosition } from '$lib/UI/canvas';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
 	const { edge, isSelected }: { edge: Edge; isSelected: boolean } = $props();
 
 	const shape = $derived(getRegularEdgePath(edge));
+	const labelPosition = $derived(getEdgeLabelPosition(edge));
 
-	const labelPosition = $derived(
-		edge.isLoopback()
-			? { x: edge.sourcePoint.x, y: edge.sourcePoint.y + 100 }
-			: midPoint(edge.sourcePoint, edge.targetPoint)
-	);
-
-	const labelOffset = 4;
 	const textSpacing = 20;
 </script>
 
@@ -27,7 +20,7 @@
 
 	<text class="edge-label" x={labelPosition.x} y={labelPosition.y}>
 		{#each edge.label as label, index}
-			<tspan x={labelPosition.x} dy={index === 0 ? labelOffset : textSpacing}>
+			<tspan x={labelPosition.x} dy={index === 0 ? 0 : textSpacing}>
 				{label}
 			</tspan>
 		{/each}

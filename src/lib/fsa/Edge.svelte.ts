@@ -56,7 +56,9 @@ export interface BaseEdge {
  */
 export class Edge implements BaseEdge, FSAItem {
 	static readonly MIN_CURVATURE = 5; // helps snapping back to straight
-	static readonly LOOPBACK_DEFAULT_CURVATURE = Math.PI / 2;
+	static readonly LOOPBACK_DEFAULT_CURVATURE = Math.PI / 2; // default position (angle) of loopback edges
+	static readonly LOOPBACK_SIZE = 40; // fixed offset for loopback size
+	static readonly LABEL_OFFSET = 40; // distance of the label from the arrow
 
 	readonly id: string;
 	readonly from: Node;
