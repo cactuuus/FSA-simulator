@@ -34,6 +34,14 @@ class EditorManager {
 		this.#selectedItemId = null;
 	}
 
+	deleteSelectedItem() {
+		if (!this.selectedItem) {
+			return;
+		}
+		this.#fsaGraph.deleteItem(this.selectedItem);
+		this.clearSelection();
+	}
+
 	setDraftEdge(source: Node, target: Node) {
 		const duplicateEdge = this.#fsaGraph.edgeAlreadyExists(source, target);
 		this.#draftEdge = new DraftEdge(source, target, duplicateEdge);

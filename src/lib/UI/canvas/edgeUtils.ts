@@ -126,7 +126,8 @@ function calculateArcGeometry(edge: BaseEdge, vector: Vector): ArcGeometry {
 
 	const mid = midPoint(edge.sourcePoint, edge.targetPoint);
 	const perp = perpendicular(vector);
-	const centerOffset = Math.sqrt(radius ** 2 - (vector.magnitude / 2) ** 2);
+	// clamp to avoid NaN from sqrt of negative number, due to floating point errors
+	const centerOffset = Math.sqrt(Math.max(0, radius ** 2 - (vector.magnitude / 2) ** 2));
 	const centerDirection = edge.curvature > 0 ? 1 : -1;
 
 	const center: Point = {
@@ -172,11 +173,11 @@ export function calculateCurvatureFromPoint(edge: BaseEdge, mousePos: Point): nu
  * @returns The SVG path string representing the loopback edge.
  */
 export function getLoopbackPath(edge: BaseEdge): string {
-	const offset = 40; // fixed offset for loopback size
 	const start = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.curvature + Math.PI / 4);
 	const end = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.curvature - Math.PI / 4);
 
-	return `M ${start.x} ${start.y} A ${offset} ${offset}, 0, 1, 0, ${end.x} ${end.y}`;
+	return `M ${start.x} ${start.y}
+			A ${Edge.LOOPBACK_SIZE} ${Edge.LOOPBACK_SIZE}, 0, 1, 0, ${end.x} ${end.y}`;
 }
 
 /**
@@ -277,4 +278,48 @@ export function getStartEdgePath(toPoint: Point): string {
 	const length = 100;
 	const start: Point = { x: toPoint.x - length, y: toPoint.y };
 	return getStraightPath(start, toPoint, false, true);
+}
+
+/** Calculates the position for an edge label based on the edge type and curvature.
+ * @param edge The edge for which to calculate the label position.
+ * @returns The point representing the label position.
+ */
+export function calculateLabelPosition(edge: Edge): Point {
+	if (edge.isLoopback()) {
+		const offset = Edge.LOOPBACK_SIZE + Edge.LABEL_OFFSET + Node.RADIUS;
+		return pointOnCircle(edge.sourcePoint, offset, edge.curvature);
+	} else if (edge.curvature === 0) {
+		return midPoint(edge.sourcePoint, edge.targetPoint);
+	} else {
+		const vector = vectorBetween(edge.sourcePoint, edge.targetPoint);
+		const { center, radius } = calculateArcGeometry(edge, vector);
+
+		// calculates the unit vector perpendicular to the straight path between source and target.
+		// points in the direction of the arc's apex, once factored in the curvature value.
+		const toApex = perpendicular(vector);
+		const direction = edge.curvature < 0 ? 1 : -1;
+		const apexDirection = {
+			x: toApex.x * direction,
+			y: toApex.y * direction
+		};
+
+		return {
+			x: center.x + apexDirection.x * (radius + Edge.LABEL_OFFSET),
+			y: center.y + apexDirection.y * (radius + Edge.LABEL_OFFSET)
+		};
+	}
+}
+
+/**
+ * Calculates the adjusted position for an edge label, taking into account multiple lines.
+ * @param edge The edge for which to calculate the label position.
+ * @returns The point representing the label position, centered vertically.
+ */
+export function getEdgeLabelPosition(edge: Edge): Point {
+	const verticalOffset = (Edge.LINE_HEIGHT * (edge.label.length - 1)) / 2;
+	const position = calculateLabelPosition(edge);
+	return {
+		x: position.x,
+		y: position.y - verticalOffset
+	};
 }

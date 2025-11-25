@@ -31,10 +31,27 @@
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
+		// prevent interfering with input fields
+		const target = e.target as HTMLElement;
+		const isTyping =
+			target.tagName === 'INPUT' ||
+			target.tagName === 'TEXTAREA' ||
+			target.tagName === 'SELECT' ||
+			target.isContentEditable;
+		if (isTyping) {
+			return;
+		}
+
 		const tool = tools.find((a) => a.kbShortcut === e.key);
 		if (tool) {
 			e.preventDefault();
 			setActive(new tool.state());
+		} else if (e.key === 'Escape') {
+			e.preventDefault();
+			editor.clearSelection();
+		} else if (e.key === 'Delete') {
+			e.preventDefault();
+			editor.deleteSelectedItem();
 		}
 	}
 

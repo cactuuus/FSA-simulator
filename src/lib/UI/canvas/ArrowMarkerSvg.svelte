@@ -4,18 +4,19 @@
  -->
 <script lang="ts">
 	const { id }: { id: string } = $props();
+	const size = 6;
 </script>
 
 <marker
 	{id}
-	viewBox="0 0 10 10"
-	refX="10"
-	refY="5"
-	markerWidth="7"
-	markerHeight="7"
+	viewBox={`0 0 ${size} ${size}`}
+	refX={size}
+	refY={size / 2}
+	markerWidth={size}
+	markerHeight={size}
 	orient="auto-start-reverse"
 	stroke="none"
 	fill="currentColor"
 >
-	<path d="M 0 0 L 10 5 L 0 10 z" />
+	<path d={`M 0 0 L ${size} ${size / 2} L 0 ${size} z`} />
 </marker>
