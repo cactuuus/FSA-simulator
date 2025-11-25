@@ -23,7 +23,7 @@ body {
 
 	--text-size: 16px;
 	--text-style: monospace;
-	--text-stroke-width: 15px;
+	--text-stroke-width: 8px;
 	--text-weight: bold;
 
 	/* node specific styling */

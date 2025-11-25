@@ -284,7 +284,7 @@ export function getStartEdgePath(toPoint: Point): string {
  * @param edge The edge for which to calculate the label position.
  * @returns The point representing the label position.
  */
-export function getEdgeLabelPosition(edge: Edge): Point {
+export function calculateLabelPosition(edge: Edge): Point {
 	if (edge.isLoopback()) {
 		const offset = Edge.LOOPBACK_SIZE + Edge.LABEL_OFFSET + Node.RADIUS;
 		return pointOnCircle(edge.sourcePoint, offset, edge.curvature);
@@ -308,4 +308,18 @@ export function getEdgeLabelPosition(edge: Edge): Point {
 			y: center.y + apexDirection.y * (radius + Edge.LABEL_OFFSET)
 		};
 	}
+}
+
+/**
+ * Calculates the adjusted position for an edge label, taking into account multiple lines.
+ * @param edge The edge for which to calculate the label position.
+ * @returns The point representing the label position, centered vertically.
+ */
+export function getEdgeLabelPosition(edge: Edge): Point {
+	const verticalOffset = (Edge.LINE_HEIGHT * (edge.label.length - 1)) / 2;
+	const position = calculateLabelPosition(edge);
+	return {
+		x: position.x,
+		y: position.y - verticalOffset
+	};
 }

@@ -7,8 +7,6 @@
 
 	const shape = $derived(getRegularEdgePath(edge));
 	const labelPosition = $derived(getEdgeLabelPosition(edge));
-
-	const textSpacing = 20;
 </script>
 
 <g data-id={edge.id} class="edge selectable {isSelected ? 'selected' : ''}">
@@ -20,7 +18,7 @@
 
 	<text class="edge-label" x={labelPosition.x} y={labelPosition.y}>
 		{#each edge.label as label, index}
-			<tspan x={labelPosition.x} dy={index === 0 ? 0 : textSpacing}>
+			<tspan x={labelPosition.x} dy={index === 0 ? 0 : Edge.LINE_HEIGHT} dominant-baseline="middle">
 				{label}
 			</tspan>
 		{/each}
