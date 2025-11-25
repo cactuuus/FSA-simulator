@@ -126,7 +126,8 @@ function calculateArcGeometry(edge: BaseEdge, vector: Vector): ArcGeometry {
 
 	const mid = midPoint(edge.sourcePoint, edge.targetPoint);
 	const perp = perpendicular(vector);
-	const centerOffset = Math.sqrt(radius ** 2 - (vector.magnitude / 2) ** 2);
+	// clamp to avoid NaN from sqrt of negative number, due to floating point errors
+	const centerOffset = Math.sqrt(Math.max(0, radius ** 2 - (vector.magnitude / 2) ** 2));
 	const centerDirection = edge.curvature > 0 ? 1 : -1;
 
 	const center: Point = {
