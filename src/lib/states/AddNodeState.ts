@@ -1,5 +1,6 @@
-import { State, type EventContext } from '$lib/state-machine';
+import { State } from '$lib/states';
 import { editor } from '$lib/stores/editor.svelte';
+import type { EventContext } from '$lib/utils';
 
 export class AddNodeState extends State {
 	static readonly NAME = 'add-node';

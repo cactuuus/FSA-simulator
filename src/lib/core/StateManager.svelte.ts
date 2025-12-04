@@ -1,10 +1,4 @@
-import {
-	AddNodeState,
-	DrawEdgeState,
-	PanningState,
-	SelectState,
-	type State
-} from '$lib/state-machine';
+import { AddNodeState, DrawEdgeState, PanningState, SelectState, type State } from '$lib/states';
 
 export class StateManager {
 	#currentState = $state.raw<State | null>(null);

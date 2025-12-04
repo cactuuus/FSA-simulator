@@ -4,9 +4,9 @@
 	import StartEdgeSvg from './StartEdgeSvg.svelte';
 	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
 	import { Node, Edge } from '$lib/fsa';
-	import type { EventContext } from '$lib/state-machine';
+	import type { EventContext } from '$lib/utils';
 	import { editor } from '$lib/stores/editor.svelte';
-	import { ViewportManager } from '$lib/utils';
+	import { ViewportManager } from '$lib/core';
 
 	let svgElement: SVGSVGElement;
 

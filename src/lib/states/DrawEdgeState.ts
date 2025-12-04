@@ -1,5 +1,6 @@
 import { editor } from '$lib/stores/editor.svelte';
-import { State, type EventContext } from '$lib/state-machine';
+import { State } from '$lib/states';
+import type { EventContext } from '$lib/utils';
 
 export class DrawEdgeState extends State {
 	static readonly NAME = 'draw-edge';

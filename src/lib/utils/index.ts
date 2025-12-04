@@ -1,5 +1,4 @@
-export type { Point, Vector, UnitVector } from './types';
-export { ViewportManager } from './ViewportManager.svelte';
+export type { Point, Vector, UnitVector, EventContext } from './types';
 export {
 	calculateCurvatureFromPoint,
 	getRegularEdgePath,

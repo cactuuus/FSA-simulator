@@ -1,3 +1,5 @@
+import type { Edge, Node } from '$lib/fsa';
+
 /**
  * Represents a point in 2D space with x and y coordinates.
  */
@@ -18,4 +20,15 @@ export type UnitVector = Point;
  */
 export interface Vector extends UnitVector {
 	magnitude: number;
+}
+
+/**
+ * Context for mouse events, providing information about the event and its target.
+ */
+export interface EventContext {
+	event: MouseEvent;
+	node?: Node;
+	edge?: Edge;
+	isCanvas: boolean;
+	mousePos: Point;
 }

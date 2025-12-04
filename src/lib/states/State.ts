@@ -1,13 +1,4 @@
-import type { Point } from '$lib/utils';
-import type { Node, Edge } from '$lib/fsa';
-
-export interface EventContext {
-	event: MouseEvent;
-	node?: Node;
-	edge?: Edge;
-	isCanvas: boolean;
-	mousePos: Point;
-}
+import type { EventContext } from '$lib/utils/types';
 
 export abstract class State {
 	static readonly NAME: string;
