@@ -68,23 +68,27 @@
 	}
 
 	function handleMouseDown(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseDown?.(getEventContext(e));
+		editor.stateManager.currentState?.handleMouseDown(getEventContext(e));
 	}
 
 	function handleMouseUp(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseUp?.(getEventContext(e));
+		editor.stateManager.currentState?.handleMouseUp(getEventContext(e));
 	}
 
 	function handleMouseMove(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseMove?.(getEventContext(e));
+		editor.stateManager.currentState?.handleMouseMove(getEventContext(e));
 	}
 
 	function handleMouseOver(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseOver?.(getEventContext(e));
+		editor.stateManager.currentState?.handleMouseOver(getEventContext(e));
 	}
 
 	function handleMouseOut(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseOut?.(getEventContext(e));
+		editor.stateManager.currentState?.handleMouseOut(getEventContext(e));
+	}
+
+	function handleDoubleClick(e: MouseEvent) {
+		editor.stateManager.currentState?.handleDoubleClick(getEventContext(e));
 	}
 </script>
 
@@ -106,6 +110,7 @@
 		onmouseover={handleMouseOver}
 		onmouseout={handleMouseOut}
 		onwheel={handleWheel}
+		ondblclick={handleDoubleClick}
 		data-state={editor.stateManager.currentState?.name}
 	>
 		<!--

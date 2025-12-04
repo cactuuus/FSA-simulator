@@ -35,4 +35,10 @@ export class SelectState extends State {
 	handleMouseUp(_ctx: EventContext): void {
 		this.#isDragging = false;
 	}
+
+	handleDoubleClick(_ctx: EventContext): void {
+		if (_ctx.node) {
+			_ctx.node.toggleAccepting();
+		}
+	}
 }

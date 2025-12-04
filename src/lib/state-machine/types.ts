@@ -25,4 +25,5 @@ export abstract class State {
 	handleMouseMove(_ctx: EventContext): void {}
 	handleMouseOver(_ctx: EventContext): void {}
 	handleMouseOut(_ctx: EventContext): void {}
+	handleDoubleClick(_ctx: EventContext): void {}
 }

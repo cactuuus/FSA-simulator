@@ -26,4 +26,8 @@ export class Node implements FSAItem {
 	moveTo(newPos: Point): void {
 		this._pos = newPos;
 	}
+
+	toggleAccepting(): void {
+		this.isAccepting = !this.isAccepting;
+	}
 }
