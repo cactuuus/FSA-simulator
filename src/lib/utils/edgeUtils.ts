@@ -1,12 +1,5 @@
-import {
-	type BaseEdge,
-	type Point,
-	type Vector,
-	type UnitVector,
-	Node,
-	Edge,
-	DraftEdge
-} from '$lib/fsa';
+import { type BaseEdge, Node, Edge, DraftEdge } from '$lib/fsa';
+import type { Point, Vector, UnitVector } from '$lib/utils/types';
 
 // vector helpers //
 

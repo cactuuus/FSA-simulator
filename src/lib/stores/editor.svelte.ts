@@ -1,6 +1,7 @@
-import { type Point, Node, Edge, DraftEdge, FSAGraph, type FSAItem } from '$lib/fsa';
+import type { Point } from '$lib/utils';
+import { Node, Edge, DraftEdge, FSAGraph, type FSAItem } from '$lib/fsa';
 import { StateManager } from '$lib/state-machine';
-import { ViewportManager } from '$lib/UI/canvas';
+import { ViewportManager } from '$lib/utils';
 
 class EditorManager {
 	#fsaGraph = new FSAGraph();

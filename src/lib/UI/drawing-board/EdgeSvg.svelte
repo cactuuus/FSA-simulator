@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Edge } from '$lib/fsa';
-	import { getRegularEdgePath, getEdgeLabelPosition } from '$lib/UI/canvas';
+	import { getRegularEdgePath, getEdgeLabelPosition } from '$lib/utils';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
 	const { edge, isSelected }: { edge: Edge; isSelected: boolean } = $props();

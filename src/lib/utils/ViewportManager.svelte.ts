@@ -1,4 +1,4 @@
-import { type Point } from '$lib/fsa';
+import type { Point } from '$lib/utils';
 
 export class ViewportManager {
 	static readonly CANVAS_ZOOM_STEP = 0.1;

@@ -6,7 +6,7 @@
 	import { Node, Edge } from '$lib/fsa';
 	import type { EventContext } from '$lib/state-machine';
 	import { editor } from '$lib/stores/editor.svelte';
-	import { ViewportManager } from './ViewportManager.svelte';
+	import { ViewportManager } from '$lib/utils';
 
 	let svgElement: SVGSVGElement;
 

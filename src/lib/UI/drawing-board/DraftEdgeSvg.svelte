@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DraftEdge } from '$lib/fsa';
+	import { getDraftEdgePath } from '$lib/utils';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
-	import { getDraftEdgePath } from './edgeUtils';
 
 	const { draftEdge }: { draftEdge: DraftEdge } = $props();
 </script>

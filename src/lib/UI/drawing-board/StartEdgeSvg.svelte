@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Node } from '$lib/fsa';
+	import { getStartEdgePath } from '$lib/utils';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
-	import { getStartEdgePath } from './edgeUtils';
 
 	const { startingNode }: { startingNode: Node } = $props();
 </script>

@@ -1,4 +1,5 @@
-import type { Node, Edge, Point } from '$lib/fsa';
+import type { Point } from '$lib/utils';
+import type { Node, Edge } from '$lib/fsa';
 
 export interface EventContext {
 	event: MouseEvent;

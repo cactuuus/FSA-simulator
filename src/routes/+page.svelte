@@ -1,15 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		AddNodeState,
-		SelectState,
-		DrawEdgeState,
-		PanningState,
-		type State
-	} from '$lib/state-machine';
-	import DrawingBoard from '$lib/UI/canvas/DrawingBoard.svelte';
+	import { AddNodeState, SelectState, DrawEdgeState, PanningState } from '$lib/state-machine';
 	import { editor } from '$lib/stores/editor.svelte';
-	import SelectedItemPanel from '$lib/UI/SelectedItemPanel.svelte';
+	import { DrawingBoard, SelectedItemPanel } from '$lib/UI';
 	import { CirclePlus, Spline, Hand, MousePointer, type Icon as IconType } from '@lucide/svelte';
 
 	interface Tool {

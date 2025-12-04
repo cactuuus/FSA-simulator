@@ -1,6 +1,6 @@
-import { State, type EventContext } from '../types';
+import type { Point } from '$lib/utils';
+import { State, type EventContext } from '$lib/state-machine';
 import { editor } from '$lib/stores/editor.svelte';
-import type { Point } from '$lib/fsa';
 
 /**
  * State for panning the canvas by dragging.

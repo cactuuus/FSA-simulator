@@ -1,7 +1,7 @@
 import { Node, Edge } from '$lib/fsa';
-import { State, type EventContext } from '../types';
+import { State, type EventContext } from '$lib/state-machine';
 import { editor } from '$lib/stores/editor.svelte';
-import { calculateCurvatureFromPoint } from '$lib/UI/canvas';
+import { calculateCurvatureFromPoint } from '$lib/utils';
 
 export class SelectState extends State {
 	static readonly NAME = 'select';

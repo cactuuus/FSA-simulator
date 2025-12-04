@@ -1,4 +1,5 @@
-import { type Point, Node, Edge, type FSAItem } from '$lib/fsa';
+import type { Point } from '$lib/utils';
+import { Node, Edge, type FSAItem } from '$lib/fsa';
 import { SvelteMap } from 'svelte/reactivity';
 
 /**

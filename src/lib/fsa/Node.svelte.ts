@@ -1,4 +1,5 @@
-import type { Point, FSAItem } from '$lib/fsa';
+import type { Point } from '$lib/utils';
+import type { FSAItem } from '$lib/fsa';
 
 /**
  * Represents a state in the finite state automaton (FSA). Each node has a position, label,

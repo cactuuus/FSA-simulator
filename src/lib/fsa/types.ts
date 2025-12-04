@@ -1,10 +1,4 @@
-/**
- * Represents a point in 2D space with x and y coordinates.
- */
-export interface Point {
-	x: number;
-	y: number;
-}
+import type { Point } from '$lib/utils';
 
 /**
  * Basic interface for items in the FSA.
@@ -14,15 +8,12 @@ export interface FSAItem {
 }
 
 /**
- * Normalised vector, representing only direction.
- * Note: this is simply an alias for Point, as they share the same structure. This was added simply
- * for semantic clarity during vector operations.
+ * Base interface for edges in the FSA. Defines common properties and methods for regular and draft
+ * edges for convenience when drawing them.
  */
-export type UnitVector = Point;
-
-/**
- * Vector with magnitude.
- */
-export interface Vector extends UnitVector {
-	magnitude: number;
+export interface BaseEdge {
+	isLoopback(): boolean;
+	get sourcePoint(): Point;
+	get targetPoint(): Point;
+	get curvature(): number;
 }
