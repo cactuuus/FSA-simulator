@@ -1,5 +1,5 @@
-import { type BaseEdge, Node, Edge, DraftEdge } from '$lib/fsa';
-import type { Point, Vector, UnitVector } from '$lib/utils/types';
+import { type BaseEdge, Node, Edge, DraftEdge } from '$lib/automata/models';
+import type { Point, Vector, UnitVector } from '$lib/geometry';
 
 // vector helpers //
 

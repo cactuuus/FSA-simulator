@@ -1,8 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { AddNodeState, SelectState, DrawEdgeState, PanningState } from '$lib/states';
+	import {
+		AddNodeState,
+		SelectState,
+		DrawEdgeState,
+		PanningState
+	} from '$lib/application/interaction';
 	import { editor } from '$lib/stores/editor.svelte';
-	import { DrawingBoard, SelectedItemPanel } from '$lib/UI';
+	import { DrawingBoard, SelectedItemPanel } from '$lib/ui';
 	import { CirclePlus, Spline, Hand, MousePointer, type Icon as IconType } from '@lucide/svelte';
 
 	interface Tool {
@@ -51,6 +56,7 @@
 	}
 
 	onMount(() => {
+		setActive(SelectState.NAME);
 		window.addEventListener('keydown', handleKeyDown);
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);

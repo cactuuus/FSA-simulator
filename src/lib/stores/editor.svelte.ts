@@ -1,6 +1,6 @@
-import type { Point } from '$lib/utils';
-import { Node, Edge, DraftEdge, type FSAItem } from '$lib/fsa';
-import { StateManager, FSAGraph, ViewportManager } from '$lib/core';
+import type { Point } from '$lib/geometry';
+import { Node, Edge, DraftEdge, type FSAItem, FSAGraph } from '$lib/automata/models';
+import { StateManager, ViewportManager } from '$lib/application/managers';
 
 class EditorManager {
 	#fsaGraph = new FSAGraph();
