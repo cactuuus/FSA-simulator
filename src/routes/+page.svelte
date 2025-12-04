@@ -10,23 +10,25 @@
 	import DrawingBoard from '$lib/UI/canvas/DrawingBoard.svelte';
 	import { editor } from '$lib/stores/editor.svelte';
 	import SelectedItemPanel from '$lib/UI/SelectedItemPanel.svelte';
+	import { CirclePlus, Spline, Hand, MousePointer, type Icon as IconType } from '@lucide/svelte';
+
+	interface Tool {
+		state: string;
+		kbShortcut: string;
+		icon: typeof IconType;
+	}
 
 	/**
 	 * Toolbar tools configuration.
 	 */
-	const tools = [
-		{ mode: 'pan', state: PanningState, kbShortcut: '1', icon: 'fa7-regular--hand' },
-		{ mode: 'select', state: SelectState, kbShortcut: '2', icon: 'mdi--cursor-default-outline' },
-		{
-			mode: 'draw-edge',
-			state: DrawEdgeState,
-			kbShortcut: '3',
-			icon: 'hugeicons--orthogonal-edge'
-		},
-		{ mode: 'add-node', state: AddNodeState, kbShortcut: '4', icon: 'tabler--circle-plus' }
+	const tools: Tool[] = [
+		{ state: PanningState.NAME, kbShortcut: '1', icon: Hand },
+		{ state: SelectState.NAME, kbShortcut: '2', icon: MousePointer },
+		{ state: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline },
+		{ state: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus }
 	];
 
-	function setActive(state: State) {
+	function setActive(state: string) {
 		editor.stateManager.transitionTo(state);
 	}
 
@@ -45,7 +47,7 @@
 		const tool = tools.find((a) => a.kbShortcut === e.key);
 		if (tool) {
 			e.preventDefault();
-			setActive(new tool.state());
+			setActive(tool.state);
 		} else if (e.key === 'Escape') {
 			e.preventDefault();
 			editor.clearSelection();
@@ -69,17 +71,18 @@
 	<ul
 		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100 px-2 py-1 shadow"
 	>
-		{#each tools as tool (tool.state.name)}
+		{#each tools as tool (tool.state)}
+			{@const Icon = tool.icon}
 			<li>
 				<button
-					onclick={() => setActive(new tool.state())}
+					onclick={() => setActive(tool.state)}
 					aria-label={tool.kbShortcut}
-					class="btn relative btn-square btn-ghost btn-secondary {tool.mode ===
+					class="btn relative btn-square btn-ghost btn-secondary {tool.state ===
 					editor.stateManager.currentState?.name
 						? 'btn-active'
 						: ''}"
 				>
-					<span class="{tool.icon} h-5 w-5"></span>
+					<Icon class="h-5 w-5" />
 					<small class="absolute right-0 -bottom-0.5 align-sub">{tool.kbShortcut}</small>
 				</button>
 			</li>

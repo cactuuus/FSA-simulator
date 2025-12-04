@@ -9,7 +9,10 @@ export interface EventContext {
 }
 
 export abstract class State {
-	abstract readonly name: string;
+	static readonly NAME: string;
+	get name(): string {
+		return (this.constructor as typeof State).NAME;
+	}
 
 	constructor() {}
 

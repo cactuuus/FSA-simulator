@@ -2,7 +2,7 @@ import { editor } from '$lib/stores/editor.svelte';
 import { State, type EventContext } from '../types';
 
 export class DrawEdgeState extends State {
-	readonly name = 'draw-edge';
+	static readonly NAME = 'draw-edge';
 	#isDragging = false;
 
 	onExit() {

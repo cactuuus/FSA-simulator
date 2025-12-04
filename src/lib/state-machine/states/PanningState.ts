@@ -9,7 +9,7 @@ import type { Point } from '$lib/fsa';
  * transformations between coordinate systems during panning.
  */
 export class PanningState extends State {
-	readonly name = 'pan';
+	static readonly NAME = 'pan';
 	#isDragging = false;
 	#lastMousePos: Point | null = null;
 

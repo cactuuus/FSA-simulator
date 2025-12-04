@@ -4,7 +4,7 @@ import { editor } from '$lib/stores/editor.svelte';
 import { calculateCurvatureFromPoint } from '$lib/UI/canvas';
 
 export class SelectState extends State {
-	readonly name = 'select';
+	static readonly NAME = 'select';
 	#isDragging = false;
 
 	handleMouseDown(ctx: EventContext): void {
