@@ -6,6 +6,7 @@
 	import { Node, Edge } from '$lib/fsa';
 	import type { EventContext } from '$lib/state-machine';
 	import { editor } from '$lib/stores/editor.svelte';
+	import { ViewportManager } from './ViewportManager.svelte';
 
 	let svgElement: SVGSVGElement;
 
@@ -18,7 +19,7 @@
 		if (svgElement) {
 			const resizeObserver = new ResizeObserver((entries) => {
 				const { width, height } = entries[0].contentRect;
-				editor.canvasSize = { width, height };
+				editor.viewportManager.canvasSize = { width, height };
 			});
 
 			resizeObserver.observe(svgElement);
@@ -58,8 +59,9 @@
 	function handleWheel(e: WheelEvent) {
 		if (e.ctrlKey) {
 			e.preventDefault();
-			const zoomAmount = e.deltaY < 0 ? editor.CANVAS_ZOOM_STEP : -editor.CANVAS_ZOOM_STEP;
-			editor.adjustZoom(zoomAmount, getEventContext(e).mousePos);
+			const zoomAmount =
+				e.deltaY < 0 ? ViewportManager.CANVAS_ZOOM_STEP : -ViewportManager.CANVAS_ZOOM_STEP;
+			editor.viewportManager.adjustZoom(zoomAmount, getEventContext(e).mousePos);
 		}
 	}
 
@@ -100,7 +102,7 @@
 	<!-- Ignore the above warnings. For now, the drawing board won't be keyboard accessible.-->
 	<svg
 		bind:this={svgElement}
-		viewBox={editor.viewBox}
+		viewBox={editor.viewportManager.viewBox}
 		id="fsa-diagram"
 		class="h-full w-full"
 		onclick={handleClick}

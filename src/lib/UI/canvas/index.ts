@@ -12,3 +12,4 @@ export {
 	getEdgeLabelPosition,
 	midPoint
 } from './edgeUtils';
+export { ViewportManager } from './ViewportManager.svelte';

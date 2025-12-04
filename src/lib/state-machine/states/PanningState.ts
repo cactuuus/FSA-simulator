@@ -22,7 +22,7 @@ export class PanningState extends State {
 		if (this.#isDragging) {
 			const dx = ctx.event.clientX - (this.#lastMousePos?.x ?? 0);
 			const dy = ctx.event.clientY - (this.#lastMousePos?.y ?? 0);
-			editor.panCanvas({ x: dx, y: dy });
+			editor.viewportManager.panCanvas({ x: dx, y: dy });
 			this.#lastMousePos = { x: ctx.event.clientX, y: ctx.event.clientY };
 		}
 	}

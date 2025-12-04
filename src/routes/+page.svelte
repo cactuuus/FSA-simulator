@@ -101,18 +101,18 @@
 	<div
 		class="absolute right-2 bottom-2 flex items-center gap-0.5 rounded-box bg-base-100 px-3 py-2 text-sm shadow"
 	>
-		<span class="mx-1">{editor.prettyZoomLevel}</span>
+		<span class="mx-1">{editor.viewportManager.prettyZoomLevel}</span>
 
 		<button
 			class="btn btn-square text-xl btn-ghost btn-xs"
-			onclick={() => editor.adjustZoom(0.1)}
+			onclick={() => editor.viewportManager.adjustZoom(0.1)}
 			aria-label="Zoom In"
 		>
 			+
 		</button>
 		<button
 			class="btn btn-square text-xl btn-ghost btn-xs"
-			onclick={() => editor.adjustZoom(-0.1)}
+			onclick={() => editor.viewportManager.adjustZoom(-0.1)}
 			aria-label="Zoom Out"
 		>
 			-
