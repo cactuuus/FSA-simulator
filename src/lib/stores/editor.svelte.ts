@@ -1,36 +1,13 @@
 import type { Point } from '$lib/geometry';
-import { Node, Edge, DraftEdge, type FSAItem, FSAGraph } from '$lib/automata/models';
-import { StateManager, ViewportManager } from '$lib/application/managers';
+import { Node, Edge, DraftEdge, FSAGraph } from '$lib/automata/models';
+import { StateManager, ViewportManager, SelectionManager } from '$lib/application/managers';
 
 class EditorManager {
 	#fsaGraph = new FSAGraph();
 	#stateManager: StateManager = new StateManager();
 	#viewportManager: ViewportManager = new ViewportManager();
-	#selectedItemId = $state<string | null>(null);
+	readonly selectionManager: SelectionManager = new SelectionManager(this.#fsaGraph);
 	#draftEdge = $state<DraftEdge | null>(null);
-	selectedItem = $derived(
-		this.#selectedItemId ? this.#fsaGraph.getItemFromId(this.#selectedItemId) : null
-	);
-
-	selectItem(item: FSAItem | null) {
-		this.#selectedItemId = item?.id || null;
-	}
-
-	isSelected(item: FSAItem): boolean {
-		return this.#selectedItemId === item.id;
-	}
-
-	clearSelection() {
-		this.#selectedItemId = null;
-	}
-
-	deleteSelectedItem() {
-		if (!this.selectedItem) {
-			return;
-		}
-		this.#fsaGraph.deleteItem(this.selectedItem);
-		this.clearSelection();
-	}
 
 	setDraftEdge(source: Node, target: Node) {
 		const duplicateEdge = this.#fsaGraph.edgeAlreadyExists(source, target);

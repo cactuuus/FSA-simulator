@@ -11,7 +11,7 @@ export class DrawEdgeState extends State {
 
 	handleMouseDown(ctx: EventContext): void {
 		if (ctx.node) {
-			editor.clearSelection();
+			editor.selectionManager.clearSelection();
 			editor.setDraftEdge(ctx.node, ctx.node);
 			this.#isDragging = true;
 		}
@@ -31,7 +31,7 @@ export class DrawEdgeState extends State {
 		this.#isDragging = false;
 		if (ctx.node && editor.draftEdge) {
 			const newEdge = editor.commitDraftEdge(ctx.node);
-			editor.selectItem(newEdge);
+			editor.selectionManager.selectItem(newEdge);
 		}
 		editor.clearDraftEdge();
 	}

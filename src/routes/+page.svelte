@@ -48,10 +48,10 @@
 			setActive(tool.state);
 		} else if (e.key === 'Escape') {
 			e.preventDefault();
-			editor.clearSelection();
+			editor.selectionManager.clearSelection();
 		} else if (e.key === 'Delete') {
 			e.preventDefault();
-			editor.deleteSelectedItem();
+			editor.selectionManager.deleteSelectedItem();
 		}
 	}
 
@@ -89,7 +89,7 @@
 	</ul>
 
 	<div class="absolute top-2 right-2">
-		<SelectedItemPanel item={editor.selectedItem} fsa={editor.fsaGraph} />
+		<SelectedItemPanel item={editor.selectionManager.selectedItem} fsa={editor.fsaGraph} />
 	</div>
 
 	<div class="absolute bottom-2 left-2 rounded-box bg-base-100 px-3 py-2 text-sm shadow">

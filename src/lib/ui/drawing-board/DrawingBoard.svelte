@@ -123,7 +123,7 @@
 		{/if}
 
 		{#each editor.fsaGraph.edges as edge (edge.id)}
-			<EdgeSvg {edge} isSelected={editor.isSelected(edge)} />
+			<EdgeSvg {edge} isSelected={editor.selectionManager.isSelected(edge)} />
 		{/each}
 
 		{#if editor.draftEdge}
@@ -131,7 +131,7 @@
 		{/if}
 
 		{#each editor.fsaGraph.nodes as node (node.id)}
-			<NodeSvg {node} isSelected={editor.isSelected(node)} />
+			<NodeSvg {node} isSelected={editor.selectionManager.isSelected(node)} />
 		{/each}
 	</svg>
 </section>

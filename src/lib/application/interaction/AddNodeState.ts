@@ -7,7 +7,7 @@ export class AddNodeState extends State {
 	handleClick(ctx: EventContext): void {
 		if (ctx.isCanvas) {
 			const newNode = editor.fsaGraph.addNode(ctx.mousePos);
-			editor.selectItem(newNode);
+			editor.selectionManager.selectItem(newNode);
 		}
 	}
 }

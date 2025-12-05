@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Edge } from '$lib/automata/models';
+	import type { Edge } from '$lib/automata/models';
 
 	const { edge }: { edge: Edge } = $props();
 	const canDeleteTransition = $derived(edge.transitionSymbols.length > 1);

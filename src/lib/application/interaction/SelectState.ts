@@ -9,12 +9,12 @@ export class SelectState extends State {
 
 	handleMouseDown(ctx: EventContext): void {
 		if (ctx.isCanvas) {
-			editor.clearSelection();
+			editor.selectionManager.clearSelection();
 		} else if (ctx.node) {
-			editor.selectItem(ctx.node);
+			editor.selectionManager.selectItem(ctx.node);
 			this.#isDragging = true;
 		} else if (ctx.edge) {
-			editor.selectItem(ctx.edge);
+			editor.selectionManager.selectItem(ctx.edge);
 			this.#isDragging = true;
 		}
 	}
@@ -23,10 +23,13 @@ export class SelectState extends State {
 		if (!this.#isDragging) {
 			return;
 		}
-		if (editor.selectedItem instanceof Node) {
-			editor.fsaGraph.updateNodePosition(editor.selectedItem as Node, ctx.mousePos);
-		} else if (editor.selectedItem instanceof Edge) {
-			const edge = editor.selectedItem as Edge;
+		if (editor.selectionManager.selectedItem instanceof Node) {
+			editor.fsaGraph.updateNodePosition(
+				editor.selectionManager.selectedItem as Node,
+				ctx.mousePos
+			);
+		} else if (editor.selectionManager.selectedItem instanceof Edge) {
+			const edge = editor.selectionManager.selectedItem as Edge;
 			const curvature = calculateCurvatureFromPoint(edge, ctx.mousePos);
 			editor.fsaGraph.updateEdgeCurvature(edge, curvature);
 		}
