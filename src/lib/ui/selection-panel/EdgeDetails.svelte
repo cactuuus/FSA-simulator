@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { Edge } from '$lib/automata/models';
+	import { X, Plus } from '@lucide/svelte';
 
 	const { edge }: { edge: Edge } = $props();
 	const canDeleteTransition = $derived(edge.transitionSymbols.length > 1);
 </script>
 
-<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-4">
 	<div class="flex flex-col gap-2">
 		<h2 class="font-semibold">Symbols</h2>
 		<div class="flex max-h-120 flex-col gap-2 overflow-y-auto">
@@ -21,7 +22,7 @@
 							title="Remove this transition symbol"
 							disabled={!canDeleteTransition}
 						>
-							Remove
+							<X class="h-4 w-4" /> Remove
 						</button>
 					</legend>
 					<label for="consume-{index}" class="mr-3 flex-1">
@@ -57,9 +58,11 @@
 			{/each}
 		</div>
 	</div>
-	<button class="btn btn-success" onclick={() => edge.addTransition()}> Add Symbols </button>
+	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition()}>
+		<Plus class="h-4 w-4" /> Add Symbol
+	</button>
 	<hr class="border-base-content/70" />
-	<div class="flex items-center justify-end gap-2">
+	<div class="flex items-center justify-end gap-1">
 		<span class="flex-1">Connects</span>
 		<span class="badge font-bold badge-info">{edge.from.label}</span>
 		⟶

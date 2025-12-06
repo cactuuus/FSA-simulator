@@ -4,13 +4,13 @@
 	const { node, fsa }: { node: Node; fsa: FSAGraph } = $props();
 </script>
 
-<div class="flex flex-col gap-6">
-	<label for="label">
+<div class="flex flex-col gap-4">
+	<label for="label" class="flex items-center justify-between gap-2">
 		Label
 		<input
 			id="label"
 			type="text"
-			class="input-bordered input mt-1 w-full"
+			class="input-bordered input max-w-1/2 text-right"
 			bind:value={node.label}
 		/>
 	</label>
