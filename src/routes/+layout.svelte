@@ -9,13 +9,13 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<header class="navbar bg-base-100 shadow-sm">
+<header class="navbar h-16 bg-base-100 shadow-sm">
 	<h1 id="banner" class="text-2xl font-extrabold">FSA Simulator</h1>
 	<div id="page-actions" class="grow px-4">
 		<!-- placeholder for future simulation controls -->
 	</div>
 </header>
 
-<main class="h-10/12 min-h-[800px] py-4">
+<main class="relative h-[calc(100vh-4rem)] w-full">
 	{@render children?.()}
 </main>

@@ -7,11 +7,6 @@
 	box-sizing: border-box;
 }
 
-html,
-body {
-	height: 100%;
-}
-
 :root {
 	/* drawing board styling */
 	--board-bg-color: oklch(98% 0 0);
