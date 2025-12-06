@@ -11,11 +11,10 @@ export abstract class State {
 	onEnter(): void {}
 	onExit(): void {}
 
-	handleClick(_ctx: EventContext): void {}
-	handleMouseDown(_ctx: EventContext): void {}
-	handleMouseUp(_ctx: EventContext): void {}
-	handleMouseMove(_ctx: EventContext): void {}
-	handleMouseOver(_ctx: EventContext): void {}
-	handleMouseOut(_ctx: EventContext): void {}
+	handlePointerDown(_ctx: EventContext): void {}
+	handlePointerUp(_ctx: EventContext): void {}
+	handlePointerMove(_ctx: EventContext): void {}
+	handlePointerOver(_ctx: EventContext): void {}
+	handlePointerOut(_ctx: EventContext): void {}
 	handleDoubleClick(_ctx: EventContext): void {}
 }

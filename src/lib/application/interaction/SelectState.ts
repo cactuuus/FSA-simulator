@@ -7,7 +7,7 @@ export class SelectState extends State {
 	static readonly NAME = 'select';
 	#isDragging = false;
 
-	handleMouseDown(ctx: EventContext): void {
+	handlePointerDown(ctx: EventContext): void {
 		if (ctx.isCanvas) {
 			editor.selectionManager.clearSelection();
 		} else if (ctx.node) {
@@ -19,23 +19,23 @@ export class SelectState extends State {
 		}
 	}
 
-	handleMouseMove(ctx: EventContext): void {
+	handlePointerMove(ctx: EventContext): void {
 		if (!this.#isDragging) {
 			return;
 		}
 		if (editor.selectionManager.selectedItem instanceof Node) {
 			editor.fsaGraph.updateNodePosition(
 				editor.selectionManager.selectedItem as Node,
-				ctx.mousePos
+				ctx.pointerPos
 			);
 		} else if (editor.selectionManager.selectedItem instanceof Edge) {
 			const edge = editor.selectionManager.selectedItem as Edge;
-			const curvature = calculateCurvatureFromPoint(edge, ctx.mousePos);
+			const curvature = calculateCurvatureFromPoint(edge, ctx.pointerPos);
 			editor.fsaGraph.updateEdgeCurvature(edge, curvature);
 		}
 	}
 
-	handleMouseUp(_ctx: EventContext): void {
+	handlePointerUp(_ctx: EventContext): void {
 		this.#isDragging = false;
 	}
 

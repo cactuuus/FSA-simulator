@@ -32,23 +32,25 @@
 	 * The mouse position (mousePos) is given in SVG coordinates. The actual mouse position
 	 * (relative to the viewport) can be accessed via the event object ({ e.clientX, e.clientY }).
 	 */
-	function getEventContext(e: MouseEvent): EventContext {
-		const element = (e.target as Element).closest('[data-id]');
+	function getEventContext(e: PointerEvent | MouseEvent): EventContext {
+		// Determine which FSA item (node/edge) was targeted, if any.
+		// Does not use e.target as it behaves differently between touch and mouse events.
+		const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-id]') ?? null;
 		const elementId = element?.getAttribute('data-id') ?? null;
 		const fsaItem = elementId ? editor.fsaGraph.getItemFromId(elementId) : null;
 
-		// Get mouse position in SVG coordinates
+		// Get pointer position in SVG coordinates
 		const pivot = svgElement.createSVGPoint();
 		pivot.x = e.clientX;
 		pivot.y = e.clientY;
-		const mousePos = pivot.matrixTransform(svgElement.getScreenCTM()?.inverse());
+		const pointerPos = pivot.matrixTransform(svgElement.getScreenCTM()?.inverse());
 
 		return {
 			event: e,
 			node: fsaItem instanceof Node ? fsaItem : undefined,
 			edge: fsaItem instanceof Edge ? fsaItem : undefined,
 			isCanvas: fsaItem === null,
-			mousePos: mousePos
+			pointerPos: pointerPos
 		};
 	}
 
@@ -61,32 +63,28 @@
 			e.preventDefault();
 			const zoomAmount =
 				e.deltaY < 0 ? ViewportManager.CANVAS_ZOOM_STEP : -ViewportManager.CANVAS_ZOOM_STEP;
-			editor.viewportManager.adjustZoom(zoomAmount, getEventContext(e).mousePos);
+			editor.viewportManager.adjustZoom(zoomAmount, getEventContext(e).pointerPos);
 		}
 	}
 
-	function handleClick(e: MouseEvent) {
-		editor.stateManager.currentState?.handleClick(getEventContext(e));
+	function handlePointerDown(e: PointerEvent) {
+		editor.stateManager.currentState?.handlePointerDown(getEventContext(e));
 	}
 
-	function handleMouseDown(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseDown(getEventContext(e));
+	function handlePointerUp(e: PointerEvent) {
+		editor.stateManager.currentState?.handlePointerUp(getEventContext(e));
 	}
 
-	function handleMouseUp(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseUp(getEventContext(e));
+	function handlePointerMove(e: PointerEvent) {
+		editor.stateManager.currentState?.handlePointerMove(getEventContext(e));
 	}
 
-	function handleMouseMove(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseMove(getEventContext(e));
+	function handlePointerOver(e: PointerEvent) {
+		editor.stateManager.currentState?.handlePointerOver(getEventContext(e));
 	}
 
-	function handleMouseOver(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseOver(getEventContext(e));
-	}
-
-	function handleMouseOut(e: MouseEvent) {
-		editor.stateManager.currentState?.handleMouseOut(getEventContext(e));
+	function handlePointerOut(e: PointerEvent) {
+		editor.stateManager.currentState?.handlePointerOut(getEventContext(e));
 	}
 
 	function handleDoubleClick(e: MouseEvent) {
@@ -104,13 +102,12 @@
 		bind:this={svgElement}
 		viewBox={editor.viewportManager.viewBox}
 		id="fsa-diagram"
-		class="h-full w-full"
-		onclick={handleClick}
-		onmousedown={handleMouseDown}
-		onmouseup={handleMouseUp}
-		onmousemove={handleMouseMove}
-		onmouseover={handleMouseOver}
-		onmouseout={handleMouseOut}
+		class="h-full w-full touch-none"
+		onpointerdown={handlePointerDown}
+		onpointermove={handlePointerMove}
+		onpointerup={handlePointerUp}
+		onpointerover={handlePointerOver}
+		onpointerout={handlePointerOut}
 		onwheel={handleWheel}
 		ondblclick={handleDoubleClick}
 		data-state={editor.stateManager.currentState?.name}

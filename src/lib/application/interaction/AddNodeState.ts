@@ -4,9 +4,9 @@ import { editor } from '$lib/stores/editor.svelte';
 export class AddNodeState extends State {
 	static readonly NAME = 'add-node';
 
-	handleClick(ctx: EventContext): void {
+	handlePointerDown(ctx: EventContext): void {
 		if (ctx.isCanvas) {
-			const newNode = editor.fsaGraph.addNode(ctx.mousePos);
+			const newNode = editor.fsaGraph.addNode(ctx.pointerPos);
 			editor.selectionManager.selectItem(newNode);
 		}
 	}

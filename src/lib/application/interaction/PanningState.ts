@@ -11,24 +11,24 @@ import { editor } from '$lib/stores/editor.svelte';
 export class PanningState extends State {
 	static readonly NAME = 'pan';
 	#isDragging = false;
-	#lastMousePos: Point | null = null;
+	#lastPointerPos: Point | null = null;
 
-	handleMouseDown(ctx: EventContext): void {
+	handlePointerDown(ctx: EventContext): void {
 		this.#isDragging = true;
-		this.#lastMousePos = { x: ctx.event.clientX, y: ctx.event.clientY };
+		this.#lastPointerPos = { x: ctx.event.clientX, y: ctx.event.clientY };
 	}
 
-	handleMouseMove(ctx: EventContext): void {
+	handlePointerMove(ctx: EventContext): void {
 		if (this.#isDragging) {
-			const dx = ctx.event.clientX - (this.#lastMousePos?.x ?? 0);
-			const dy = ctx.event.clientY - (this.#lastMousePos?.y ?? 0);
+			const dx = ctx.event.clientX - (this.#lastPointerPos?.x ?? 0);
+			const dy = ctx.event.clientY - (this.#lastPointerPos?.y ?? 0);
 			editor.viewportManager.panCanvas({ x: dx, y: dy });
-			this.#lastMousePos = { x: ctx.event.clientX, y: ctx.event.clientY };
+			this.#lastPointerPos = { x: ctx.event.clientX, y: ctx.event.clientY };
 		}
 	}
 
-	handleMouseUp(_ctx: EventContext): void {
+	handlePointerUp(_ctx: EventContext): void {
 		this.#isDragging = false;
-		this.#lastMousePos = null;
+		this.#lastPointerPos = null;
 	}
 }
