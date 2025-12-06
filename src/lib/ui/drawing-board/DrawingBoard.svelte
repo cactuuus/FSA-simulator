@@ -76,7 +76,6 @@
 	function handlePointerUp(e: PointerEvent) {
 		// ignore non-left clicks (mouse) and secondary touch points (touch)
 		if (e.button !== 0 || !e.isPrimary) return;
-		console.log(e);
 		editor.stateManager.currentState?.handlePointerUp(getEventContext(e));
 	}
 
