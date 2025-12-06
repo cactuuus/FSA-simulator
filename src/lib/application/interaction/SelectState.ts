@@ -1,7 +1,8 @@
 import { State, type EventContext } from '$lib/application/interaction';
 import { Node, Edge } from '$lib/automata/models';
 import { editor } from '$lib/stores/editor.svelte';
-import { calculateCurvatureFromPoint } from '$lib/utils';
+import { angleTo } from '$lib/geometry';
+import { getControlPointFromLabelPos } from '$lib/utils';
 
 export class SelectState extends State {
 	static readonly NAME = 'select';
@@ -20,18 +21,20 @@ export class SelectState extends State {
 	}
 
 	handlePointerMove(ctx: EventContext): void {
-		if (!this.#isDragging) {
-			return;
-		}
-		if (editor.selectionManager.selectedItem instanceof Node) {
-			editor.fsaGraph.updateNodePosition(
-				editor.selectionManager.selectedItem as Node,
-				ctx.pointerPos
-			);
-		} else if (editor.selectionManager.selectedItem instanceof Edge) {
-			const edge = editor.selectionManager.selectedItem as Edge;
-			const curvature = calculateCurvatureFromPoint(edge, ctx.pointerPos);
-			editor.fsaGraph.updateEdgeCurvature(edge, curvature);
+		if (!this.#isDragging) return;
+
+		const item = editor.selectionManager.selectedItem;
+		if (item instanceof Node) {
+			item.moveTo(ctx.pointerPos);
+		} else if (item instanceof Edge) {
+			if (item.isLoopback()) {
+				const newAngle = angleTo(item.sourcePoint, ctx.pointerPos);
+				item.adjustLoopbackAngle(newAngle);
+			} else {
+				// uses label position to determine new control point, for better UX
+				const controlPoint = getControlPointFromLabelPos(item, ctx.pointerPos);
+				item.updateControlPoint(controlPoint);
+			}
 		}
 	}
 

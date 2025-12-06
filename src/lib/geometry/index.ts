@@ -1,10 +1,9 @@
-export type { Point, Vector, UnitVector } from './types';
+export type { Point, Vector } from './types';
 export {
 	vectorBetween,
-	perpendicular,
-	dotProduct,
 	midPoint,
-	pointAlongLine,
+	angleTo,
+	pointOnLine,
 	pointOnCircle,
-	angleTo
+	pointOnBezierCurve
 } from './operations';

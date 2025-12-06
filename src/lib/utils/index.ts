@@ -1,10 +1,7 @@
 export {
-	calculateCurvatureFromPoint,
 	getRegularEdgePath,
-	getDraftEdgePath,
-	getCurvedPath,
-	getLoopbackPath,
-	getStraightPath,
 	getStartEdgePath,
-	getEdgeLabelPosition
+	getDraftEdgePath,
+	getEdgeLabelPosition,
+	getControlPointFromLabelPos
 } from './edgeUtils';

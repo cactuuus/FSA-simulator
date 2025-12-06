@@ -32,14 +32,6 @@ export class FSAGraph {
 		return this.edgesMap.has(edgeId);
 	}
 
-	updateNodePosition(node: Node, newPoint: Point): void {
-		node.moveTo(newPoint);
-	}
-
-	updateEdgeCurvature(edge: Edge, newCurvature: number): void {
-		edge.adjustCurvature(newCurvature);
-	}
-
 	getItemFromId(id: string): FSAItem | null {
 		const node = this.nodesMap.get(id);
 		if (node) return node;

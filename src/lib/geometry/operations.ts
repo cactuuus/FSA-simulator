@@ -1,4 +1,4 @@
-import type { Point, Vector, UnitVector } from '$lib/geometry';
+import type { Point, Vector } from '$lib/geometry';
 
 /**
  * Calculates the vector from one point to another.
@@ -14,30 +14,6 @@ export function vectorBetween(from: Point, to: Point): Vector {
 }
 
 /**
- * Calculates the perpendicular, normalised vector of a given vector, rotated 90 degrees clockwise.
- * @param vector The input vector.
- * @return The perpendicular, normalised vector.
- */
-export function perpendicular(vector: Vector): UnitVector {
-	return {
-		x: -vector.y / vector.magnitude,
-		y: vector.x / vector.magnitude
-	};
-}
-
-/**
- * Calculates the dot product of two vectors.
- * @param v1 The first vector.
- * @param v2 The second vector.
- * @returns The dot product of the two vectors.
- */
-export function dotProduct(v1: UnitVector, v2: UnitVector): number {
-	return v1.x * v2.x + v1.y * v2.y;
-}
-
-// point helpers //
-
-/**
  * Finds the midpoint between two points.
  * @param p1 The first point.
  * @param p2 The second point.
@@ -51,13 +27,23 @@ export function midPoint(p1: Point, p2: Point): Point {
 }
 
 /**
- * Finds a point along a line defined by a starting point and a vector, at a specified distance.
+ * Calculates the angle in radians from one point to another.
+ * @param from The starting point.
+ * @param to The ending point.
+ * @returns The angle in radians from the starting point to the ending point.
+ */
+export function angleTo(from: Point, to: Point): number {
+	return Math.atan2(to.y - from.y, to.x - from.x);
+}
+
+/**
+ * Finds a point along a straight line defined by a starting point and a vector, at a specified distance.
  * @param from The starting point.
  * @param vector The direction vector.
  * @param distance The distance from the starting point.
  * @returns The point along the line at the specified distance.
  */
-export function pointAlongLine(from: Point, vector: Vector, distance: number): Point {
+export function pointOnLine(from: Point, vector: Vector, distance: number): Point {
 	const ratio = distance / vector.magnitude;
 	return {
 		x: from.x + vector.x * ratio,
@@ -80,11 +66,21 @@ export function pointOnCircle(center: Point, radius: number, angle: number): Poi
 }
 
 /**
- * Calculates the angle in radians from one point to another.
- * @param from The starting point.
- * @param to The ending point.
- * @returns The angle in radians from the starting point to the ending point.
+ * Calculate a point on a quadratic Bezier curve at parameter t.
+ * More info here: https://mmrndev.medium.com/understanding-b%C3%A9zier-curves-f6eaa0fa6c7d
+ *
+ * @param t The parameter along the curve (0 <= t <= 1).
+ * @param start The starting point of the curve.
+ * @param control The control point of the curve.
+ * @param end The ending point of the curve.
+ * @returns The point on the Bezier curve at parameter t.
  */
-export function angleTo(from: Point, to: Point): number {
-	return Math.atan2(to.y - from.y, to.x - from.x);
+export function pointOnBezierCurve(t: number, start: Point, control: Point, end: Point): Point {
+	const t2 = t * t;
+	const mt = 1 - t;
+	const mt2 = mt * mt;
+	return {
+		x: mt2 * start.x + 2 * mt * t * control.x + t2 * end.x,
+		y: mt2 * start.y + 2 * mt * t * control.y + t2 * end.y
+	};
 }

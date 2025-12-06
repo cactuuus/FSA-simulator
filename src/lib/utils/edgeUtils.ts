@@ -1,83 +1,82 @@
-import { type BaseEdge, Node, Edge, DraftEdge } from '$lib/automata/models';
 import {
 	type Point,
-	type Vector,
-	midPoint,
-	perpendicular,
-	angleTo,
+	pointOnCircle,
 	vectorBetween,
-	dotProduct,
-	pointAlongLine,
-	pointOnCircle
+	pointOnLine,
+	pointOnBezierCurve,
+	angleTo
 } from '$lib/geometry';
-
-// curvature calculations //
+import { Edge, Node, DraftEdge, type BaseEdge } from '$lib/automata/models';
 
 /**
- * Helper interface representing the geometry of an arc.
+ * Generate SVG path for quadratic Bezier curve with node edge termination.
+ * Handles both straight edges (when control point is at midpoint) and curved edges.
  */
-interface ArcGeometry {
-	center: Point;
-	radius: number;
-	sweepFlag: 0 | 1;
+function getQuadraticBezierPath(
+	from: Point,
+	to: Point,
+	controlPoint: Point,
+	nodeRadius: number
+): string {
+	const start = pointOnCircle(from, nodeRadius, angleTo(from, controlPoint));
+	const end = pointOnCircle(to, nodeRadius, angleTo(to, controlPoint));
+	return `M ${start.x} ${start.y} Q ${controlPoint.x} ${controlPoint.y} ${end.x} ${end.y}`;
 }
 
 /**
- * Calculates the geometry of an arc for a given edge and vector.
- * @param edge The edge for which to calculate the arc geometry.
- * @param vector The vector representing the direction and magnitude between the edge's source and
- *  target points.
- * @returns The geometry of the arc including its center, radius, and sweep flag.
+ * Calculate position for edge label.
+ * @param edge The edge for which to calculate its label's position.
+ * @returns The position of the edge label, centered vertically for multi-line labels.
  */
-function calculateArcGeometry(edge: BaseEdge, vector: Vector): ArcGeometry {
-	const h = Math.abs(edge.curvature);
-	const maxCurvature = vector.magnitude / 2;
-	const clampedH = Math.min(h, maxCurvature);
+export function getEdgeLabelPosition(edge: Edge): Point {
+	let position: Point;
 
-	const radius = (vector.magnitude ** 2 / 4 + clampedH ** 2) / (2 * clampedH);
-
-	const mid = midPoint(edge.sourcePoint, edge.targetPoint);
-	const perp = perpendicular(vector);
-	// clamp to avoid NaN from sqrt of negative number, due to floating point errors
-	const centerOffset = Math.sqrt(Math.max(0, radius ** 2 - (vector.magnitude / 2) ** 2));
-	const centerDirection = edge.curvature > 0 ? 1 : -1;
-
-	const center: Point = {
-		x: mid.x + perp.x * centerOffset * centerDirection,
-		y: mid.y + perp.y * centerOffset * centerDirection
-	};
-
-	const sweepFlag: 0 | 1 = edge.curvature > 0 ? 1 : 0;
-
-	return { center, radius, sweepFlag };
-}
-
-/**
- * Calculates the curvature for an edge based on a given mouse position.
- * @param edge The edge for which to calculate the curvature.
- * @param mousePos The position of the mouse (in SVG coordinates).
- * @returns The calculated curvature.
- */
-export function calculateCurvatureFromPoint(edge: BaseEdge, mousePos: Point): number {
 	if (edge.isLoopback()) {
-		const angle = angleTo(edge.sourcePoint, mousePos);
-		return angle;
+		const offset = Edge.LOOPBACK_SIZE + Edge.LABEL_OFFSET + Node.RADIUS;
+		position = pointOnCircle(edge.sourcePoint, offset, edge.loopbackAngle);
+	} else {
+		const curveMidpoint = pointOnBezierCurve(
+			0.5,
+			edge.sourcePoint,
+			edge.controlPoint,
+			edge.targetPoint
+		);
+		position = {
+			x: curveMidpoint.x + (edge.controlPoint.x - curveMidpoint.x) * Edge.LABEL_DISTANCE_BIAS,
+			y: curveMidpoint.y + (edge.controlPoint.y - curveMidpoint.y) * Edge.LABEL_DISTANCE_BIAS
+		};
 	}
 
-	const vector = vectorBetween(edge.sourcePoint, edge.targetPoint);
-	const mid = midPoint(edge.sourcePoint, edge.targetPoint);
-
-	// vector from midpoint to mouse
-	const toMouse = vectorBetween(mid, mousePos);
-
-	// perpendicular direction (normalized)
-	const perp = perpendicular(vector);
-	const curvature = dotProduct(toMouse, perp);
-
-	return -curvature;
+	const verticalOffset = ((edge.label.length - 1) * Edge.LINE_HEIGHT) / 2;
+	return {
+		x: position.x,
+		y: position.y - verticalOffset
+	};
 }
 
-// SVG path calculations //
+/**
+ * Calculate the actual control point given the label position, effectively the inverse of
+ * what getEdgeLabelPosition does.
+ * This allows to use the label as a proxy for the control point, which is visually more intuitive
+ * than using an hidden, possibly distant (from the actual line) point.
+ *
+ * TLDR: Allows the user to drag the label to adjust the Bezier curve.
+ *
+ * @param edge The edge for which to calculate the control point.
+ * @return The calculated control point.
+ */
+export function getControlPointFromLabelPos(edge: Edge, labelPos: Point): Point {
+	const midWeight = (1 - Edge.LABEL_DISTANCE_BIAS) * 0.25;
+	const controlWeight = 0.5 + 0.5 * Edge.LABEL_DISTANCE_BIAS;
+	const midContribution = {
+		x: midWeight * (edge.sourcePoint.x + edge.targetPoint.x),
+		y: midWeight * (edge.sourcePoint.y + edge.targetPoint.y)
+	};
+	return {
+		x: (labelPos.x - midContribution.x) / controlWeight,
+		y: (labelPos.y - midContribution.y) / controlWeight
+	};
+}
 
 /**
  * Calculates the SVG path for a loopback edge.
@@ -85,9 +84,8 @@ export function calculateCurvatureFromPoint(edge: BaseEdge, mousePos: Point): nu
  * @returns The SVG path string representing the loopback edge.
  */
 export function getLoopbackPath(edge: BaseEdge): string {
-	const start = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.curvature + Math.PI / 4);
-	const end = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.curvature - Math.PI / 4);
-
+	const start = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.loopbackAngle + Math.PI / 4);
+	const end = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.loopbackAngle - Math.PI / 4);
 	return `M ${start.x} ${start.y}
 			A ${Edge.LOOPBACK_SIZE} ${Edge.LOOPBACK_SIZE}, 0, 1, 0, ${end.x} ${end.y}`;
 }
@@ -98,66 +96,44 @@ export function getLoopbackPath(edge: BaseEdge): string {
  * node-to-node, and node-to-point).
  * @param from The starting point of the straight edge.
  * @param edge The straight edge.
- * @param startOffset Whether to apply an offset at the start point.
- * @param endOffset Whether to apply an offset at the end point.
+ * @param startOffset The offset to apply at the starting point.
+ * @param endOffset The offset to apply at the end point.
  * @returns The SVG path string representing the straight edge.
  */
 export function getStraightPath(
 	from: Point,
 	to: Point,
-	startOffset: boolean = true,
-	endOffset: boolean = true
+	startOffset: number = 0,
+	endOffset: number = 0
 ): string {
 	const vector = vectorBetween(from, to);
-
-	const start = startOffset ? pointAlongLine(from, vector, Node.RADIUS) : from;
-	const end = endOffset ? pointAlongLine(from, vector, vector.magnitude - Node.RADIUS) : to;
+	const start = startOffset !== 0 ? pointOnLine(from, vector, startOffset) : from;
+	const end = endOffset !== 0 ? pointOnLine(from, vector, vector.magnitude - endOffset) : to;
 	return `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
 }
 
 /**
- * Calculates the SVG path for a curved edge.
- * @param edge The curved edge.
- * @returns The SVG path string representing the curved edge.
- */
-export function getCurvedPath(edge: BaseEdge): string {
-	const vector = vectorBetween(edge.sourcePoint, edge.targetPoint);
-	const { center, radius, sweepFlag } = calculateArcGeometry(edge, vector);
-
-	// calculate new start/end points offset by node radius
-	const angleToSource = angleTo(center, edge.sourcePoint);
-	const angleToTarget = angleTo(center, edge.targetPoint);
-
-	// shorten by node radius on both ends
-	const angleToRemove = Node.RADIUS / radius;
-	let newSourceAngle, newTargetAngle;
-	if (edge.curvature > 0) {
-		newSourceAngle = angleToSource + angleToRemove;
-		newTargetAngle = angleToTarget - angleToRemove;
-	} else {
-		newSourceAngle = angleToSource - angleToRemove;
-		newTargetAngle = angleToTarget + angleToRemove;
-	}
-
-	const start = pointOnCircle(center, radius, newSourceAngle);
-	const end = pointOnCircle(center, radius, newTargetAngle);
-
-	return `M ${start.x} ${start.y} A ${radius} ${radius} 0 0 ${sweepFlag} ${end.x} ${end.y}`;
-}
-
-/**
- * Calculates the SVG path for an edge based on its type (loopback, straight, or curved).
+ * Generate SVG path for an edge.
  * @param edge The edge for which to calculate the SVG path.
  * @returns The SVG path string representing the edge.
  */
 export function getRegularEdgePath(edge: Edge): string {
 	if (edge.isLoopback()) {
 		return getLoopbackPath(edge);
-	} else if (edge.curvature === 0) {
-		return getStraightPath(edge.sourcePoint, edge.targetPoint);
-	} else {
-		return getCurvedPath(edge);
 	}
+	return getQuadraticBezierPath(edge.sourcePoint, edge.targetPoint, edge.controlPoint, Node.RADIUS);
+}
+
+/**
+ * Calculates the SVG path for a start edge pointing to a given point (the center of the starting
+ * node).
+ * @param toPoint The center of the starting node.
+ * @returns The SVG path string representing the start edge.
+ */
+export function getStartEdgePath(toPoint: Point): string {
+	const length = 100;
+	const start: Point = { x: toPoint.x - length, y: toPoint.y };
+	return getStraightPath(start, toPoint, 0, Node.RADIUS);
 }
 
 /**
@@ -174,64 +150,8 @@ export function getDraftEdgePath(draftEdge: DraftEdge): string {
 		return getStraightPath(
 			draftEdge.sourcePoint,
 			draftEdge.targetPoint,
-			true,
-			draftEdge.pointingAtNode
+			Node.RADIUS,
+			draftEdge.pointingAtNode ? Node.RADIUS : 0
 		);
 	}
-}
-
-/**
- * Calculates the SVG path for a start edge pointing to a given point (the center of the starting
- * node).
- * @param toPoint The center of the starting node.
- * @returns The SVG path string representing the start edge.
- */
-export function getStartEdgePath(toPoint: Point): string {
-	const length = 100;
-	const start: Point = { x: toPoint.x - length, y: toPoint.y };
-	return getStraightPath(start, toPoint, false, true);
-}
-
-/** Calculates the position for an edge label based on the edge type and curvature.
- * @param edge The edge for which to calculate the label position.
- * @returns The point representing the label position.
- */
-export function calculateLabelPosition(edge: Edge): Point {
-	if (edge.isLoopback()) {
-		const offset = Edge.LOOPBACK_SIZE + Edge.LABEL_OFFSET + Node.RADIUS;
-		return pointOnCircle(edge.sourcePoint, offset, edge.curvature);
-	} else if (edge.curvature === 0) {
-		return midPoint(edge.sourcePoint, edge.targetPoint);
-	} else {
-		const vector = vectorBetween(edge.sourcePoint, edge.targetPoint);
-		const { center, radius } = calculateArcGeometry(edge, vector);
-
-		// calculates the unit vector perpendicular to the straight path between source and target.
-		// points in the direction of the arc's apex, once factored in the curvature value.
-		const toApex = perpendicular(vector);
-		const direction = edge.curvature < 0 ? 1 : -1;
-		const apexDirection = {
-			x: toApex.x * direction,
-			y: toApex.y * direction
-		};
-
-		return {
-			x: center.x + apexDirection.x * (radius + Edge.LABEL_OFFSET),
-			y: center.y + apexDirection.y * (radius + Edge.LABEL_OFFSET)
-		};
-	}
-}
-
-/**
- * Calculates the adjusted position for an edge label, taking into account multiple lines.
- * @param edge The edge for which to calculate the label position.
- * @returns The point representing the label position, centered vertically.
- */
-export function getEdgeLabelPosition(edge: Edge): Point {
-	const verticalOffset = (Edge.LINE_HEIGHT * (edge.label.length - 1)) / 2;
-	const position = calculateLabelPosition(edge);
-	return {
-		x: position.x,
-		y: position.y - verticalOffset
-	};
 }
