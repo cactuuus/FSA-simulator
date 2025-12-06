@@ -10,12 +10,12 @@
 
 <details
 	bind:open={showContent}
-	class="collapse-arrow collapse w-88 rounded-2xl bg-base-100 shadow-lg"
+	class="collapse-arrow collapse rounded-box bg-base-100/95 shadow {showContent ? 'w-88' : 'w-12'}"
 >
 	<summary
-		class="collapse-title flex items-baseline gap-4 border-b border-base-300 p-4 font-semibold"
+		class="collapse-title flex min-h-12 items-baseline gap-4 border-b border-base-300 p-4 font-semibold"
 	>
-		Selected Item
+		{showContent ? 'Selected Item' : ''}
 	</summary>
 
 	<div class="collapse-content p-4">
