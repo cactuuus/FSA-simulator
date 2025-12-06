@@ -120,8 +120,16 @@ export function getStraightPath(
 export function getRegularEdgePath(edge: Edge): string {
 	if (edge.isLoopback()) {
 		return getLoopbackPath(edge);
+	} else if (edge.isStraight()) {
+		return getStraightPath(edge.sourcePoint, edge.targetPoint, Node.RADIUS, Node.RADIUS);
+	} else {
+		return getQuadraticBezierPath(
+			edge.sourcePoint,
+			edge.targetPoint,
+			edge.controlPoint,
+			Node.RADIUS
+		);
 	}
-	return getQuadraticBezierPath(edge.sourcePoint, edge.targetPoint, edge.controlPoint, Node.RADIUS);
 }
 
 /**

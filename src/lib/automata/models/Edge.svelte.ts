@@ -6,27 +6,26 @@ import { Node, type FSAItem, type BaseEdge, TransitionSymbol } from '$lib/automa
  * symbols associated with it, as well as curvature for visual representation.
  */
 export class Edge implements BaseEdge, FSAItem {
-	static readonly MIN_CURVATURE = 5; // helps snapping back to straight
 	static readonly LOOPBACK_DEFAULT_CURVATURE = Math.PI / 2; // default position (angle) of loopback edges
 	static readonly LOOPBACK_SIZE = 40; // fixed offset for loopback size
 	static readonly LABEL_OFFSET = 40; // distance of the label from the arrow
 	static readonly LINE_HEIGHT = 20; // height of each line in the label
-	static readonly LABEL_DISTANCE_BIAS = 0.5; // distance bias placing label between bezier midppoint and control point
+	static readonly LABEL_DISTANCE_BIAS = 0.5; // distance bias placing label between bezier midpoint and control point
 
 	readonly id: string;
 	readonly from: Node;
 	readonly to: Node;
 	private _transitionSymbols: TransitionSymbol[] = $state<TransitionSymbol[]>([]);
 	readonly label = $derived<string[]>(this._transitionSymbols.map((ts) => ts.toString()));
-	private _controlPoint = $state<Point>({ x: 0, y: 0 }); // dummy point, real value is set in constructor
+	private _controlOffset = $state<Point | null>(null);
 	private _loopbackAngle = $state<number>(Edge.LOOPBACK_DEFAULT_CURVATURE);
+	private _midpoint = $derived<Point>(midPoint(this.sourcePoint, this.targetPoint));
 
 	constructor(from: Node, to: Node) {
 		this.from = from;
 		this.to = to;
 		this.id = Edge.createId(from, to);
 		this.addTransition();
-		this._controlPoint = midPoint(this.sourcePoint, this.targetPoint);
 	}
 
 	static createId(from: Node, to: Node): string {
@@ -42,7 +41,13 @@ export class Edge implements BaseEdge, FSAItem {
 	}
 
 	get controlPoint(): Point {
-		return this._controlPoint;
+		if (this._controlOffset === null) {
+			return this._midpoint;
+		}
+		return {
+			x: this._midpoint.x + this._controlOffset.x,
+			y: this._midpoint.y + this._controlOffset.y
+		};
 	}
 
 	get loopbackAngle(): number {
@@ -55,6 +60,10 @@ export class Edge implements BaseEdge, FSAItem {
 
 	isLoopback(): boolean {
 		return this.from.id === this.to.id;
+	}
+
+	isStraight(): boolean {
+		return this._controlOffset === null;
 	}
 
 	addTransition(): void {
@@ -71,7 +80,10 @@ export class Edge implements BaseEdge, FSAItem {
 		this._loopbackAngle = newAngle;
 	}
 
-	updateControlPoint(newControlPoint: Point): void {
-		this._controlPoint = newControlPoint;
+	updateControlPoint(newPosition: Point): void {
+		this._controlOffset = {
+			x: newPosition.x - this._midpoint.x,
+			y: newPosition.y - this._midpoint.y
+		};
 	}
 }
