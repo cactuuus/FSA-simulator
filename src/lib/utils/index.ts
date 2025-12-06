@@ -6,6 +6,5 @@ export {
 	getLoopbackPath,
 	getStraightPath,
 	getStartEdgePath,
-	getEdgeLabelPosition,
-	midPoint
+	getEdgeLabelPosition
 } from './edgeUtils';
