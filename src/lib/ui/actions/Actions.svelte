@@ -8,7 +8,7 @@
 	function openFileDialog() {
 		const input = document.createElement('input');
 		input.type = 'file';
-		input.accept = '.json';
+		input.accept = '.fsa';
 		input.onchange = async () => {
 			if (input.files && input.files.length > 0) {
 				const file = input.files[0];

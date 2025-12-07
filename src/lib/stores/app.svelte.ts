@@ -9,7 +9,7 @@ class AppManager {
 	private _fsaGraph = new FSAGraph();
 	private _viewportManager = new ViewportManager();
 	private _mode = $state<AppMode>('editing');
-	private _currentFilename = $state<string | null>(null);
+	title = $state<string>('Untitled');
 
 	// sub-managers
 	private _editorManager: EditorManager;
@@ -37,7 +37,7 @@ class AppManager {
 	}
 
 	async downloadGraph(): Promise<void> {
-		const filename = this._currentFilename ?? 'fsa-graph.json';
+		const filename = `${this.title}.fsa`;
 		const data = JSON.stringify(this._fsaGraph.toJSON());
 		const blob = new Blob([data], { type: 'application/json' });
 		const url = URL.createObjectURL(blob);
@@ -55,7 +55,7 @@ class AppManager {
 		const json = JSON.parse(text) as SerializedFSAGraph;
 		this._fsaGraph.loadFromJSON(json);
 		// TODO -- possibly need to reset editor/simulation state here
-		this._currentFilename = file.name;
+		this.title = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
 	}
 }
 
