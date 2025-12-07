@@ -55,16 +55,26 @@
 		}
 	}
 
+	let mounted = false;
 	onMount(() => {
 		setActive(SelectState.NAME);
 		window.addEventListener('keydown', handleKeyDown);
+		mounted = true;
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
 	});
 </script>
 
-<section class="relative h-full w-full">
+<section class="relative h-full w-full {mounted ? '' : 'pointer-events-none opacity-50'}">
+	<!-- Spinner to indicate the app is not mounted yet -->
+	{#if !mounted}
+		<div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
+			Loading...
+			<span class="loading loading-xl loading-spinner"></span>
+		</div>
+	{/if}
+
 	<DrawingBoard />
 
 	<ul
