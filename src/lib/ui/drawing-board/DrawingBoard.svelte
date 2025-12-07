@@ -127,8 +127,8 @@
 			<EdgeSvg {edge} isSelected={editor.selectionManager.isSelected(edge)} />
 		{/each}
 
-		{#if editor.draftEdge}
-			<DraftEdgeSvg draftEdge={editor.draftEdge} />
+		{#if editor.draftEdgeManager.draftEdge}
+			<DraftEdgeSvg draftEdge={editor.draftEdgeManager.draftEdge} />
 		{/if}
 
 		{#each editor.fsaGraph.nodes as node (node.id)}

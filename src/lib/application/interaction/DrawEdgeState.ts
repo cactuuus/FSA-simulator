@@ -6,13 +6,13 @@ export class DrawEdgeState extends State {
 	#isDragging = false;
 
 	onExit() {
-		editor.clearDraftEdge();
+		editor.draftEdgeManager.clearDraftEdge();
 	}
 
 	handlePointerDown(ctx: EventContext): void {
 		if (ctx.node) {
 			editor.selectionManager.clearSelection();
-			editor.setDraftEdge(ctx.node, ctx.node);
+			editor.draftEdgeManager.setDraftEdge(ctx.node, ctx.node);
 			this.#isDragging = true;
 		}
 	}
@@ -20,21 +20,21 @@ export class DrawEdgeState extends State {
 	handlePointerMove(ctx: EventContext): void {
 		if (this.#isDragging) {
 			if (ctx.node) {
-				editor.updateDraftEdgeTarget(ctx.node);
+				editor.draftEdgeManager.updateDraftEdgeTarget(ctx.node);
 			} else {
-				editor.updateDraftEdgeTarget(ctx.pointerPos);
+				editor.draftEdgeManager.updateDraftEdgeTarget(ctx.pointerPos);
 			}
 		}
 	}
 
 	handlePointerUp(ctx: EventContext): void {
 		this.#isDragging = false;
-		if (ctx.node && editor.draftEdge) {
-			const newEdge = editor.commitDraftEdge(ctx.node);
+		if (ctx.node && editor.draftEdgeManager.draftEdge) {
+			const newEdge = editor.draftEdgeManager.commitDraftEdge(ctx.node);
 			if (newEdge) {
 				editor.selectionManager.selectItem(newEdge);
 			}
 		}
-		editor.clearDraftEdge();
+		editor.draftEdgeManager.clearDraftEdge();
 	}
 }

@@ -1,59 +1,28 @@
-import type { Point } from '$lib/geometry';
-import { Node, Edge, DraftEdge, FSAGraph } from '$lib/automata/models';
-import { StateManager, ViewportManager, SelectionManager } from '$lib/application/managers';
+import { FSAGraph } from '$lib/automata/models';
+import {
+	StateManager,
+	ViewportManager,
+	SelectionManager,
+	DraftEdgeManager
+} from '$lib/application/managers';
 
 class EditorManager {
-	#fsaGraph = new FSAGraph();
-	#stateManager: StateManager = new StateManager();
-	#viewportManager: ViewportManager = new ViewportManager();
-	readonly selectionManager: SelectionManager = new SelectionManager(this.#fsaGraph);
-	#draftEdge = $state<DraftEdge | null>(null);
-
-	setDraftEdge(source: Node, target: Node) {
-		const duplicateEdge = this.#fsaGraph.edgeAlreadyExists(source, target);
-		this.#draftEdge = new DraftEdge(source, target, duplicateEdge);
-	}
-
-	updateDraftEdgeTarget(newTarget: Point | Node) {
-		if (this.#draftEdge) {
-			let duplicateEdge = false;
-			if (newTarget instanceof Node) {
-				duplicateEdge = this.#fsaGraph.edgeAlreadyExists(this.#draftEdge.from, newTarget);
-			}
-			this.#draftEdge.updateTarget(newTarget, duplicateEdge);
-		}
-	}
-
-	commitDraftEdge(targetNode: Node): Edge | null {
-		if (!this.#draftEdge) {
-			throw new Error('No draft edge to commit');
-		}
-		if (this.#draftEdge.isDuplicate) {
-			console.error('Cannot commit to a duplicate edge');
-			return null;
-		}
-
-		return this.#fsaGraph.addEdge(this.#draftEdge.from, targetNode);
-	}
-
-	clearDraftEdge() {
-		this.#draftEdge = null;
-	}
-
-	get draftEdge(): DraftEdge | null {
-		return this.#draftEdge;
-	}
+	private _fsaGraph = new FSAGraph();
+	private _stateManager = new StateManager();
+	private _viewportManager = new ViewportManager();
+	readonly selectionManager = new SelectionManager(this._fsaGraph);
+	readonly draftEdgeManager = new DraftEdgeManager(this._fsaGraph);
 
 	get fsaGraph(): FSAGraph {
-		return this.#fsaGraph;
+		return this._fsaGraph;
 	}
 
 	get stateManager(): StateManager {
-		return this.#stateManager;
+		return this._stateManager;
 	}
 
 	get viewportManager(): ViewportManager {
-		return this.#viewportManager;
+		return this._viewportManager;
 	}
 }
 
