@@ -1,5 +1,6 @@
 import { FSAGraph } from '$lib/automata/models';
 import { EditorManager, ViewportManager } from '$lib/application/managers';
+import type { SerializedFSAGraph } from '$lib/automata/serialisation';
 
 type AppMode = 'editing' | 'simulating';
 
@@ -47,6 +48,14 @@ class AppManager {
 		a.click();
 
 		URL.revokeObjectURL(url);
+	}
+
+	async uploadGraph(file: File): Promise<void> {
+		const text = await file.text();
+		const json = JSON.parse(text) as SerializedFSAGraph;
+		this._fsaGraph.loadFromJSON(json);
+		// TODO -- possibly need to reset editor/simulation state here
+		this._currentFilename = file.name;
 	}
 }
 

@@ -45,4 +45,8 @@ export class TransitionSymbol implements Serializable<SerializedTransitionSymbol
 			push: this.push
 		};
 	}
+
+	static fromJSON(json: SerializedTransitionSymbol): TransitionSymbol {
+		return new TransitionSymbol(json.consume, json.push, json.pop);
+	}
 }

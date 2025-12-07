@@ -80,4 +80,18 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 			startNodeId: this.startNode ? this.startNode.id : null
 		};
 	}
+
+	loadFromJSON(json: SerializedFSAGraph): void {
+		this.nodesMap.clear();
+		this.edgesMap.clear();
+		json.nodes.forEach((nodeJson) => {
+			const node = Node.fromJSON(nodeJson);
+			this.nodesMap.set(node.id, node);
+		});
+		json.edges.forEach((edgeJson) => {
+			const edge = Edge.fromJSON(edgeJson, this.nodesMap);
+			this.edgesMap.set(edge.id, edge);
+		});
+		this.startNode = json.startNodeId ? (this.nodesMap.get(json.startNodeId) ?? null) : null;
+	}
 }

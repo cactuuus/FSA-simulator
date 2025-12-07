@@ -14,8 +14,8 @@ export class Node implements FSAItem, Serializable<SerializedNode> {
 	label = $state<string>('');
 	isAccepting = $state<boolean>(false);
 
-	constructor(pos: Point, label: string = '', isAccepting: boolean = false) {
-		this.id = crypto.randomUUID();
+	constructor(pos: Point, label: string = '', isAccepting: boolean = false, id?: string) {
+		this.id = id ?? crypto.randomUUID();
 		this._pos = pos;
 		this.label = label;
 		this.isAccepting = isAccepting;
@@ -41,5 +41,9 @@ export class Node implements FSAItem, Serializable<SerializedNode> {
 			label: this.label,
 			isAccepting: this.isAccepting
 		};
+	}
+
+	static fromJSON(json: SerializedNode): Node {
+		return new Node(json.pos, json.label, json.isAccepting, json.id);
 	}
 }

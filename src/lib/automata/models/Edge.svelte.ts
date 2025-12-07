@@ -98,4 +98,19 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 			loopbackAngle: this._loopbackAngle
 		};
 	}
+
+	static fromJSON(json: SerializedEdge, nodesMap: Map<string, Node>): Edge {
+		const fromNode = nodesMap.get(json.fromNodeId);
+		const toNode = nodesMap.get(json.toNodeId);
+		if (!fromNode || !toNode) {
+			throw new Error('Invalid node IDs in serialized edge');
+		}
+		const edge = new Edge(fromNode, toNode);
+		edge._transitionSymbols = json.transitionSymbols.map((tsJson) =>
+			TransitionSymbol.fromJSON(tsJson)
+		);
+		edge._controlOffset = json.controlOffset;
+		edge._loopbackAngle = json.loopbackAngle;
+		return edge;
+	}
 }
