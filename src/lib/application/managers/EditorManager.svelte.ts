@@ -9,12 +9,20 @@ import {
 } from '$lib/application/interaction';
 import { ViewportManager, SelectionManager, DraftEdgeManager } from '$lib/application/managers';
 
-class EditorManager {
-	private _fsaGraph = new FSAGraph();
-	private _viewportManager = new ViewportManager();
-	readonly selectionManager = new SelectionManager(this._fsaGraph);
-	readonly draftEdgeManager = new DraftEdgeManager(this._fsaGraph);
+export class EditorManager {
+	private _fsaGraph: FSAGraph;
+	private _viewportManager: ViewportManager;
+	readonly selectionManager: SelectionManager;
+	readonly draftEdgeManager: DraftEdgeManager;
 	private _currentState = $state.raw<State | null>(null);
+
+	constructor(fsaGraph: FSAGraph, viewportManager: ViewportManager) {
+		this._fsaGraph = fsaGraph;
+		this._viewportManager = viewportManager;
+		this.selectionManager = new SelectionManager(this._fsaGraph);
+		this.draftEdgeManager = new DraftEdgeManager(this._fsaGraph);
+		this.transitionTo(SelectState.NAME);
+	}
 
 	transitionTo(newState: string): void {
 		this._currentState?.onExit?.();
@@ -57,5 +65,3 @@ class EditorManager {
 		return this._currentState;
 	}
 }
-
-export const editor = new EditorManager();

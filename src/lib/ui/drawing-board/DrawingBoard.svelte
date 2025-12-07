@@ -6,8 +6,9 @@
 	import { Node, Edge } from '$lib/automata/models';
 	import type { EventContext } from '$lib/application/interaction';
 	import { ViewportManager } from '$lib/application/managers';
-	import { editor } from '$lib/stores/editor.svelte';
+	import type { EditorManager } from '$lib/application/managers/EditorManager.svelte';
 
+	const { editor }: { editor: EditorManager } = $props();
 	let svgElement: SVGSVGElement;
 
 	/**

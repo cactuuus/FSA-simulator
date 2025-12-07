@@ -6,7 +6,7 @@
 		DrawEdgeState,
 		PanningState
 	} from '$lib/application/interaction';
-	import { editor } from '$lib/stores/editor.svelte';
+	import { app } from '$lib/stores/app.svelte';
 	import { DrawingBoard, SelectedItemPanel } from '$lib/ui';
 	import { CirclePlus, Spline, Hand, MousePointer, type Icon as IconType } from '@lucide/svelte';
 
@@ -27,7 +27,7 @@
 	];
 
 	function setActive(state: string) {
-		editor.transitionTo(state);
+		app.editor.transitionTo(state);
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
@@ -48,10 +48,10 @@
 			setActive(tool.state);
 		} else if (e.key === 'Escape') {
 			e.preventDefault();
-			editor.selectionManager.clearSelection();
+			app.editor.selectionManager.clearSelection();
 		} else if (e.key === 'Delete') {
 			e.preventDefault();
-			editor.selectionManager.deleteSelectedItem();
+			app.editor.selectionManager.deleteSelectedItem();
 		}
 	}
 
@@ -75,7 +75,7 @@
 		</div>
 	{/if}
 
-	<DrawingBoard />
+	<DrawingBoard editor={app.editor} />
 
 	<ul
 		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow"
@@ -87,7 +87,7 @@
 					onclick={() => setActive(tool.state)}
 					aria-label={tool.kbShortcut}
 					class="btn relative btn-square btn-ghost btn-secondary {tool.state ===
-					editor.currentState?.name
+					app.editor.currentState?.name
 						? 'btn-active'
 						: ''}"
 				>
@@ -99,29 +99,31 @@
 	</ul>
 
 	<div class="absolute top-2 right-2">
-		<SelectedItemPanel item={editor.selectionManager.selectedItem} fsa={editor.fsaGraph} />
+		<SelectedItemPanel item={app.editor.selectionManager.selectedItem} fsa={app.editor.fsaGraph} />
 	</div>
 
 	<div
 		class="absolute bottom-2 left-2 flex h-8 items-center rounded-box bg-base-100/95 px-3 text-sm shadow"
 	>
-		<span>Nodes: {editor.fsaGraph.nodes.length} | Edges: {editor.fsaGraph.edges.length}</span>
+		<span
+			>Nodes: {app.editor.fsaGraph.nodes.length} | Edges: {app.editor.fsaGraph.edges.length}</span
+		>
 	</div>
 	<div
 		class="absolute right-2 bottom-2 flex h-8 items-center gap-0.5 rounded-box bg-base-100/95 px-3 text-sm shadow"
 	>
-		<span class="mx-1">{editor.viewportManager.prettyZoomLevel}</span>
+		<span class="mx-1">{app.editor.viewportManager.prettyZoomLevel}</span>
 
 		<button
 			class="btn btn-square text-xl btn-ghost btn-xs"
-			onclick={() => editor.viewportManager.adjustZoom(0.1)}
+			onclick={() => app.editor.viewportManager.adjustZoom(0.1)}
 			aria-label="Zoom In"
 		>
 			+
 		</button>
 		<button
 			class="btn btn-square text-xl btn-ghost btn-xs"
-			onclick={() => editor.viewportManager.adjustZoom(-0.1)}
+			onclick={() => app.editor.viewportManager.adjustZoom(-0.1)}
 			aria-label="Zoom Out"
 		>
 			-
