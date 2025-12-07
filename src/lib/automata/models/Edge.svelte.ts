@@ -1,11 +1,12 @@
 import { type Point, midPoint } from '$lib/geometry';
 import { Node, type FSAItem, type BaseEdge, TransitionSymbol } from '$lib/automata/models';
+import type { SerializedEdge, Serializable } from '$lib/automata/serialisation';
 
 /**
  * Represents a directed edge between two nodes in the FSA. It can have multiple transition
  * symbols associated with it, as well as curvature for visual representation.
  */
-export class Edge implements BaseEdge, FSAItem {
+export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	static readonly LOOPBACK_DEFAULT_CURVATURE = Math.PI / 2; // default position (angle) of loopback edges
 	static readonly LOOPBACK_SIZE = 40; // fixed offset for loopback size
 	static readonly LABEL_OFFSET = 40; // distance of the label from the arrow
@@ -84,6 +85,17 @@ export class Edge implements BaseEdge, FSAItem {
 		this._controlOffset = {
 			x: newPosition.x - this._midpoint.x,
 			y: newPosition.y - this._midpoint.y
+		};
+	}
+
+	toJSON(): SerializedEdge {
+		return {
+			id: this.id,
+			fromNodeId: this.from.id,
+			toNodeId: this.to.id,
+			transitionSymbols: this._transitionSymbols.map((ts) => ts.toJSON()),
+			controlOffset: this._controlOffset,
+			loopbackAngle: this._loopbackAngle
 		};
 	}
 }

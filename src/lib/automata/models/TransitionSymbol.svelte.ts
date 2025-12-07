@@ -1,8 +1,10 @@
+import type { SerializedTransitionSymbol, Serializable } from '$lib/automata/serialisation';
+
 /**
  * Defines the transition symbol for an edge in the FSA. It includes the input symbol to consume,
  * as well as optional stack operations (pop and push) for PDAs.
  */
-export class TransitionSymbol {
+export class TransitionSymbol implements Serializable<SerializedTransitionSymbol> {
 	static readonly EPSILON = 'ε';
 
 	consume = $state<string>(TransitionSymbol.EPSILON);
@@ -34,5 +36,13 @@ export class TransitionSymbol {
 			return `${this.consume}, ${popOperation} ⟶ ${pushOperation}`;
 		}
 		return `${this.consume}`;
+	}
+
+	toJSON(): SerializedTransitionSymbol {
+		return {
+			consume: this.consume,
+			pop: this.pop,
+			push: this.push
+		};
 	}
 }

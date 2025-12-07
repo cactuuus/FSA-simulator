@@ -1,12 +1,13 @@
 import type { Point } from '$lib/geometry';
 import { Node, Edge, type FSAItem } from '$lib/automata/models';
 import { SvelteMap } from 'svelte/reactivity';
+import type { SerializedFSAGraph, Serializable } from '$lib/automata/serialisation';
 
 /**
  * Overall representation of a finite state automaton (FSA) graph. It manages nodes and edges,
  * providing methods to add, update, and delete them.
  */
-export class FSAGraph {
+export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	readonly nodesMap = new SvelteMap<string, Node>();
 	readonly edgesMap = new SvelteMap<string, Edge>();
 	startNode = $state<Node | null>(null);
@@ -70,5 +71,13 @@ export class FSAGraph {
 
 	get edges(): Edge[] {
 		return Array.from(this.edgesMap.values());
+	}
+
+	toJSON(): SerializedFSAGraph {
+		return {
+			nodes: this.nodes.map((node) => node.toJSON()),
+			edges: this.edges.map((edge) => edge.toJSON()),
+			startNodeId: this.startNode ? this.startNode.id : null
+		};
 	}
 }

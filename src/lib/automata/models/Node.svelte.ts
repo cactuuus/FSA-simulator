@@ -1,11 +1,12 @@
 import type { Point } from '$lib/geometry';
 import type { FSAItem } from '$lib/automata/models';
+import type { SerializedNode, Serializable } from '$lib/automata/serialisation';
 
 /**
  * Represents a state in the finite state automaton (FSA). Each node has a position, label,
  * and acceptance status. Whether a node is starting or not is managed by the FSAGraph class.
  */
-export class Node implements FSAItem {
+export class Node implements FSAItem, Serializable<SerializedNode> {
 	static readonly RADIUS = 30;
 
 	readonly id: string;
@@ -30,5 +31,15 @@ export class Node implements FSAItem {
 
 	toggleAccepting(): void {
 		this.isAccepting = !this.isAccepting;
+	}
+
+	// about pos: I cannot figure out why but in this instance pos is not serializing correctly unless unpacked
+	toJSON(): SerializedNode {
+		return {
+			id: this.id,
+			pos: { x: this.pos.x, y: this.pos.y },
+			label: this.label,
+			isAccepting: this.isAccepting
+		};
 	}
 }
