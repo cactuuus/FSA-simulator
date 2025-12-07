@@ -57,7 +57,6 @@
 
 	let mounted = false;
 	onMount(() => {
-		setActive(SelectState.NAME);
 		window.addEventListener('keydown', handleKeyDown);
 		mounted = true;
 		return () => {
