@@ -70,29 +70,29 @@
 	function handlePointerDown(e: PointerEvent) {
 		// ignore non-left clicks (mouse) and secondary touch points (touch)
 		if (e.button !== 0 || !e.isPrimary) return;
-		editor.stateManager.currentState?.handlePointerDown(getEventContext(e));
+		editor.currentState?.handlePointerDown(getEventContext(e));
 	}
 
 	function handlePointerUp(e: PointerEvent) {
 		// ignore non-left clicks (mouse) and secondary touch points (touch)
 		if (e.button !== 0 || !e.isPrimary) return;
-		editor.stateManager.currentState?.handlePointerUp(getEventContext(e));
+		editor.currentState?.handlePointerUp(getEventContext(e));
 	}
 
 	function handlePointerMove(e: PointerEvent) {
-		editor.stateManager.currentState?.handlePointerMove(getEventContext(e));
+		editor.currentState?.handlePointerMove(getEventContext(e));
 	}
 
 	function handlePointerOver(e: PointerEvent) {
-		editor.stateManager.currentState?.handlePointerOver(getEventContext(e));
+		editor.currentState?.handlePointerOver(getEventContext(e));
 	}
 
 	function handlePointerOut(e: PointerEvent) {
-		editor.stateManager.currentState?.handlePointerOut(getEventContext(e));
+		editor.currentState?.handlePointerOut(getEventContext(e));
 	}
 
 	function handleDoubleClick(e: MouseEvent) {
-		editor.stateManager.currentState?.handleDoubleClick(getEventContext(e));
+		editor.currentState?.handleDoubleClick(getEventContext(e));
 	}
 </script>
 
@@ -114,7 +114,7 @@
 		onpointerout={handlePointerOut}
 		onwheel={handleWheel}
 		ondblclick={handleDoubleClick}
-		data-state={editor.stateManager.currentState?.name}
+		data-state={editor.currentState?.name}
 	>
 		<!--
 			Note: SVG renders elements in the order they appear in the code.

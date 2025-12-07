@@ -27,7 +27,7 @@
 	];
 
 	function setActive(state: string) {
-		editor.stateManager.transitionTo(state);
+		editor.transitionTo(state);
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
@@ -77,7 +77,7 @@
 					onclick={() => setActive(tool.state)}
 					aria-label={tool.kbShortcut}
 					class="btn relative btn-square btn-ghost btn-secondary {tool.state ===
-					editor.stateManager.currentState?.name
+					editor.currentState?.name
 						? 'btn-active'
 						: ''}"
 				>
