@@ -1,4 +1,4 @@
-export type { EventContext } from './types';
+export type { EventContext, EditorContext } from './types';
 export { State } from './State';
 
 export { SelectState } from './SelectState';

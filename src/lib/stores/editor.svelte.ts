@@ -1,5 +1,6 @@
 import { FSAGraph } from '$lib/automata/models';
 import {
+	type EditorContext,
 	State,
 	PanningState,
 	SelectState,
@@ -23,15 +24,22 @@ class EditorManager {
 	}
 
 	private initialiseState(stateName: string): State {
+		const editorContext: EditorContext = {
+			fsaGraph: this._fsaGraph,
+			selectionManager: this.selectionManager,
+			draftEdgeManager: this.draftEdgeManager,
+			viewportManager: this._viewportManager
+		};
+
 		switch (stateName) {
 			case PanningState.NAME:
-				return new PanningState();
+				return new PanningState(editorContext);
 			case SelectState.NAME:
-				return new SelectState();
+				return new SelectState(editorContext);
 			case DrawEdgeState.NAME:
-				return new DrawEdgeState();
+				return new DrawEdgeState(editorContext);
 			case AddNodeState.NAME:
-				return new AddNodeState();
+				return new AddNodeState(editorContext);
 			default:
 				throw new Error(`Unknown state: ${stateName}`);
 		}

@@ -1,6 +1,5 @@
 import type { Point } from '$lib/geometry';
 import { State, type EventContext } from '$lib/application/interaction';
-import { editor } from '$lib/stores/editor.svelte';
 
 /**
  * State for panning the canvas by dragging.
@@ -22,7 +21,7 @@ export class PanningState extends State {
 		if (this.#isDragging) {
 			const dx = ctx.event.clientX - (this.#lastPointerPos?.x ?? 0);
 			const dy = ctx.event.clientY - (this.#lastPointerPos?.y ?? 0);
-			editor.viewportManager.panCanvas({ x: dx, y: dy });
+			this.editorCtx.viewportManager.panCanvas({ x: dx, y: dy });
 			this.#lastPointerPos = { x: ctx.event.clientX, y: ctx.event.clientY };
 		}
 	}

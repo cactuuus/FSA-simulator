@@ -1,12 +1,16 @@
-import type { EventContext } from '$lib/application/interaction';
+import type { EventContext, EditorContext } from '$lib/application/interaction';
 
 export abstract class State {
 	static readonly NAME: string;
+	protected editorCtx: EditorContext;
+
+	constructor(editorContext: EditorContext) {
+		this.editorCtx = editorContext;
+	}
+
 	get name(): string {
 		return (this.constructor as typeof State).NAME;
 	}
-
-	constructor() {}
 
 	onEnter(): void {}
 	onExit(): void {}

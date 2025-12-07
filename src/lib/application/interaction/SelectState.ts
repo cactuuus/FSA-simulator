@@ -1,6 +1,5 @@
 import { State, type EventContext } from '$lib/application/interaction';
 import { Node, Edge } from '$lib/automata/models';
-import { editor } from '$lib/stores/editor.svelte';
 import { angleTo } from '$lib/geometry';
 import { getControlPointFromLabelPos } from '$lib/utils';
 
@@ -10,12 +9,12 @@ export class SelectState extends State {
 
 	handlePointerDown(ctx: EventContext): void {
 		if (ctx.isCanvas) {
-			editor.selectionManager.clearSelection();
+			this.editorCtx.selectionManager.clearSelection();
 		} else if (ctx.node) {
-			editor.selectionManager.selectItem(ctx.node);
+			this.editorCtx.selectionManager.selectItem(ctx.node);
 			this.#isDragging = true;
 		} else if (ctx.edge) {
-			editor.selectionManager.selectItem(ctx.edge);
+			this.editorCtx.selectionManager.selectItem(ctx.edge);
 			this.#isDragging = true;
 		}
 	}
@@ -23,7 +22,7 @@ export class SelectState extends State {
 	handlePointerMove(ctx: EventContext): void {
 		if (!this.#isDragging) return;
 
-		const item = editor.selectionManager.selectedItem;
+		const item = this.editorCtx.selectionManager.selectedItem;
 		if (item instanceof Node) {
 			item.moveTo(ctx.pointerPos);
 		} else if (item instanceof Edge) {
