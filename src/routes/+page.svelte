@@ -85,10 +85,8 @@
 				<button
 					onclick={() => setActive(tool.state)}
 					aria-label={tool.kbShortcut}
-					class="btn relative btn-square btn-ghost btn-secondary {tool.state ===
-					app.editor.currentState?.name
-						? 'btn-active'
-						: ''}"
+					class="btn relative btn-square text-base-content btn-ghost btn-secondary
+						   {tool.state === app.editor.currentState?.name ? 'btn-active' : ''}"
 				>
 					<Icon class="h-5 w-5" />
 					<small class="absolute right-0 -bottom-0.5 align-sub">{tool.kbShortcut}</small>
