@@ -8,7 +8,7 @@
 	} from '$lib/application/interaction';
 	import { app } from '$lib/stores/app.svelte';
 	import { DrawingBoard, SelectedItemPanel } from '$lib/ui';
-	import { CirclePlus, Spline, Hand, MousePointer, type Icon as IconType } from '@lucide/svelte';
+	import { CirclePlus, Spline, Hand, MousePointer, Plus, Minus, type Icon as IconType } from '@lucide/svelte';
 
 	interface Tool {
 		state: string;
@@ -100,30 +100,30 @@
 	</div>
 
 	<div
-		class="absolute bottom-2 left-2 flex h-8 items-center rounded-box bg-base-100/95 px-3 text-sm shadow"
+		class="absolute bottom-2 left-2 flex h-10 items-center rounded-box bg-base-100/95 px-3 text-sm shadow"
 	>
-		<span
-			>Nodes: {app.editor.fsaGraph.nodes.length} | Edges: {app.editor.fsaGraph.edges.length}</span
-		>
+		<span>
+			Nodes: {app.editor.fsaGraph.nodes.length} | Edges: {app.editor.fsaGraph.edges.length}
+		</span>
 	</div>
 	<div
-		class="absolute right-2 bottom-2 flex h-8 items-center gap-0.5 rounded-box bg-base-100/95 px-3 text-sm shadow"
+		class="absolute right-2 bottom-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 text-sm shadow"
 	>
-		<span class="mx-1">{app.editor.viewportManager.prettyZoomLevel}</span>
+		<span class="mr-2">{app.editor.viewportManager.prettyZoomLevel}</span>
 
 		<button
-			class="btn btn-square text-xl btn-ghost btn-xs"
+			class="btn btn-square btn-ghost btn-sm"
 			onclick={() => app.editor.viewportManager.adjustZoom(0.1)}
 			aria-label="Zoom In"
 		>
-			+
+			<Plus class="h-4 w-4" />
 		</button>
 		<button
-			class="btn btn-square text-xl btn-ghost btn-xs"
+			class="btn btn-square btn-ghost btn-sm"
 			onclick={() => app.editor.viewportManager.adjustZoom(-0.1)}
 			aria-label="Zoom Out"
 		>
-			-
+			<Minus class="h-4 w-4" />
 		</button>
 	</div>
 </section>

@@ -13,7 +13,7 @@
 		bgClass: string;
 	}
 
-	const MESSAGE_DURATION = 8000; // duration in milliseconds
+	const MESSAGE_DURATION = 5000; // duration in milliseconds
 	const queue = $state<Notification[]>([]);
 
 	// maps each notification type to its corresponding toast configuration
@@ -68,10 +68,10 @@
 	});
 </script>
 
-<div class="toast toast-center w-sm max-w-11/12 opacity-95">
+<div class="toast toast-end w-sm max-w-11/12">
 	{#each queue as notification (notification.id)}
 		{@const config = toastConfigMap[notification.type]}
-		<div role="alert" class="relative alert overflow-hidden alert-soft">
+		<div role="alert" class="relative alert overflow-hidden alert-soft bg-base-100/95 shadow">
 			<config.icon class="h-6 w-6 shrink-0 {config.textClass}" />
 			<div>
 				<h3 class="font-bold {config.textClass}">{notification.type}</h3>
