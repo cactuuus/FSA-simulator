@@ -1,20 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		type NotificationEvent,
-		NotificationType,
-		notificationQueue,
-		addNotification,
-		removeNotification,
-		MESSAGE_DURATION
-	} from '$lib/utils/notifications.svelte';
+	import {type NotificationEvent, NotificationType } from '$lib/utils';
 	import { X, CircleCheck, CircleX, Info, CircleAlert, type Icon as IconType } from '@lucide/svelte';
+
+	interface Notification extends NotificationEvent {
+		id: string;
+	}
 
 	interface ToastConfig {
 		icon: typeof IconType;
 		textClass: string;
 		bgClass: string;
 	}
+
+	const MESSAGE_DURATION = 8000; // duration in milliseconds
+	const queue = $state<Notification[]>([]);
 
 	// maps each notification type to its corresponding toast configuration
 	// it includes some classes for styling, since doing it dynamically (aka class="text-{color}")
@@ -42,6 +42,21 @@
 		}
 	};
 
+	function removeNotification(id: string): void {
+		const index = queue.findIndex((notification) => notification.id === id);
+		if (index !== -1) {
+			queue.splice(index, 1);
+		}
+	}
+
+	function addNotification(type: NotificationType, message: string): void {
+		const id = crypto.randomUUID();
+		queue.push({ id, type, message });
+		setTimeout(() => {
+			removeNotification(id);
+		}, MESSAGE_DURATION);
+	}
+
 	onMount(() => {
 		const handleNotifyEvent = (event: CustomEvent<NotificationEvent>) => {
 			addNotification(event.detail.type, event.detail.message);
@@ -54,7 +69,7 @@
 </script>
 
 <div class="toast toast-center w-sm max-w-11/12 opacity-95">
-	{#each notificationQueue as notification (notification.id)}
+	{#each queue as notification (notification.id)}
 		{@const config = toastConfigMap[notification.type]}
 		<div role="alert" class="relative alert overflow-hidden alert-soft">
 			<config.icon class="h-6 w-6 shrink-0 {config.textClass}" />
@@ -72,7 +87,7 @@
 				<X class="h-4 w-4" />
 			</button>
 
-			<!-- progress bar showing auto-closing -->
+			<!-- progress bar showing time left until auto-closing -->
 			<div class="absolute bottom-0 left-0 h-1 w-full bg-transparent">
 				<div
 					class="h-full w-full {config.bgClass}"

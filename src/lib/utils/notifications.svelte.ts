@@ -1,10 +1,6 @@
-export interface NotificationEvent {
-	type: NotificationType;
-	message: string;
-}
+import { UserFacingError } from '$lib/utils';
 
-export interface Notification {
-	id: string;
+export interface NotificationEvent {
 	type: NotificationType;
 	message: string;
 }
@@ -16,20 +12,50 @@ export enum NotificationType {
 	Warning = 'Warning'
 }
 
-export const MESSAGE_DURATION = 3000;
-export const notificationQueue = $state<Notification[]>([]);
+function logError(error: unknown): void {
+	window.dispatchEvent(
+		new CustomEvent('notify', {
+			detail: {
+				type: NotificationType.Error,
+				message: 'An unexpected error occurred, see console for details.'
+			}
+		})
+	);
+	console.error(error);
+}
 
-export function removeNotification(id: string): void {
-	const index = notificationQueue.findIndex((notification) => notification.id === id);
-	if (index !== -1) {
-		notificationQueue.splice(index, 1);
+export function notifyError(error: unknown): void {
+	if (error instanceof UserFacingError) {
+		window.dispatchEvent(
+			new CustomEvent('notify', {
+				detail: { type: NotificationType.Error, message: error.message }
+			})
+		);
+	} else {
+		logError(error);
 	}
 }
 
-export function addNotification(type: NotificationType, message: string): void {
-	const id = crypto.randomUUID();
-	notificationQueue.push({ id, type, message });
-	setTimeout(() => {
-		removeNotification(id);
-	}, MESSAGE_DURATION);
+export function notifySuccess(message: string): void {
+	window.dispatchEvent(
+		new CustomEvent('notify', {
+			detail: { type: NotificationType.Success, message }
+		})
+	);
+}
+
+export function notifyInfo(message: string): void {
+	window.dispatchEvent(
+		new CustomEvent('notify', {
+			detail: { type: NotificationType.Info, message }
+		})
+	);
+}
+
+export function notifyWarning(message: string): void {
+	window.dispatchEvent(
+		new CustomEvent('notify', {
+			detail: { type: NotificationType.Warning, message }
+		})
+	);
 }
