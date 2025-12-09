@@ -126,3 +126,13 @@
 		color: var(--draft-edge-invalid-color);
 	}
 }
+
+/* Animation for toast progress bar */
+@keyframes expand {
+	from {
+		width: 0%;
+	}
+	to {
+		width: 100%;
+	}
+}

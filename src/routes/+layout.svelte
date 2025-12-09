@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { Actions } from '$lib/ui';
+	import { Actions, Toast } from '$lib/ui';
 
 	let { children } = $props();
 </script>
@@ -20,3 +20,4 @@
 <main class="relative h-[calc(100vh-3rem)] w-full">
 	{@render children?.()}
 </main>
+<Toast />
