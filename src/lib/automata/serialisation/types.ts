@@ -16,7 +16,6 @@ export interface SerializedNode {
 }
 
 export interface SerializedEdge {
-	id: string;
 	fromNodeId: string;
 	toNodeId: string;
 	transitionSymbols: SerializedTransitionSymbol[];

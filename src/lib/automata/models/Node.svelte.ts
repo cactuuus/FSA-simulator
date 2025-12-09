@@ -1,6 +1,7 @@
 import type { Point } from '$lib/geometry';
 import type { FSAItem } from '$lib/automata/models';
 import type { SerializedNode, Serializable } from '$lib/automata/serialisation';
+import { UserFacingError } from '$lib/utils';
 
 /**
  * Represents a state in the finite state automaton (FSA). Each node has a position, label,
@@ -44,6 +45,14 @@ export class Node implements FSAItem, Serializable<SerializedNode> {
 	}
 
 	static fromJSON(json: SerializedNode): Node {
+		if (!json.id) {
+			throw new UserFacingError(`Missing ID in serialized node`);
+		}
+		if (!json.pos || typeof json.pos.x !== 'number' || typeof json.pos.y !== 'number') {
+			throw new UserFacingError(
+				`Invalid position data in serialized node: { x: ${json.pos?.x}, y: ${json.pos?.y}}`
+			);
+		}
 		return new Node(json.pos, json.label, json.isAccepting, json.id);
 	}
 }

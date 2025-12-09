@@ -11,6 +11,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	readonly nodesMap = new SvelteMap<string, Node>();
 	readonly edgesMap = new SvelteMap<string, Edge>();
 	startNode = $state<Node | null>(null);
+	isEmpty: boolean = $derived(this.nodesMap.size === 0);
 
 	addNode(pos: Point): Node {
 		const label = `q${this.nodesMap.size}`;

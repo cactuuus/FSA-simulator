@@ -1,6 +1,7 @@
 import { FSAGraph } from '$lib/automata/models';
 import { EditorManager, ViewportManager } from '$lib/application/managers';
 import type { SerializedFSAGraph } from '$lib/automata/serialisation';
+import { notifyError, notifyWarning, UserFacingError } from '$lib/utils';
 
 type AppMode = 'editing' | 'simulating';
 
@@ -36,7 +37,15 @@ class AppManager {
 		return this._mode === 'simulating';
 	}
 
+	canDownloadGraph(): boolean {
+		return !this._fsaGraph.isEmpty;
+	}
+
 	async downloadGraph(): Promise<void> {
+		if (this._fsaGraph.isEmpty) {
+			throw new UserFacingError('Cannot download an empty graph.');
+		}
+
 		const filename = `${this.title}.fsa`;
 		const data = JSON.stringify(this._fsaGraph.toJSON());
 		const blob = new Blob([data], { type: 'application/json' });
@@ -53,9 +62,17 @@ class AppManager {
 	async uploadGraph(file: File): Promise<void> {
 		const text = await file.text();
 		const json = JSON.parse(text) as SerializedFSAGraph;
-		this._fsaGraph.loadFromJSON(json);
-		// TODO -- possibly need to reset editor/simulation state here
-		this.title = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+		const backup = this._fsaGraph.toJSON();
+
+		try {
+			this._fsaGraph.loadFromJSON(json);
+			this.title = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+			// TODO -- possibly need to reset editor/simulation state here
+		} catch (error: unknown) {
+			this._fsaGraph.loadFromJSON(backup);
+			notifyError(error);
+			notifyWarning('Invalid FSA data in the uploaded file, upload aborted.');
+		}
 	}
 }
 
