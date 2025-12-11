@@ -8,7 +8,15 @@
 	} from '$lib/application/interaction';
 	import { app } from '$lib/stores/app.svelte';
 	import { DrawingBoard, SelectedItemPanel } from '$lib/ui';
-	import { CirclePlus, Spline, Hand, MousePointer, Plus, Minus, type Icon as IconType } from '@lucide/svelte';
+	import {
+		CirclePlus,
+		Spline,
+		Hand,
+		MousePointer,
+		Plus,
+		Minus,
+		type Icon as IconType
+	} from '@lucide/svelte';
 
 	interface Tool {
 		state: string;
@@ -55,25 +63,15 @@
 		}
 	}
 
-	let mounted = false;
 	onMount(() => {
 		window.addEventListener('keydown', handleKeyDown);
-		mounted = true;
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
 	});
 </script>
 
-<section class="relative h-full w-full {mounted ? '' : 'pointer-events-none opacity-50'}">
-	<!-- Spinner to indicate the app is not mounted yet -->
-	{#if !mounted}
-		<div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
-			Loading...
-			<span class="loading loading-xl loading-spinner"></span>
-		</div>
-	{/if}
-
+<section class="relative h-full w-full">
 	<DrawingBoard editor={app.editor} />
 
 	<ul
