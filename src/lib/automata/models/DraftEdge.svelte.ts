@@ -41,7 +41,7 @@ export class DraftEdge implements BaseEdge {
 	}
 
 	get loopbackAngle(): number {
-		return Edge.LOOPBACK_DEFAULT_CURVATURE;
+		return Edge.LOOPBACK_DEFAULT_ANGLE;
 	}
 
 	get pointingAtNode(): boolean {
