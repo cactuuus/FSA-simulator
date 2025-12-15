@@ -114,6 +114,14 @@
 	}
 }
 
+/* prevent text selection on SVG text elements, to avoid interfering with drag operations */
+svg text {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
 .draft-edge {
 	fill: none;
 	color: var(--draft-edge-color);
