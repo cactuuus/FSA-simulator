@@ -11,10 +11,10 @@ export class SelectState extends State {
 		if (ctx.isCanvas) {
 			this.editorCtx.selectionManager.clearSelection();
 		} else if (ctx.node) {
-			this.editorCtx.selectionManager.selectItem(ctx.node);
+			this.editorCtx.selectionManager.select(ctx.node);
 			this.#isDragging = true;
 		} else if (ctx.edge) {
-			this.editorCtx.selectionManager.selectItem(ctx.edge);
+			this.editorCtx.selectionManager.select(ctx.edge);
 			this.#isDragging = true;
 		}
 	}
@@ -22,7 +22,7 @@ export class SelectState extends State {
 	handlePointerMove(ctx: EventContext): void {
 		if (!this.#isDragging) return;
 
-		const item = this.editorCtx.selectionManager.selectedItem;
+		const item = this.editorCtx.selectionManager.selectedItems[0]; // TODO: actually handle checking items selected
 		if (item instanceof Node) {
 			item.moveTo(ctx.pointerPos);
 		} else if (item instanceof Edge) {

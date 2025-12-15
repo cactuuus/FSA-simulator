@@ -59,7 +59,7 @@
 			app.editor.selectionManager.clearSelection();
 		} else if (e.key === 'Delete') {
 			e.preventDefault();
-			app.editor.selectionManager.deleteSelectedItem();
+			app.editor.selectionManager.deleteSelectedItems();
 		}
 	}
 
@@ -94,7 +94,7 @@
 	</ul>
 
 	<div class="absolute top-2 right-2">
-		<SelectedItemPanel item={app.editor.selectionManager.selectedItem} fsa={app.editor.fsaGraph} />
+		<SelectedItemPanel selectionManager={app.editor.selectionManager} />
 	</div>
 
 	<div

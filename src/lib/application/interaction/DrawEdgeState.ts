@@ -31,7 +31,7 @@ export class DrawEdgeState extends State {
 		if (ctx.node && this.editorCtx.draftEdgeManager.draftEdge) {
 			const newEdge = this.editorCtx.draftEdgeManager.commitDraftEdge(ctx.node);
 			if (newEdge) {
-				this.editorCtx.selectionManager.selectItem(newEdge);
+				this.editorCtx.selectionManager.select(newEdge);
 			}
 		}
 		this.editorCtx.draftEdgeManager.clearDraftEdge();

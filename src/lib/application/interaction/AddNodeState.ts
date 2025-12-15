@@ -6,7 +6,7 @@ export class AddNodeState extends State {
 	handlePointerDown(ctx: EventContext): void {
 		if (ctx.isCanvas) {
 			const newNode = this.editorCtx.fsaGraph.addNode(ctx.pointerPos);
-			this.editorCtx.selectionManager.selectItem(newNode);
+			this.editorCtx.selectionManager.select(newNode);
 		}
 	}
 }
