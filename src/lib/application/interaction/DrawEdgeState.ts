@@ -2,22 +2,27 @@ import { State, type EventContext } from '$lib/application/interaction';
 
 export class DrawEdgeState extends State {
 	static readonly NAME = 'draw-edge';
-	#isDragging = false;
 
 	onExit() {
 		this.editorCtx.draftEdgeManager.clearDraftEdge();
 	}
 
-	handlePointerDown(ctx: EventContext): void {
+	handleClick(ctx: EventContext): void {
 		if (ctx.node) {
-			this.editorCtx.selectionManager.clearSelection();
 			this.editorCtx.draftEdgeManager.setDraftEdge(ctx.node, ctx.node);
-			this.#isDragging = true;
+			this.editorCtx.draftEdgeManager.commitDraftEdge(ctx.node);
+		}
+		this.editorCtx.draftEdgeManager.clearDraftEdge();
+	}
+
+	handleDragStart(ctx: EventContext): void {
+		if (ctx.node && !this.editorCtx.draftEdgeManager.draftEdge) {
+			this.editorCtx.draftEdgeManager.setDraftEdge(ctx.node, ctx.node);
 		}
 	}
 
-	handlePointerMove(ctx: EventContext): void {
-		if (this.#isDragging) {
+	handleDragMove(ctx: EventContext): void {
+		if (this.editorCtx.draftEdgeManager.draftEdge) {
 			if (ctx.node) {
 				this.editorCtx.draftEdgeManager.updateDraftEdgeTarget(ctx.node);
 			} else {
@@ -26,8 +31,7 @@ export class DrawEdgeState extends State {
 		}
 	}
 
-	handlePointerUp(ctx: EventContext): void {
-		this.#isDragging = false;
+	handleDragEnd(ctx: EventContext): void {
 		if (ctx.node && this.editorCtx.draftEdgeManager.draftEdge) {
 			const newEdge = this.editorCtx.draftEdgeManager.commitDraftEdge(ctx.node);
 			if (newEdge) {

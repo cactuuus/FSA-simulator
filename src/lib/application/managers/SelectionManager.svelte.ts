@@ -46,6 +46,14 @@ export class SelectionManager {
 	}
 
 	/**
+	 * Removes the given item from the selection set. Doesn't check if it was actually selected or not.
+	 * @param item The item to be deselected.
+	 */
+	deselect(item: FSAItem): void {
+		this._selectedIds.delete(item.id);
+	}
+
+	/**
 	 * Checks wether the given item is currently selected.
 	 * @param item The item to check.
 	 * @returns True if selected, false otherwise.

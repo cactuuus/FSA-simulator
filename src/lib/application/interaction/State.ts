@@ -15,10 +15,9 @@ export abstract class State {
 	onEnter(): void {}
 	onExit(): void {}
 
-	handlePointerDown(_ctx: EventContext): void {}
-	handlePointerUp(_ctx: EventContext): void {}
-	handlePointerMove(_ctx: EventContext): void {}
-	handlePointerOver(_ctx: EventContext): void {}
-	handlePointerOut(_ctx: EventContext): void {}
 	handleDoubleClick(_ctx: EventContext): void {}
+	handleDragStart?(_ctx: EventContext): void {}
+	handleDragMove?(_ctx: EventContext): void {}
+	handleDragEnd?(_ctx: EventContext): void {}
+	handleClick?(_ctx: EventContext): void {}
 }

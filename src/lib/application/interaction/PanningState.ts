@@ -9,25 +9,20 @@ import { State, type EventContext } from '$lib/application/interaction';
  */
 export class PanningState extends State {
 	static readonly NAME = 'pan';
-	#isDragging = false;
 	#lastPointerPos: Point | null = null;
 
-	handlePointerDown(ctx: EventContext): void {
-		this.#isDragging = true;
+	handleDragStart(ctx: EventContext): void {
 		this.#lastPointerPos = { x: ctx.event.clientX, y: ctx.event.clientY };
 	}
 
-	handlePointerMove(ctx: EventContext): void {
-		if (this.#isDragging) {
-			const dx = ctx.event.clientX - (this.#lastPointerPos?.x ?? 0);
-			const dy = ctx.event.clientY - (this.#lastPointerPos?.y ?? 0);
-			this.editorCtx.viewportManager.panCanvas({ x: dx, y: dy });
-			this.#lastPointerPos = { x: ctx.event.clientX, y: ctx.event.clientY };
-		}
+	handleDragMove(ctx: EventContext): void {
+		const dx = ctx.event.clientX - (this.#lastPointerPos?.x ?? 0);
+		const dy = ctx.event.clientY - (this.#lastPointerPos?.y ?? 0);
+		this.editorCtx.viewportManager.panCanvas({ x: dx, y: dy });
+		this.#lastPointerPos = { x: ctx.event.clientX, y: ctx.event.clientY };
 	}
 
-	handlePointerUp(_ctx: EventContext): void {
-		this.#isDragging = false;
+	handleDragEnd(_ctx: EventContext): void {
 		this.#lastPointerPos = null;
 	}
 }

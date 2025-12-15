@@ -3,13 +3,14 @@
 	import EdgeSvg from './EdgeSvg.svelte';
 	import StartEdgeSvg from './StartEdgeSvg.svelte';
 	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
-	import { Node, Edge } from '$lib/automata/models';
-	import type { EventContext } from '$lib/application/interaction';
-	import { ViewportManager } from '$lib/application/managers';
+	import { SvgInputManager, ViewportManager } from '$lib/application/managers';
 	import type { EditorManager } from '$lib/application/managers/EditorManager.svelte';
+	import { onMount } from 'svelte';
 
 	const { editor }: { editor: EditorManager } = $props();
 	let svgElement: SVGSVGElement;
+	// svelte-ignore non_reactive_update - svgInputManager does not need to be reactive
+	let svgInputManager: SvgInputManager;
 
 	/**
 	 * Observe size changes of the SVG element to update viewport size.
@@ -29,31 +30,11 @@
 	});
 
 	/**
-	 * Get the context of a mouse event, including which FSA item (if any) was targeted.
-	 * The mouse position (mousePos) is given in SVG coordinates. The actual mouse position
-	 * (relative to the viewport) can be accessed via the event object ({ e.clientX, e.clientY }).
+	 * Initialize the SVG input manager on mount.
 	 */
-	function getEventContext(e: PointerEvent | MouseEvent): EventContext {
-		// Determine which FSA item (node/edge) was targeted, if any.
-		// Does not use e.target as it behaves differently between touch and mouse events.
-		const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-id]') ?? null;
-		const elementId = element?.getAttribute('data-id') ?? null;
-		const fsaItem = elementId ? editor.fsaGraph.getItemFromId(elementId) : null;
-
-		// Get pointer position in SVG coordinates
-		const pivot = svgElement.createSVGPoint();
-		pivot.x = e.clientX;
-		pivot.y = e.clientY;
-		const pointerPos = pivot.matrixTransform(svgElement.getScreenCTM()?.inverse());
-
-		return {
-			event: e,
-			node: fsaItem instanceof Node ? fsaItem : undefined,
-			edge: fsaItem instanceof Edge ? fsaItem : undefined,
-			isCanvas: fsaItem === null,
-			pointerPos: pointerPos
-		};
-	}
+	onMount(() => {
+		svgInputManager = new SvgInputManager(svgElement, editor.fsaGraph, () => editor.currentState);
+	});
 
 	/**
 	 * Handle mouse wheel events.
@@ -64,36 +45,8 @@
 			e.preventDefault();
 			const zoomAmount =
 				e.deltaY < 0 ? ViewportManager.CANVAS_ZOOM_STEP : -ViewportManager.CANVAS_ZOOM_STEP;
-			editor.viewportManager.adjustZoom(zoomAmount, getEventContext(e).pointerPos);
+			editor.viewportManager.adjustZoom(zoomAmount, svgInputManager.getPointerPosFromEvent(e));
 		}
-	}
-
-	function handlePointerDown(e: PointerEvent) {
-		// ignore non-left clicks (mouse) and secondary touch points (touch)
-		if (e.button !== 0 || !e.isPrimary) return;
-		editor.currentState?.handlePointerDown(getEventContext(e));
-	}
-
-	function handlePointerUp(e: PointerEvent) {
-		// ignore non-left clicks (mouse) and secondary touch points (touch)
-		if (e.button !== 0 || !e.isPrimary) return;
-		editor.currentState?.handlePointerUp(getEventContext(e));
-	}
-
-	function handlePointerMove(e: PointerEvent) {
-		editor.currentState?.handlePointerMove(getEventContext(e));
-	}
-
-	function handlePointerOver(e: PointerEvent) {
-		editor.currentState?.handlePointerOver(getEventContext(e));
-	}
-
-	function handlePointerOut(e: PointerEvent) {
-		editor.currentState?.handlePointerOut(getEventContext(e));
-	}
-
-	function handleDoubleClick(e: MouseEvent) {
-		editor.currentState?.handleDoubleClick(getEventContext(e));
 	}
 </script>
 
@@ -108,13 +61,11 @@
 		viewBox={editor.viewportManager.viewBox}
 		id="fsa-diagram"
 		class="h-full w-full touch-none"
-		onpointerdown={handlePointerDown}
-		onpointermove={handlePointerMove}
-		onpointerup={handlePointerUp}
-		onpointerover={handlePointerOver}
-		onpointerout={handlePointerOut}
+		onpointerdown={svgInputManager.handlePointerDown.bind(svgInputManager)}
+		onpointermove={svgInputManager.handlePointerMove.bind(svgInputManager)}
+		onpointerup={svgInputManager.handlePointerUp.bind(svgInputManager)}
+		ondblclick={svgInputManager.handleDoubleClick.bind(svgInputManager)}
 		onwheel={handleWheel}
-		ondblclick={handleDoubleClick}
 		data-state={editor.currentState?.name}
 	>
 		<!--
