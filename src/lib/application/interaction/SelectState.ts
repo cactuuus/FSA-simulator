@@ -6,47 +6,47 @@ import { getControlPointFromLabelPos } from '$lib/utils';
 export class SelectState extends State {
 	static readonly NAME = 'select';
 	private _startPointerPos: { x: number; y: number } | null = null;
-	private _makingSelectionBox: boolean = false;
 
-	/**
-	 * Toggles selection of the given item.
-	 * @param item The item to toggle selection for.
-	 * @param append Optional flag indicating whether to append to current selection or not, used
-	 * only when the item is to be selected.
-	 */
-	private toggleSelection(item: Node | Edge, append: boolean = false): void {
-		if (this.editorCtx.selectionManager.isSelected(item)) {
-			this.editorCtx.selectionManager.deselect(item);
-		} else {
-			this.editorCtx.selectionManager.select(item, append);
-		}
+	private resetState() {
+		this.editorCtx.selectionManager.destroySelectionArea();
+		this._startPointerPos = null;
+	}
+
+	onExit(): void {
+		this.resetState();
 	}
 
 	handleClick(ctx: EventContext): void {
-		this._makingSelectionBox = false;
-		this._startPointerPos = null;
+		this.resetState();
+
 		if (ctx.isCanvas) {
 			this.editorCtx.selectionManager.clearSelection();
 			return;
 		}
 		const item = ctx.node || ctx.edge;
 		if (item) {
-			this.toggleSelection(item, ctx.event.ctrlKey);
+			if (this.editorCtx.selectionManager.isSelected(item)) {
+				this.editorCtx.selectionManager.deselect(item);
+			} else {
+				this.editorCtx.selectionManager.select(item, ctx.event.ctrlKey);
+			}
 		}
 	}
 
 	handleDragStart(ctx: EventContext): void {
+		this.resetState();
 		this._startPointerPos = ctx.pointerPos;
 
 		// case 1: clicked on empty canvas
 		if (ctx.isCanvas) {
 			this.editorCtx.selectionManager.clearSelection();
-			this._makingSelectionBox = true;
-			// TODO: start drawing a selection box
+			this.editorCtx.selectionManager.updateSelectionArea(
+				this._startPointerPos,
+				this._startPointerPos
+			);
 			return;
 		}
 
-		this._makingSelectionBox = false;
 		const item = ctx.node || ctx.edge;
 		// case 2: clicked on a non selected item
 		if (item && !this.editorCtx.selectionManager.isSelected(item)) {
@@ -59,8 +59,8 @@ export class SelectState extends State {
 		if (!this._startPointerPos) return;
 
 		// case 1: we're making a selection box
-		if (this._makingSelectionBox) {
-			// update selection box drawing
+		if (this.editorCtx.selectionManager.selectionArea) {
+			this.editorCtx.selectionManager.updateSelectionArea(this._startPointerPos, ctx.pointerPos);
 			// possibly update selection in real time, as the box is dragged?
 			return;
 		}
@@ -93,6 +93,14 @@ export class SelectState extends State {
 			}
 		});
 		this._startPointerPos = ctx.pointerPos;
+	}
+
+	handleDragEnd(_ctx: EventContext): void {
+		if (this.editorCtx.selectionManager.selectionArea) {
+			// find elements inside the box's area
+			// select all of them
+		}
+		this.resetState();
 	}
 
 	handleDoubleClick(ctx: EventContext): void {

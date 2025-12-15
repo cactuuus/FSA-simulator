@@ -1,9 +1,11 @@
+import type { Point } from '$lib/geometry';
 import type { FSAGraph, FSAItem } from '$lib/automata/models';
 import { SvelteSet } from 'svelte/reactivity';
 
 export class SelectionManager {
-	private _selectedIds = new SvelteSet<string>();
 	private _fsaGraph: FSAGraph;
+	private _selectedIds = new SvelteSet<string>();
+	private _selectionArea = $state<{ start: Point; end: Point } | null>(null);
 
 	/**
 	 * List of currently VALID selected items. This is because since we store only IDs, it might be
@@ -77,5 +79,28 @@ export class SelectionManager {
 			this._fsaGraph.deleteItem(item);
 		});
 		this.clearSelection();
+	}
+
+	/**
+	 * Simple getter for selection area.
+	 */
+	get selectionArea(): { start: Point; end: Point } | null {
+		return this._selectionArea;
+	}
+
+	/**
+	 * Updates the selection area, given a start and end point.
+	 * @param start Start point
+	 * @param end End point.
+	 */
+	updateSelectionArea(start: Point, end: Point): void {
+		this._selectionArea = { start, end };
+	}
+
+	/**
+	 * Removes the selection area.
+	 */
+	destroySelectionArea(): void {
+		this._selectionArea = null;
 	}
 }

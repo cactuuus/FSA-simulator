@@ -3,6 +3,7 @@
 	import EdgeSvg from './EdgeSvg.svelte';
 	import StartEdgeSvg from './StartEdgeSvg.svelte';
 	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
+	import SelectionArea from './SelectionArea.svelte';
 	import { SvgInputManager, ViewportManager } from '$lib/application/managers';
 	import type { EditorManager } from '$lib/application/managers/EditorManager.svelte';
 	import { onMount } from 'svelte';
@@ -86,5 +87,10 @@
 		{#each editor.fsaGraph.nodes as node (node.id)}
 			<NodeSvg {node} isSelected={editor.selectionManager.isSelected(node)} />
 		{/each}
+
+		{#if editor.selectionManager.selectionArea}
+			{@const { start, end } = editor.selectionManager.selectionArea}
+			<SelectionArea {start} {end} />
+		{/if}
 	</svg>
 </section>
