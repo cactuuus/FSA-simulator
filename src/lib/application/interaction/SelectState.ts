@@ -68,8 +68,6 @@ export class SelectState extends State {
 		// case 2: we have a single edge selected
 		const selection = this.editorCtx.selectionManager.selectedItems;
 		if (selection.length === 1 && selection[0] instanceof Edge) {
-			console.log('edge clicked');
-
 			const edge = selection[0] as Edge;
 			if (edge.isLoopback()) {
 				const newAngle = angleTo(edge.sourcePoint, ctx.pointerPos);

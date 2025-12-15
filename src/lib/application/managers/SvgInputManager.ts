@@ -44,10 +44,8 @@ export class SvgInputManager {
 
 		// Determine if we should continue or start dragging
 		if (this._isDragging) {
-			console.log('drag move');
 			currentState.handleDragMove?.(ctx);
 		} else if (distance > SvgInputManager.DRAG_DISTANCE_THRESHOLD) {
-			console.log('drag start');
 			this._isDragging = true;
 			currentState.handleDragStart?.(this._pointerDownCtx);
 		}
@@ -60,10 +58,8 @@ export class SvgInputManager {
 
 		const ctx = this.createEventContext(e);
 		if (this._isDragging) {
-			console.log('drag end');
 			currentState.handleDragEnd?.(ctx);
 		} else {
-			console.log('click');
 			currentState.handleClick?.(this._pointerDownCtx);
 		}
 

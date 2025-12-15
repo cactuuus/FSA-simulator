@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {type NotificationEvent, NotificationType } from '$lib/utils';
-	import { X, CircleCheck, CircleX, Info, CircleAlert, type Icon as IconType } from '@lucide/svelte';
+	import { type NotificationEvent, NotificationType } from '$lib/utils';
+	import {
+		X,
+		CircleCheck,
+		CircleX,
+		Info,
+		CircleAlert,
+		type Icon as IconType
+	} from '@lucide/svelte';
 
 	interface Notification extends NotificationEvent {
 		id: string;
@@ -71,7 +78,7 @@
 <div class="toast toast-end w-sm max-w-11/12">
 	{#each queue as notification (notification.id)}
 		{@const config = toastConfigMap[notification.type]}
-		<div role="alert" class="relative alert overflow-hidden alert-soft bg-base-100/95 shadow">
+		<div role="alert" class="relative alert overflow-hidden bg-base-100/95 alert-soft shadow">
 			<config.icon class="h-6 w-6 shrink-0 {config.textClass}" />
 			<div>
 				<h3 class="font-bold {config.textClass}">{notification.type}</h3>
@@ -80,7 +87,6 @@
 			<button
 				class="btn btn-square self-start btn-ghost btn-xs"
 				onclick={() => {
-					console.log(`removing id:${notification.id}`);
 					removeNotification(notification.id);
 				}}
 			>

@@ -28,7 +28,6 @@ export class EditorManager {
 		this._currentState?.onExit?.();
 		this._currentState = this.initialiseState(newState);
 		this._currentState?.onEnter?.();
-		console.debug(`Transitioned to state: ${newState}`);
 	}
 
 	private initialiseState(stateName: string): State {
