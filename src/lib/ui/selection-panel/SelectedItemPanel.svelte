@@ -38,7 +38,7 @@
 				<Trash2 class="h-4 w-4" /> Delete Item
 			</button>
 		{:else}
-			<ul class="flex flex-col gap-4">
+			<ul class="flex max-h-120 flex-col gap-4 overflow-y-auto">
 				{#each items as item}
 					{#if item instanceof Node}
 						<li class="flex items-center justify-end gap-1">
