@@ -61,11 +61,25 @@
 	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition()}>
 		<Plus class="h-4 w-4" /> Add Symbol
 	</button>
-	<hr class="border-base-content/70" />
-	<div class="flex items-center justify-end gap-1">
-		<span class="flex-1">Connects</span>
-		<span class="badge font-bold badge-info">{edge.from.label}</span>
-		⟶
-		<span class="badge font-bold badge-info">{edge.to.label}</span>
-	</div>
+	{#if !edge.isLoopback()}
+		<hr class="border-base-content/70" />
+		<label for="forceStraight" class="flex items-center justify-between gap-2">
+			Force Straight
+			<input
+				id="forceStraight"
+				type="checkbox"
+				class="checkbox checkbox-success"
+				bind:checked={edge.forceStraight}
+			/>
+		</label>
+		<label for="forceAlignCenter" class="flex items-center justify-between gap-2">
+			Force Align To Center
+			<input
+				id="forceAlignCenter"
+				type="checkbox"
+				class="checkbox checkbox-success"
+				bind:checked={edge.forceAlignCenter}
+			/>
+		</label>
+	{/if}
 </div>

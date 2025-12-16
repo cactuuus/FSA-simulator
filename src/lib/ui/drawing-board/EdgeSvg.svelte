@@ -35,3 +35,13 @@
 	<!-- hidden, thicker path, used for easier selection -->
 	<path d={shape} class="select-area" />
 </g>
+<!--
+<path
+	d="M {edge.sourcePoint.x} {edge.sourcePoint.y} L {edge.controlPoint.x} {edge.controlPoint
+		.y} L {edge.targetPoint.x} {edge.targetPoint.y}"
+	fill="none"
+	stroke="pink"
+	stroke-width="2"
+	stroke-dasharray="5,5"
+/>
+<circle cx={edge.controlPoint.x} cy={edge.controlPoint.y} r="3" fill="red" /> -->
