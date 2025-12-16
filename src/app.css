@@ -1,16 +1,10 @@
 @import 'tailwindcss';
-@import './icons.css';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 @plugin 'daisyui';
 
 * {
 	box-sizing: border-box;
-}
-
-html,
-body {
-	height: 100%;
 }
 
 :root {
@@ -36,6 +30,13 @@ body {
 	--edge-arrow-size: 7px;
 	--edge-stroke-width: 2px;
 	--edge-selectable-area-width: 30px;
+
+	/* selection box styling */
+	--sel-area-color: var(--color-secondary);
+	--sel-area-stroke-width: 2px;
+	--sel-area-stroke-opacity: 0.5;
+	--sel-area-fill-opacity: 0.2;
+	--sel-area-corners-radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -67,7 +68,8 @@ body {
 		text-anchor: middle;
 	}
 
-	&.selectable:hover {
+	&.selectable:hover,
+	&.in-selection-area {
 		cursor: pointer;
 		filter: var(--drop-shadow);
 	}
@@ -103,7 +105,8 @@ body {
 		opacity: 0; /* invisible, used purely for easier selection */
 	}
 
-	&.selectable:hover {
+	&.selectable:hover,
+	&.in-selection-area {
 		cursor: pointer;
 		.edge-path {
 			filter: var(--drop-shadow);
@@ -120,6 +123,14 @@ body {
 	}
 }
 
+/* prevent text selection on SVG text elements, to avoid interfering with drag operations */
+svg text {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
 .draft-edge {
 	fill: none;
 	color: var(--draft-edge-color);
@@ -130,5 +141,24 @@ body {
 	&.invalid {
 		stroke: var(--draft-edge-invalid-color);
 		color: var(--draft-edge-invalid-color);
+	}
+}
+
+.selection-area {
+	stroke: var(--sel-area-color);
+	fill: var(--sel-area-color);
+	stroke-width: var(--sel-area-stroke-width);
+	stroke-opacity: var(--sel-area-stroke-opacity);
+	fill-opacity: var(--sel-area-fill-opacity);
+	rx: var(--sel-area-corners-radius);
+}
+
+/* Animation for toast progress bar */
+@keyframes expand {
+	from {
+		width: 0%;
+	}
+	to {
+		width: 100%;
 	}
 }
