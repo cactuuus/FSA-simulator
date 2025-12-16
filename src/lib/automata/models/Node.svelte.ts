@@ -30,6 +30,10 @@ export class Node implements FSAItem, Serializable<SerializedNode> {
 		this._pos = { x: this._pos.x + delta.x, y: this._pos.y + delta.y };
 	}
 
+	moveTo(newPos: Point): void {
+		this._pos = newPos;
+	}
+
 	toggleAccepting(): void {
 		this.isAccepting = !this.isAccepting;
 	}
