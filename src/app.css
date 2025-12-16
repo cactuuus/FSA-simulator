@@ -105,7 +105,8 @@
 		opacity: 0; /* invisible, used purely for easier selection */
 	}
 
-	&.selectable:hover {
+	&.selectable:hover,
+	&.in-selection-area {
 		cursor: pointer;
 		.edge-path {
 			filter: var(--drop-shadow);

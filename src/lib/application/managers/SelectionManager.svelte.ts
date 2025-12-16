@@ -1,5 +1,5 @@
 import type { Point } from '$lib/geometry';
-import { type FSAGraph, type FSAItem, Node } from '$lib/automata/models';
+import type { FSAGraph, FSAItem } from '$lib/automata/models';
 import { SvelteSet } from 'svelte/reactivity';
 
 export class SelectionManager {
@@ -110,9 +110,17 @@ export class SelectionManager {
 
 		this._inSelectionAreaIds.clear();
 		// Naive O(n) approach, potential for optimisation
-		this._fsaGraph.nodes.forEach((node: Node) => {
-			if (node.pos.x >= xMin && node.pos.x <= xMax && node.pos.y >= yMin && node.pos.y <= yMax) {
+		this._fsaGraph.nodes.forEach((node) => {
+			const pos = node.pos;
+			if (pos.x >= xMin && pos.x <= xMax && pos.y >= yMin && pos.y <= yMax) {
 				this._inSelectionAreaIds.add(node.id);
+			}
+		});
+		// Naive O(n) approach, potential for optimisation
+		this._fsaGraph.edges.forEach((edge) => {
+			const pos = edge.controlPoint;
+			if (pos.x >= xMin && pos.x <= xMax && pos.y >= yMin && pos.y <= yMax) {
+				this._inSelectionAreaIds.add(edge.id);
 			}
 		});
 	}
@@ -134,6 +142,11 @@ export class SelectionManager {
 		return this._inSelectionAreaIds.has(item.id);
 	}
 
+	/**
+	 * Commits the current selection area to the selected items set.
+	 * @param append Flag indicating wether to append to current selection or not
+	 * (true = add to current selection, false = clear selection first, then select only items in selection area)
+	 */
 	commitSelectionArea(append: boolean = false): void {
 		if (!append) {
 			this.clearSelection();

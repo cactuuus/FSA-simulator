@@ -77,7 +77,11 @@
 		{/if}
 
 		{#each editor.fsaGraph.edges as edge (edge.id)}
-			<EdgeSvg {edge} isSelected={editor.selectionManager.isSelected(edge)} />
+			<EdgeSvg
+				{edge}
+				isSelected={editor.selectionManager.isSelected(edge)}
+				isInSelectionArea={editor.selectionManager.isInSelectionArea(edge)}
+			/>
 		{/each}
 
 		{#if editor.draftEdgeManager.draftEdge}

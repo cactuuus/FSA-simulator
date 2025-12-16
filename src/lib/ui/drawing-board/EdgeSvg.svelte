@@ -3,13 +3,21 @@
 	import { getRegularEdgePath, getEdgeLabelPosition } from '$lib/utils';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
-	const { edge, isSelected }: { edge: Edge; isSelected: boolean } = $props();
+	const {
+		edge,
+		isSelected,
+		isInSelectionArea
+	}: { edge: Edge; isSelected: boolean; isInSelectionArea: boolean } = $props();
 
 	const shape = $derived(getRegularEdgePath(edge));
 	const labelPosition = $derived(getEdgeLabelPosition(edge));
 </script>
 
-<g data-id={edge.id} class="edge selectable {isSelected ? 'selected' : ''}">
+<g
+	data-id={edge.id}
+	class="edge selectable {isSelected ? 'selected' : ''}
+		  {isInSelectionArea ? 'in-selection-area' : ''}"
+>
 	<defs>
 		<ArrowMarkerSvg id="arrow-{edge.id}" />
 	</defs>
