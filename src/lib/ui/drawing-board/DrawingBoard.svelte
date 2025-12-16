@@ -85,7 +85,11 @@
 		{/if}
 
 		{#each editor.fsaGraph.nodes as node (node.id)}
-			<NodeSvg {node} isSelected={editor.selectionManager.isSelected(node)} />
+			<NodeSvg
+				{node}
+				isSelected={editor.selectionManager.isSelected(node)}
+				isInSelectionArea={editor.selectionManager.isInSelectionArea(node)}
+			/>
 		{/each}
 
 		{#if editor.selectionManager.selectionArea}

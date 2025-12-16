@@ -39,7 +39,9 @@ export class SelectState extends State {
 
 		// case 1: clicked on empty canvas
 		if (ctx.isCanvas) {
-			this.editorCtx.selectionManager.clearSelection();
+			if (!ctx.event.ctrlKey) {
+				this.editorCtx.selectionManager.clearSelection();
+			}
 			this.editorCtx.selectionManager.updateSelectionArea(
 				this._startPointerPos,
 				this._startPointerPos
@@ -61,7 +63,6 @@ export class SelectState extends State {
 		// case 1: we're making a selection box
 		if (this.editorCtx.selectionManager.selectionArea) {
 			this.editorCtx.selectionManager.updateSelectionArea(this._startPointerPos, ctx.pointerPos);
-			// possibly update selection in real time, as the box is dragged?
 			return;
 		}
 
@@ -93,10 +94,9 @@ export class SelectState extends State {
 		this._startPointerPos = ctx.pointerPos;
 	}
 
-	handleDragEnd(_ctx: EventContext): void {
+	handleDragEnd(ctx: EventContext): void {
 		if (this.editorCtx.selectionManager.selectionArea) {
-			// find elements inside the box's area
-			// select all of them
+			this.editorCtx.selectionManager.commitSelectionArea(ctx.event.ctrlKey);
 		}
 		this.resetState();
 	}

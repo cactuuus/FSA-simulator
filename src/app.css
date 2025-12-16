@@ -68,7 +68,8 @@
 		text-anchor: middle;
 	}
 
-	&.selectable:hover {
+	&.selectable:hover,
+	&.in-selection-area {
 		cursor: pointer;
 		filter: var(--drop-shadow);
 	}

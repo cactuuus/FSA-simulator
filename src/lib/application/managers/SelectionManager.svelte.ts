@@ -1,11 +1,12 @@
 import type { Point } from '$lib/geometry';
-import type { FSAGraph, FSAItem } from '$lib/automata/models';
+import { type FSAGraph, type FSAItem, Node } from '$lib/automata/models';
 import { SvelteSet } from 'svelte/reactivity';
 
 export class SelectionManager {
 	private _fsaGraph: FSAGraph;
 	private _selectedIds = new SvelteSet<string>();
 	private _selectionArea = $state<{ start: Point; end: Point } | null>(null);
+	private _inSelectionAreaIds = new SvelteSet<string>();
 
 	/**
 	 * List of currently VALID selected items. This is because since we store only IDs, it might be
@@ -15,6 +16,12 @@ export class SelectionManager {
 	 */
 	selectedItems: FSAItem[] = $derived(
 		Array.from(this._selectedIds)
+			.map((id) => this._fsaGraph.getItemFromId(id))
+			.filter((item): item is FSAItem => item !== null)
+	);
+
+	inSelectionAreaItems: FSAItem[] = $derived(
+		Array.from(this._inSelectionAreaIds)
 			.map((id) => this._fsaGraph.getItemFromId(id))
 			.filter((item): item is FSAItem => item !== null)
 	);
@@ -95,6 +102,19 @@ export class SelectionManager {
 	 */
 	updateSelectionArea(start: Point, end: Point): void {
 		this._selectionArea = { start, end };
+
+		const xMin = Math.min(start.x, end.x);
+		const xMax = Math.max(start.x, end.x);
+		const yMin = Math.min(start.y, end.y);
+		const yMax = Math.max(start.y, end.y);
+
+		this._inSelectionAreaIds.clear();
+		// Naive O(n) approach, potential for optimisation
+		this._fsaGraph.nodes.forEach((node: Node) => {
+			if (node.pos.x >= xMin && node.pos.x <= xMax && node.pos.y >= yMin && node.pos.y <= yMax) {
+				this._inSelectionAreaIds.add(node.id);
+			}
+		});
 	}
 
 	/**
@@ -102,5 +122,25 @@ export class SelectionManager {
 	 */
 	destroySelectionArea(): void {
 		this._selectionArea = null;
+		this._inSelectionAreaIds.clear();
+	}
+
+	/**
+	 * Checks wether the given item is in the selection area.
+	 * @param item The item to check.
+	 * @returns True if in selection area, false otherwise.
+	 */
+	isInSelectionArea(item: FSAItem): boolean {
+		return this._inSelectionAreaIds.has(item.id);
+	}
+
+	commitSelectionArea(append: boolean = false): void {
+		if (!append) {
+			this.clearSelection();
+		}
+		this.inSelectionAreaItems.forEach((item) => {
+			this._selectedIds.add(item.id);
+		});
+		this.destroySelectionArea();
 	}
 }
