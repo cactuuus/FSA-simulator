@@ -42,15 +42,17 @@
 			</button>
 		{:else}
 			<ul class="flex max-h-120 flex-col gap-4 overflow-y-auto">
-				{#each items as item}
+				{#each items as item, index}
 					{#if item instanceof Node}
-						<li class="flex items-center justify-end gap-1">
-							<span class="flex-1">Node</span>
+						<li class="flex items-end justify-end gap-1">
+							<span class="font-semibold">[{index + 1}]</span>
+							<span class="mr-6 flex-1">Node</span>
 							<span class="badge font-bold badge-info">{item.label}</span>
 						</li>
 					{:else if item instanceof Edge}
-						<li class="flex items-center justify-end gap-1">
-							<span class="flex-1">Edge</span>
+						<li class="flex items-end justify-end gap-1">
+							<span class="font-semibold">[{index + 1}]</span>
+							<span class="mr-6 flex-1">Edge</span>
 							<span class="badge font-bold badge-info">{item.from.label}</span>
 							⟶
 							<span class="badge font-bold badge-info">{item.to.label}</span>
