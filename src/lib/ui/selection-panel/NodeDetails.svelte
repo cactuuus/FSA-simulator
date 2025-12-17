@@ -19,7 +19,7 @@
 		<input
 			id="isAccepting"
 			type="checkbox"
-			class="checkbox checkbox-success"
+			class="checkbox checkbox-sm checkbox-success"
 			bind:checked={node.isAccepting}
 		/>
 	</label>
@@ -28,7 +28,7 @@
 		<input
 			id="isStarting"
 			type="checkbox"
-			class="checkbox checkbox-success"
+			class="checkbox checkbox-sm checkbox-success"
 			checked={fsa.startNode?.id === node.id}
 			onchange={(event) => {
 				const checked = event.currentTarget.checked;

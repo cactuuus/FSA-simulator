@@ -1,4 +1,4 @@
-import { type Point, midPoint } from '$lib/geometry';
+import { type Point, midPoint, vectorBetween } from '$lib/geometry';
 import { Node, type FSAItem, type BaseEdge, TransitionSymbol } from '$lib/automata/models';
 import type { SerializedEdge, Serializable } from '$lib/automata/serialisation';
 import { UserFacingError } from '$lib/utils';
@@ -22,6 +22,8 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	private _controlOffset = $state<Point | null>(null);
 	private _loopbackAngle = $state<number>(Edge.LOOPBACK_DEFAULT_ANGLE);
 	private _midpoint = $derived<Point>(midPoint(this.sourcePoint, this.targetPoint));
+	forceStraight = $state<boolean>(false);
+	forceAlignCenter = $state<boolean>(false);
 
 	constructor(from: Node, to: Node) {
 		this.from = from;
@@ -43,12 +45,14 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	}
 
 	get controlPoint(): Point {
-		if (this._controlOffset === null) {
+		if (this.isStraight()) {
 			return this._midpoint;
 		}
+		const offset = this.forceAlignCenter ? this.getOffestSnappedToCenter() : this._controlOffset;
+		// if the isStraight check is passed, it is guaranteed that controlOffsset is not null
 		return {
-			x: this._midpoint.x + this._controlOffset.x,
-			y: this._midpoint.y + this._controlOffset.y
+			x: this._midpoint.x + offset!.x,
+			y: this._midpoint.y + offset!.y
 		};
 	}
 
@@ -65,7 +69,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	}
 
 	isStraight(): boolean {
-		return this._controlOffset === null;
+		return this.forceStraight || this._controlOffset === null;
 	}
 
 	addTransition(): void {
@@ -89,13 +93,33 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		};
 	}
 
+	private getOffestSnappedToCenter(): Point {
+		if (this._controlOffset === null || this.isLoopback()) {
+			return { x: 0, y: 0 };
+		}
+		// get unit vector perpendicular to the edge (considering the edge as a stright line)
+		const edgeVector = vectorBetween(this.sourcePoint, this.targetPoint);
+		const perpVector = {
+			x: -edgeVector.y / edgeVector.magnitude,
+			y: edgeVector.x / edgeVector.magnitude
+		};
+		// distance along the perpendicular direction
+		const distance = this._controlOffset.x * perpVector.x + this._controlOffset.y * perpVector.y;
+		return {
+			x: distance * perpVector.x,
+			y: distance * perpVector.y
+		};
+	}
+
 	toJSON(): SerializedEdge {
 		return {
 			fromNodeId: this.from.id,
 			toNodeId: this.to.id,
 			transitionSymbols: this._transitionSymbols.map((ts) => ts.toJSON()),
 			controlOffset: this._controlOffset,
-			loopbackAngle: this._loopbackAngle
+			loopbackAngle: this._loopbackAngle,
+			forceStraight: this.forceStraight,
+			forceAlignCenter: this.forceAlignCenter
 		};
 	}
 
@@ -114,6 +138,8 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		);
 		edge._controlOffset = json.controlOffset ?? null;
 		edge._loopbackAngle = json.loopbackAngle ?? Edge.LOOPBACK_DEFAULT_ANGLE;
+		edge.forceStraight = json.forceStraight ?? false;
+		edge.forceAlignCenter = json.forceAlignCenter ?? false;
 		return edge;
 	}
 }

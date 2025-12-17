@@ -3,7 +3,16 @@
 @plugin '@tailwindcss/typography';
 @plugin 'daisyui';
 
+@font-face {
+	font-family: 'Ubuntu Mono';
+	font-style: normal;
+	font-weight: 100;
+	font-display: swap;
+	src: url('./fonts/Ubuntu_Mono/UbuntuMono-Regular.ttf') format('truetype');
+}
+
 * {
+	font-family: 'Ubuntu Mono', monospace;
 	box-sizing: border-box;
 }
 
@@ -12,11 +21,11 @@
 	--board-bg-color: oklch(98% 0 0);
 	--draw-color: black;
 	--selected-color: limegreen;
-	--hover-shadow: rgba(0, 0, 0, 0.705);
+	--hover-shadow: rgba(0, 0, 0, 0.7);
 	--drop-shadow: drop-shadow(0 0 5px var(--hover-shadow));
 
 	--text-size: 16px;
-	--text-style: monospace;
+	--text-style: 'Ubuntu Mono', monospace;
 	--text-stroke-width: 8px;
 	--text-weight: bold;
 
@@ -51,6 +60,11 @@
 	}
 }
 
+input[type='text'] {
+	height: auto;
+	padding: 0.15rem 0.5rem;
+}
+
 .node {
 	stroke: var(--draw-color);
 	fill: transparent;
@@ -71,7 +85,9 @@
 	&.selectable:hover,
 	&.in-selection-area {
 		cursor: pointer;
-		filter: var(--drop-shadow);
+		circle {
+			filter: var(--drop-shadow);
+		}
 	}
 
 	&.selected {

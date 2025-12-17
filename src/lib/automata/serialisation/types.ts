@@ -21,6 +21,8 @@ export interface SerializedEdge {
 	transitionSymbols: SerializedTransitionSymbol[];
 	controlOffset: Point | null;
 	loopbackAngle: number;
+	forceStraight: boolean;
+	forceAlignCenter: boolean;
 }
 
 export interface SerializedTransitionSymbol {

@@ -8,7 +8,7 @@
 
 <div class="flex flex-col gap-4">
 	<div class="flex flex-col gap-2">
-		<h2 class="font-semibold">Symbols</h2>
+		<h2>Symbols</h2>
 		<div class="flex max-h-120 flex-col gap-2 overflow-y-auto">
 			{#each edge.transitionSymbols as symbol, index}
 				<fieldset class="fieldset flex items-center gap-2 rounded-box bg-base-300 p-2">
@@ -61,11 +61,25 @@
 	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition()}>
 		<Plus class="h-4 w-4" /> Add Symbol
 	</button>
-	<hr class="border-base-content/70" />
-	<div class="flex items-center justify-end gap-1">
-		<span class="flex-1">Connects</span>
-		<span class="badge font-bold badge-info">{edge.from.label}</span>
-		⟶
-		<span class="badge font-bold badge-info">{edge.to.label}</span>
-	</div>
+	{#if !edge.isLoopback()}
+		<hr class="border-base-content/70" />
+		<label for="forceStraight" class="flex items-center justify-between gap-2">
+			Force Straight
+			<input
+				id="forceStraight"
+				type="checkbox"
+				class="checkbox checkbox-sm checkbox-success"
+				bind:checked={edge.forceStraight}
+			/>
+		</label>
+		<label for="forceAlignCenter" class="flex items-center justify-between gap-2">
+			Force Align To Center
+			<input
+				id="forceAlignCenter"
+				type="checkbox"
+				class="checkbox checkbox-sm checkbox-success"
+				bind:checked={edge.forceAlignCenter}
+			/>
+		</label>
+	{/if}
 </div>

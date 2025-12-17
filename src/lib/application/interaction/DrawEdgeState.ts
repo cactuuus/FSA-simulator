@@ -10,7 +10,10 @@ export class DrawEdgeState extends State {
 	handleClick(ctx: EventContext): void {
 		if (ctx.node) {
 			this.editorCtx.draftEdgeManager.setDraftEdge(ctx.node, ctx.node);
-			this.editorCtx.draftEdgeManager.commitDraftEdge(ctx.node);
+			const newEdge = this.editorCtx.draftEdgeManager.commitDraftEdge(ctx.node);
+			if (newEdge) {
+				this.editorCtx.selectionManager.select(newEdge);
+			}
 		}
 		this.editorCtx.draftEdgeManager.clearDraftEdge();
 	}

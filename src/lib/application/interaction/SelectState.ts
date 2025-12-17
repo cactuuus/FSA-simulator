@@ -104,6 +104,7 @@ export class SelectState extends State {
 	handleDoubleClick(ctx: EventContext): void {
 		if (ctx.node) {
 			ctx.node.toggleAccepting();
+			this.editorCtx.selectionManager.select(ctx.node);
 		}
 	}
 }

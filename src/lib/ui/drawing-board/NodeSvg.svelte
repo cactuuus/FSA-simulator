@@ -6,7 +6,6 @@
 		isSelected,
 		isInSelectionArea
 	}: { node: Node; isSelected: boolean; isInSelectionArea: boolean } = $props();
-	const textOffsetY = 5; // Vertical adjustment for text inside the node
 	const acceptingCircleDiff = -5; // Difference in radius for accepting state circle
 </script>
 
@@ -24,5 +23,5 @@
 			class="accepting-circle"
 		/>
 	{/if}
-	<text x={node.pos.x} y={node.pos.y + textOffsetY}>{node.label} </text>
+	<text dominant-baseline="middle" x={node.pos.x} y={node.pos.y}>{node.label} </text>
 </g>
