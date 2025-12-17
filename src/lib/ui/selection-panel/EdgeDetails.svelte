@@ -8,7 +8,7 @@
 
 <div class="flex flex-col gap-4">
 	<div class="flex flex-col gap-2">
-		<h2 class="font-semibold">Symbols</h2>
+		<h2>Symbols</h2>
 		<div class="flex max-h-120 flex-col gap-2 overflow-y-auto">
 			{#each edge.transitionSymbols as symbol, index}
 				<fieldset class="fieldset flex items-center gap-2 rounded-box bg-base-300 p-2">
@@ -68,7 +68,7 @@
 			<input
 				id="forceStraight"
 				type="checkbox"
-				class="checkbox checkbox-success"
+				class="checkbox checkbox-sm checkbox-success"
 				bind:checked={edge.forceStraight}
 			/>
 		</label>
@@ -77,7 +77,7 @@
 			<input
 				id="forceAlignCenter"
 				type="checkbox"
-				class="checkbox checkbox-success"
+				class="checkbox checkbox-sm checkbox-success"
 				bind:checked={edge.forceAlignCenter}
 			/>
 		</label>

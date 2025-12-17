@@ -28,7 +28,7 @@
 
 <header class="navbar flex min-h-12! items-end gap-6 bg-base-100">
 	<h1 id="banner" class="text-xl font-extrabold">FSA Simulator</h1>
-	<div id="page-actions" class="flex grow items-end px-4">
+	<div id="page-actions" class="flex grow items-end">
 		<Actions />
 	</div>
 </header>

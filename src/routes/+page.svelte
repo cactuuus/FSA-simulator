@@ -83,10 +83,10 @@
 				<button
 					onclick={() => setActive(tool.state)}
 					aria-label={tool.kbShortcut}
-					class="btn relative btn-square text-base-content btn-ghost btn-secondary
+					class="btn relative btn-square text-base-content btn-ghost btn-sm btn-secondary
 						   {tool.state === app.editor.currentState?.name ? 'btn-active' : ''}"
 				>
-					<Icon class="h-5 w-5" />
+					<Icon class="h-4 w-4" />
 					<small class="absolute right-0 -bottom-0.5 align-sub">{tool.kbShortcut}</small>
 				</button>
 			</li>
@@ -98,14 +98,14 @@
 	</div>
 
 	<div
-		class="absolute bottom-2 left-2 flex h-10 items-center rounded-box bg-base-100/95 px-3 text-sm shadow"
+		class="absolute bottom-2 left-2 flex h-10 items-center rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
 		<span>
 			Nodes: {app.editor.fsaGraph.nodes.length} | Edges: {app.editor.fsaGraph.edges.length}
 		</span>
 	</div>
 	<div
-		class="absolute right-2 bottom-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 text-sm shadow"
+		class="absolute right-2 bottom-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
 		<span class="mr-2">{app.editor.viewportManager.prettyZoomLevel}</span>
 

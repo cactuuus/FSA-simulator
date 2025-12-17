@@ -3,7 +3,7 @@
 	import { type FSAItem, Node, Edge } from '$lib/automata/models';
 	import NodeDetails from './NodeDetails.svelte';
 	import EdgeDetails from './EdgeDetails.svelte';
-	import { Trash2 } from '@lucide/svelte';
+	import { ChevronDown, Trash2 } from '@lucide/svelte';
 
 	const { selectionManager }: { selectionManager: SelectionManager } = $props();
 	const items: FSAItem[] = $derived(selectionManager.selectedItems);
@@ -12,17 +12,20 @@
 
 <details
 	bind:open={showContent}
-	class="collapse-arrow collapse rounded-box bg-base-100/95 shadow {showContent ? 'w-80' : 'w-12'}"
+	class="max-w-70 rounded-box bg-base-100/95 text-sm shadow duration-0"
 >
 	<summary
-		class="collapse-title flex min-h-12 items-baseline gap-4 border-b border-base-300 p-4 font-semibold"
+		class="flex h-10 flex-row-reverse items-center justify-between gap-2 px-3 py-2 font-semibold"
 	>
-		{showContent ? 'Selected' : ''}
+		<ChevronDown
+			class="h-4 w-4 transition-transform duration-300 {showContent ? 'rotate-180' : 'rotate-0'}"
+		/>
+		<span>Selection</span>
 	</summary>
 
-	<div class="collapse-content p-4">
+	<div class=" border-t border-base-300 px-3 py-2">
 		{#if items.length === 0}
-			<p class="text-center text-sm text-base-content/70">Nothing selected</p>
+			<p class="text-center text-sm text-base-content/70">No item(s) selected</p>
 		{:else if items.length === 1}
 			{@const item = items[0]}
 			{#if item instanceof Node}
