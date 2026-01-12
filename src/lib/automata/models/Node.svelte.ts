@@ -1,5 +1,5 @@
 import type { Point } from '$lib/geometry';
-import type { FSAItem } from '$lib/automata/models';
+import type { FSAItem } from '$lib/automata/models/types';
 import type { SerializedNode, Serializable } from '$lib/automata/serialisation';
 import { UserFacingError } from '$lib/utils';
 

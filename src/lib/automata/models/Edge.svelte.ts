@@ -1,5 +1,7 @@
 import { type Point, midPoint, vectorBetween } from '$lib/geometry';
-import { Node, type FSAItem, type BaseEdge, TransitionSymbol } from '$lib/automata/models';
+import { Node } from '$lib/automata/models/Node.svelte';
+import { TransitionSymbol } from '$lib/automata/models/TransitionSymbol.svelte';
+import type { BaseEdge, FSAItem } from '$lib/automata/models/types';
 import type { SerializedEdge, Serializable } from '$lib/automata/serialisation';
 import { UserFacingError } from '$lib/utils';
 

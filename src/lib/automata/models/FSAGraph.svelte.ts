@@ -1,5 +1,7 @@
 import type { Point } from '$lib/geometry';
-import { Node, Edge, type FSAItem } from '$lib/automata/models';
+import { Node } from '$lib/automata/models/Node.svelte';
+import { Edge } from '$lib/automata/models/Edge.svelte';
+import type { FSAItem } from '$lib/automata/models/types';
 import { SvelteMap } from 'svelte/reactivity';
 import type { SerializedFSAGraph, Serializable } from '$lib/automata/serialisation';
 
