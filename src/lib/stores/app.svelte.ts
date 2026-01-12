@@ -10,7 +10,6 @@ class AppManager {
 	private _fsaGraph = new FSAGraph();
 	private _viewportManager = new ViewportManager();
 	private _mode = $state<AppMode>('editing');
-	title = $state<string>('Untitled');
 
 	// sub-managers
 	private _editorManager: EditorManager;
@@ -46,7 +45,7 @@ class AppManager {
 			throw new UserFacingError('Cannot download an empty graph.');
 		}
 
-		const filename = `${this.title}.fsa`;
+		const filename = `${this._fsaGraph.title}.fsa`;
 		const data = JSON.stringify(this._fsaGraph.toJSON());
 		const blob = new Blob([data], { type: 'application/json' });
 		const url = URL.createObjectURL(blob);
@@ -66,7 +65,6 @@ class AppManager {
 
 		try {
 			this._fsaGraph.loadFromJSON(json);
-			this.title = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
 			// TODO -- possibly need to reset editor/simulation state here
 		} catch (error: unknown) {
 			this._fsaGraph.loadFromJSON(backup);

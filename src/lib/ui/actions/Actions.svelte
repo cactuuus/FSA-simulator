@@ -23,13 +23,13 @@
 	async function handleFileUpload(files: FileList | null) {
 		try {
 			if (!files || files.length === 0) {
-				throw new UserFacingError('No file selected.')
+				throw new UserFacingError('No file selected.');
 			} else if (files.length > 1) {
-				throw new UserFacingError('Please select only one file.')
+				throw new UserFacingError('Please select only one file.');
 			}
 			const file = files[0];
 			if (!file.name.endsWith('.fsa')) {
-				throw new UserFacingError('Invalid file type, select a \'.fsa\' file.');
+				throw new UserFacingError("Invalid file type, select a '.fsa' file.");
 			}
 			await app.uploadGraph(file).catch((error: Error) => {
 				notifyError(error);
@@ -57,18 +57,18 @@
 				<Folder class="h-4 w-4" /> Open
 			</button>
 		</li>
-			{#if app.canDownloadGraph()}
-				<li>
-					<button onclick={downloadGraph}>
-						<Download class="h-4 w-4" /> Save to disk
-					</button>
-				</li>
-			{:else}
-				<li class="tooltip tooltip-bottom" data-tip="Cannot download an empty graph">
-					<button class="opacity-50 cursor-default bg-transparent w-full" disabled>
-						<Download class="h-4 w-4" /> Save to disk
-					</button>
-				</li>
-			{/if}
+		{#if app.canDownloadGraph()}
+			<li>
+				<button onclick={downloadGraph}>
+					<Download class="h-4 w-4" /> Save to disk
+				</button>
+			</li>
+		{:else}
+			<li class="tooltip tooltip-bottom" data-tip="Cannot download an empty graph">
+				<button class="w-full cursor-default bg-transparent opacity-50" disabled>
+					<Download class="h-4 w-4" /> Save to disk
+				</button>
+			</li>
+		{/if}
 	</ul>
 </div>

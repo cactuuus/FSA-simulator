@@ -32,6 +32,7 @@ export interface SerializedTransitionSymbol {
 }
 
 export interface SerializedFSAGraph {
+	title: string;
 	nodes: SerializedNode[];
 	edges: SerializedEdge[];
 	startNodeId: string | null;
