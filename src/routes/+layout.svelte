@@ -2,13 +2,47 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { Actions, Toast, TitleEditor } from '$lib/ui';
-	import { onMount } from 'svelte';
+	import { viewport, saveViewport, loadViewport } from '$lib/stores/viewport.svelte';
+	import { onMount, untrack } from 'svelte';
+	import { fsaGraph, loadWorkingGraph, saveWorkingGraph } from '$lib/stores/fsa.svelte';
 
 	let { children } = $props();
+	const DEBOUCE_DELAY = 10000; // milliseconds
 
 	let mounted = $state(false);
 	onMount(() => {
+		loadWorkingGraph();
+		loadViewport();
 		mounted = true;
+
+		// auto-save working graph changes
+		$effect(() => {
+			fsaGraph.toJSON(); // trigger reactivity to fsaGraph changes
+			const timeout = setTimeout(() => {
+				untrack(() => saveWorkingGraph());
+			}, DEBOUCE_DELAY);
+			return () => clearTimeout(timeout);
+		});
+
+		// auto-save viewport changes
+		$effect(() => {
+			viewport.toJson(); // trigger reactivity to viewport changes
+			const timeout = setTimeout(() => {
+				untrack(() => saveViewport());
+			}, DEBOUCE_DELAY);
+			return () => clearTimeout(timeout);
+		});
+
+		// save before navigating away (close, refresh, etc)
+		function handleBeforeUnload() {
+			saveWorkingGraph();
+			saveViewport();
+		}
+		window.addEventListener('beforeunload', handleBeforeUnload);
+
+		return () => {
+			window.removeEventListener('beforeunload', handleBeforeUnload);
+		};
 	});
 </script>
 

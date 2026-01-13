@@ -1,4 +1,3 @@
-import { FSAGraph } from '$lib/automata/models';
 import {
 	type EditorContext,
 	State,
@@ -7,20 +6,17 @@ import {
 	DrawEdgeState,
 	AddNodeState
 } from '$lib/application/interaction';
-import { ViewportManager, SelectionManager, DraftEdgeManager } from '$lib/application/managers';
+import { SelectionManager } from '$lib/application/managers/SelectionManager.svelte';
+import { DraftEdgeManager } from '$lib/application/managers/DraftEdgeManager.svelte';
 
 export class EditorManager {
-	private _fsaGraph: FSAGraph;
-	private _viewportManager: ViewportManager;
 	readonly selectionManager: SelectionManager;
 	readonly draftEdgeManager: DraftEdgeManager;
 	private _currentState = $state.raw<State | null>(null);
 
-	constructor(fsaGraph: FSAGraph, viewportManager: ViewportManager) {
-		this._fsaGraph = fsaGraph;
-		this._viewportManager = viewportManager;
-		this.selectionManager = new SelectionManager(this._fsaGraph);
-		this.draftEdgeManager = new DraftEdgeManager(this._fsaGraph);
+	constructor() {
+		this.selectionManager = new SelectionManager();
+		this.draftEdgeManager = new DraftEdgeManager();
 		this.transitionTo(SelectState.NAME);
 	}
 
@@ -32,10 +28,8 @@ export class EditorManager {
 
 	private initialiseState(stateName: string): State {
 		const editorContext: EditorContext = {
-			fsaGraph: this._fsaGraph,
 			selectionManager: this.selectionManager,
-			draftEdgeManager: this.draftEdgeManager,
-			viewportManager: this._viewportManager
+			draftEdgeManager: this.draftEdgeManager
 		};
 
 		switch (stateName) {
@@ -50,14 +44,6 @@ export class EditorManager {
 			default:
 				throw new Error(`Unknown state: ${stateName}`);
 		}
-	}
-
-	get fsaGraph(): FSAGraph {
-		return this._fsaGraph;
-	}
-
-	get viewportManager(): ViewportManager {
-		return this._viewportManager;
 	}
 
 	get currentState(): State | null {

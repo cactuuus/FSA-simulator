@@ -1,4 +1,5 @@
-import { State, type EventContext } from '$lib/application/interaction';
+import { State } from '$lib/application/interaction/State';
+import type { EventContext } from '$lib/application/interaction/types';
 import { Node, Edge } from '$lib/automata/models';
 import { angleTo } from '$lib/geometry';
 import { getControlPointFromLabelPos } from '$lib/utils';

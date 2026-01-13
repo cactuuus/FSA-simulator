@@ -4,8 +4,9 @@
 	import StartEdgeSvg from './StartEdgeSvg.svelte';
 	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
 	import SelectionArea from './SelectionArea.svelte';
-	import { SvgInputManager, ViewportManager } from '$lib/application/managers';
-	import type { EditorManager } from '$lib/application/managers/EditorManager.svelte';
+	import { fsaGraph } from '$lib/stores/fsa.svelte';
+	import { viewport, CANVAS_ZOOM_STEP } from '$lib/stores/viewport.svelte';
+	import { SvgInputManager, type EditorManager } from '$lib/application/managers';
 	import { onMount } from 'svelte';
 
 	const { editor }: { editor: EditorManager } = $props();
@@ -22,7 +23,7 @@
 		if (svgElement) {
 			const resizeObserver = new ResizeObserver((entries) => {
 				const { width, height } = entries[0].contentRect;
-				editor.viewportManager.canvasSize = { width, height };
+				viewport.canvasSize = { width, height };
 			});
 
 			resizeObserver.observe(svgElement);
@@ -34,7 +35,7 @@
 	 * Initialize the SVG input manager on mount.
 	 */
 	onMount(() => {
-		svgInputManager = new SvgInputManager(svgElement, editor.fsaGraph, () => editor.currentState);
+		svgInputManager = new SvgInputManager(svgElement, () => editor.currentState);
 	});
 
 	/**
@@ -44,9 +45,8 @@
 	function handleWheel(e: WheelEvent) {
 		if (e.ctrlKey) {
 			e.preventDefault();
-			const zoomAmount =
-				e.deltaY < 0 ? ViewportManager.CANVAS_ZOOM_STEP : -ViewportManager.CANVAS_ZOOM_STEP;
-			editor.viewportManager.adjustZoom(zoomAmount, svgInputManager.getPointerPosFromEvent(e));
+			const zoomAmount = e.deltaY < 0 ? CANVAS_ZOOM_STEP : -CANVAS_ZOOM_STEP;
+			viewport.adjustZoom(zoomAmount, svgInputManager.getPointerPosFromEvent(e));
 		}
 	}
 </script>
@@ -59,7 +59,7 @@
 	<!-- Ignore the above warnings. For now, the drawing board won't be keyboard accessible.-->
 	<svg
 		bind:this={svgElement}
-		viewBox={editor.viewportManager.viewBox}
+		viewBox={viewport.viewBox}
 		id="fsa-diagram"
 		class="h-full w-full touch-none"
 		onpointerdown={svgInputManager.handlePointerDown.bind(svgInputManager)}
@@ -72,11 +72,11 @@
 		<!--
 			Note: SVG renders elements in the order they appear in the code.
 		 -->
-		{#if editor.fsaGraph.startNode}
-			<StartEdgeSvg startingNode={editor.fsaGraph.startNode} />
+		{#if fsaGraph.startNode}
+			<StartEdgeSvg startingNode={fsaGraph.startNode} />
 		{/if}
 
-		{#each editor.fsaGraph.edges as edge (edge.id)}
+		{#each fsaGraph.edges as edge (edge.id)}
 			<EdgeSvg
 				{edge}
 				isSelected={editor.selectionManager.isSelected(edge)}
@@ -88,7 +88,7 @@
 			<DraftEdgeSvg draftEdge={editor.draftEdgeManager.draftEdge} />
 		{/if}
 
-		{#each editor.fsaGraph.nodes as node (node.id)}
+		{#each fsaGraph.nodes as node (node.id)}
 			<NodeSvg
 				{node}
 				isSelected={editor.selectionManager.isSelected(node)}

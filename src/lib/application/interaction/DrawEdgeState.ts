@@ -1,4 +1,5 @@
-import { State, type EventContext } from '$lib/application/interaction';
+import { State } from '$lib/application/interaction/State';
+import type { EventContext } from '$lib/application/interaction/types';
 
 export class DrawEdgeState extends State {
 	static readonly NAME = 'draw-edge';

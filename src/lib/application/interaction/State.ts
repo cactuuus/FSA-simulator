@@ -1,4 +1,4 @@
-import type { EventContext, EditorContext } from '$lib/application/interaction';
+import type { EventContext, EditorContext } from '$lib/application/interaction/types';
 
 export abstract class State {
 	static readonly NAME: string;

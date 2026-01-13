@@ -10,7 +10,7 @@ import type { SerializedFSAGraph, Serializable } from '$lib/automata/serialisati
  * providing methods to add, update, and delete them.
  */
 export class FSAGraph implements Serializable<SerializedFSAGraph> {
-	private _title = $state<string>('Untitled_FSA');
+	private _title = $state<string | null>();
 	readonly nodesMap = new SvelteMap<string, Node>();
 	readonly edgesMap = new SvelteMap<string, Edge>();
 	startNode = $state<Node | null>(null);
@@ -69,6 +69,13 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		}
 	}
 
+	clear(): void {
+		this._title = null;
+		this.nodesMap.clear();
+		this.edgesMap.clear();
+		this.startNode = null;
+	}
+
 	get nodes(): Node[] {
 		return Array.from(this.nodesMap.values());
 	}
@@ -78,7 +85,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	}
 
 	get title(): string {
-		return this._title;
+		return this._title ?? 'Untitled_FSA';
 	}
 
 	set title(newTitle: string) {
@@ -95,7 +102,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	}
 
 	loadFromJSON(json: SerializedFSAGraph): void {
-		this.title = json.title ?? 'Untitled_FSA';
+		this.title = json.title;
 		this.nodesMap.clear();
 		this.edgesMap.clear();
 		json.nodes.forEach((nodeJson) => {

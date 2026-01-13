@@ -1,4 +1,4 @@
-import type { Point, Vector } from '$lib/geometry';
+import type { Point, Vector } from '$lib/geometry/types';
 
 /**
  * Calculates the vector from one point to another.

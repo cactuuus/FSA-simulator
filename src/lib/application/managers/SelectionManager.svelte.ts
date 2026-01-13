@@ -1,9 +1,9 @@
-import type { Point } from '$lib/geometry';
-import type { FSAGraph, FSAItem } from '$lib/automata/models';
 import { SvelteSet } from 'svelte/reactivity';
+import { fsaGraph } from '$lib/stores/fsa.svelte';
+import type { Point } from '$lib/geometry';
+import type { FSAItem } from '$lib/automata/models';
 
 export class SelectionManager {
-	private _fsaGraph: FSAGraph;
 	private _selectedIds = new SvelteSet<string>();
 	private _selectionArea = $state<{ start: Point; end: Point } | null>(null);
 	private _inSelectionAreaIds = new SvelteSet<string>();
@@ -16,26 +16,15 @@ export class SelectionManager {
 	 */
 	selectedItems: FSAItem[] = $derived(
 		Array.from(this._selectedIds)
-			.map((id) => this._fsaGraph.getItemFromId(id))
+			.map((id) => fsaGraph.getItemFromId(id))
 			.filter((item): item is FSAItem => item !== null)
 	);
 
 	inSelectionAreaItems: FSAItem[] = $derived(
 		Array.from(this._inSelectionAreaIds)
-			.map((id) => this._fsaGraph.getItemFromId(id))
+			.map((id) => fsaGraph.getItemFromId(id))
 			.filter((item): item is FSAItem => item !== null)
 	);
-
-	constructor(fsaGraph: FSAGraph) {
-		this._fsaGraph = fsaGraph;
-	}
-
-	/**
-	 * Simple getter for the FSA graph used by the selection manager.
-	 */
-	get fsaGraph(): FSAGraph {
-		return this._fsaGraph;
-	}
 
 	/**
 	 * Add the given item(s) to the selection set.
@@ -83,7 +72,7 @@ export class SelectionManager {
 	 */
 	deleteSelectedItems(): void {
 		this.selectedItems.forEach((item: FSAItem) => {
-			this._fsaGraph.deleteItem(item);
+			fsaGraph.deleteItem(item);
 		});
 		this.clearSelection();
 	}
@@ -110,14 +99,14 @@ export class SelectionManager {
 
 		this._inSelectionAreaIds.clear();
 		// Naive O(n) approach, potential for optimisation
-		this._fsaGraph.nodes.forEach((node) => {
+		fsaGraph.nodes.forEach((node) => {
 			const pos = node.pos;
 			if (pos.x >= xMin && pos.x <= xMax && pos.y >= yMin && pos.y <= yMax) {
 				this._inSelectionAreaIds.add(node.id);
 			}
 		});
 		// Naive O(n) approach, potential for optimisation
-		this._fsaGraph.edges.forEach((edge) => {
+		fsaGraph.edges.forEach((edge) => {
 			const pos = edge.controlPoint;
 			if (pos.x >= xMin && pos.x <= xMax && pos.y >= yMin && pos.y <= yMax) {
 				this._inSelectionAreaIds.add(edge.id);

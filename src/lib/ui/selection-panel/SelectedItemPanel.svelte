@@ -29,7 +29,7 @@
 		{:else if items.length === 1}
 			{@const item = items[0]}
 			{#if item instanceof Node}
-				<NodeDetails node={item} fsa={selectionManager.fsaGraph} />
+				<NodeDetails node={item} />
 			{:else if item instanceof Edge}
 				<EdgeDetails edge={item} />
 			{/if}
