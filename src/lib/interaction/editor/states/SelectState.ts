@@ -1,15 +1,15 @@
-import { State } from '$lib/application/interaction/State';
-import type { EventContext } from '$lib/application/interaction/types';
+import { EditorState } from './EditorState';
+import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node, Edge } from '$lib/automata/models';
 import { angleTo } from '$lib/geometry';
 import { getControlPointFromLabelPos } from '$lib/utils';
 
-export class SelectState extends State {
+export class SelectState extends EditorState {
 	static readonly NAME = 'select';
 	private _startPointerPos: { x: number; y: number } | null = null;
 
 	private resetState() {
-		this.editorCtx.selectionManager.destroySelectionArea();
+		this.editorCtx.selection.destroyArea();
 		this._startPointerPos = null;
 	}
 
@@ -21,15 +21,15 @@ export class SelectState extends State {
 		this.resetState();
 
 		if (ctx.isCanvas) {
-			this.editorCtx.selectionManager.clearSelection();
+			this.editorCtx.selection.clear();
 			return;
 		}
 		const item = ctx.node || ctx.edge;
 		if (item) {
-			if (this.editorCtx.selectionManager.isSelected(item)) {
-				this.editorCtx.selectionManager.deselect(item);
+			if (this.editorCtx.selection.isSelected(item)) {
+				this.editorCtx.selection.deselect(item);
 			} else {
-				this.editorCtx.selectionManager.select(item, ctx.event.ctrlKey);
+				this.editorCtx.selection.select(item, ctx.event.ctrlKey);
 			}
 		}
 	}
@@ -41,19 +41,16 @@ export class SelectState extends State {
 		// case 1: clicked on empty canvas
 		if (ctx.isCanvas) {
 			if (!ctx.event.ctrlKey) {
-				this.editorCtx.selectionManager.clearSelection();
+				this.editorCtx.selection.clear();
 			}
-			this.editorCtx.selectionManager.updateSelectionArea(
-				this._startPointerPos,
-				this._startPointerPos
-			);
+			this.editorCtx.selection.updateArea(this._startPointerPos, this._startPointerPos);
 			return;
 		}
 
 		const item = ctx.node || ctx.edge;
 		// case 2: clicked on a non selected item
-		if (item && !this.editorCtx.selectionManager.isSelected(item)) {
-			this.editorCtx.selectionManager.select(item, ctx.event.ctrlKey);
+		if (item && !this.editorCtx.selection.isSelected(item)) {
+			this.editorCtx.selection.select(item, ctx.event.ctrlKey);
 		}
 	}
 
@@ -62,13 +59,13 @@ export class SelectState extends State {
 		if (!this._startPointerPos) return;
 
 		// case 1: we're making a selection box
-		if (this.editorCtx.selectionManager.selectionArea) {
-			this.editorCtx.selectionManager.updateSelectionArea(this._startPointerPos, ctx.pointerPos);
+		if (this.editorCtx.selection.area) {
+			this.editorCtx.selection.updateArea(this._startPointerPos, ctx.pointerPos);
 			return;
 		}
 
 		// case 2: we have a single edge selected
-		const selection = this.editorCtx.selectionManager.selectedItems;
+		const selection = this.editorCtx.selection.items;
 		if (selection.length === 1 && selection[0] instanceof Edge) {
 			const edge = selection[0] as Edge;
 			if (edge.isLoopback()) {
@@ -96,8 +93,8 @@ export class SelectState extends State {
 	}
 
 	handleDragEnd(ctx: EventContext): void {
-		if (this.editorCtx.selectionManager.selectionArea) {
-			this.editorCtx.selectionManager.commitSelectionArea(ctx.event.ctrlKey);
+		if (this.editorCtx.selection.area) {
+			this.editorCtx.selection.commitArea(ctx.event.ctrlKey);
 		}
 		this.resetState();
 	}
@@ -105,7 +102,7 @@ export class SelectState extends State {
 	handleDoubleClick(ctx: EventContext): void {
 		if (ctx.node) {
 			ctx.node.toggleAccepting();
-			this.editorCtx.selectionManager.select(ctx.node);
+			this.editorCtx.selection.select(ctx.node);
 		}
 	}
 }

@@ -1,6 +1,17 @@
 import { Node, Edge, type FSAGraph } from '$lib/automata/models';
 import type { Point } from '$lib/geometry/types';
-import type { State, EventContext } from '$lib/application/interaction';
+import type { State } from './State';
+
+/**
+ * Context for pointer events, providing information about the event and its target.
+ */
+export interface EventContext {
+	event: PointerEvent | MouseEvent;
+	node?: Node;
+	edge?: Edge;
+	isCanvas: boolean;
+	pointerPos: Point;
+}
 
 export class SvgInputHandler {
 	private _svgElement: SVGSVGElement;

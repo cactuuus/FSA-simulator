@@ -69,7 +69,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		}
 	}
 
-	clear(): void {
+	reset(): void {
 		this._title = null;
 		this.nodesMap.clear();
 		this.edgesMap.clear();

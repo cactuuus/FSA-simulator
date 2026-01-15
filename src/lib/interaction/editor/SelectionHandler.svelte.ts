@@ -1,28 +1,32 @@
 import { SvelteSet } from 'svelte/reactivity';
-import { fsaGraph } from '$lib/stores/fsa.svelte';
 import type { Point } from '$lib/geometry';
-import type { FSAItem } from '$lib/automata/models';
+import type { FSAItem, Edge, Node, FSAGraph } from '$lib/automata/models';
 
-export class SelectionManager {
+export class SelectionHandler {
+	private _fsaGraph: FSAGraph;
 	private _selectedIds = new SvelteSet<string>();
 	private _selectionArea = $state<{ start: Point; end: Point } | null>(null);
-	private _inSelectionAreaIds = new SvelteSet<string>();
+	private _idsWithinArea = new SvelteSet<string>();
+
+	constructor(fsaGraph: FSAGraph) {
+		this._fsaGraph = fsaGraph;
+	}
 
 	/**
 	 * List of currently VALID selected items. This is because since we store only IDs, it might be
 	 * possible that some selected IDs no longer exist in the graph.
 	 *
-	 * NOTE: this also means that any operation perfomed on _selectedIds triggers a O(n) update here.
+	 * NOTE: this also means that any operation perfomed on _ids triggers a O(n) update here.
 	 */
-	selectedItems: FSAItem[] = $derived(
+	items: FSAItem[] = $derived(
 		Array.from(this._selectedIds)
-			.map((id) => fsaGraph.getItemFromId(id))
+			.map((id) => this._fsaGraph.getItemFromId(id))
 			.filter((item): item is FSAItem => item !== null)
 	);
 
-	inSelectionAreaItems: FSAItem[] = $derived(
-		Array.from(this._inSelectionAreaIds)
-			.map((id) => fsaGraph.getItemFromId(id))
+	itemsInArea: FSAItem[] = $derived(
+		Array.from(this._idsWithinArea)
+			.map((id) => this._fsaGraph.getItemFromId(id))
 			.filter((item): item is FSAItem => item !== null)
 	);
 
@@ -34,7 +38,7 @@ export class SelectionManager {
 	 */
 	select(items: FSAItem | FSAItem[], append: boolean = false): void {
 		if (!append) {
-			this.clearSelection();
+			this.clear();
 		}
 		if (Array.isArray(items)) {
 			items.forEach((item) => this._selectedIds.add(item.id));
@@ -63,24 +67,24 @@ export class SelectionManager {
 	/**
 	 * Completely clears current selection.
 	 */
-	clearSelection(): void {
+	clear(): void {
 		this._selectedIds.clear();
 	}
 
 	/**
 	 * Deletes all selected items.
 	 */
-	deleteSelectedItems(): void {
-		this.selectedItems.forEach((item: FSAItem) => {
-			fsaGraph.deleteItem(item);
+	deleteAll(): void {
+		this.items.forEach((item: FSAItem) => {
+			this._fsaGraph.deleteItem(item);
 		});
-		this.clearSelection();
+		this.clear();
 	}
 
 	/**
 	 * Simple getter for selection area.
 	 */
-	get selectionArea(): { start: Point; end: Point } | null {
+	get area(): { start: Point; end: Point } | null {
 		return this._selectionArea;
 	}
 
@@ -89,7 +93,7 @@ export class SelectionManager {
 	 * @param start Start point
 	 * @param end End point.
 	 */
-	updateSelectionArea(start: Point, end: Point): void {
+	updateArea(start: Point, end: Point): void {
 		this._selectionArea = { start, end };
 
 		const xMin = Math.min(start.x, end.x);
@@ -97,19 +101,19 @@ export class SelectionManager {
 		const yMin = Math.min(start.y, end.y);
 		const yMax = Math.max(start.y, end.y);
 
-		this._inSelectionAreaIds.clear();
+		this._idsWithinArea.clear();
 		// Naive O(n) approach, potential for optimisation
-		fsaGraph.nodes.forEach((node) => {
+		this._fsaGraph.nodes.forEach((node: Node) => {
 			const pos = node.pos;
 			if (pos.x >= xMin && pos.x <= xMax && pos.y >= yMin && pos.y <= yMax) {
-				this._inSelectionAreaIds.add(node.id);
+				this._idsWithinArea.add(node.id);
 			}
 		});
 		// Naive O(n) approach, potential for optimisation
-		fsaGraph.edges.forEach((edge) => {
+		this._fsaGraph.edges.forEach((edge: Edge) => {
 			const pos = edge.controlPoint;
 			if (pos.x >= xMin && pos.x <= xMax && pos.y >= yMin && pos.y <= yMax) {
-				this._inSelectionAreaIds.add(edge.id);
+				this._idsWithinArea.add(edge.id);
 			}
 		});
 	}
@@ -117,9 +121,9 @@ export class SelectionManager {
 	/**
 	 * Removes the selection area.
 	 */
-	destroySelectionArea(): void {
+	destroyArea(): void {
 		this._selectionArea = null;
-		this._inSelectionAreaIds.clear();
+		this._idsWithinArea.clear();
 	}
 
 	/**
@@ -127,8 +131,8 @@ export class SelectionManager {
 	 * @param item The item to check.
 	 * @returns True if in selection area, false otherwise.
 	 */
-	isInSelectionArea(item: FSAItem): boolean {
-		return this._inSelectionAreaIds.has(item.id);
+	isInArea(item: FSAItem): boolean {
+		return this._idsWithinArea.has(item.id);
 	}
 
 	/**
@@ -136,13 +140,13 @@ export class SelectionManager {
 	 * @param append Flag indicating wether to append to current selection or not
 	 * (true = add to current selection, false = clear selection first, then select only items in selection area)
 	 */
-	commitSelectionArea(append: boolean = false): void {
+	commitArea(append: boolean = false): void {
 		if (!append) {
-			this.clearSelection();
+			this.clear();
 		}
-		this.inSelectionAreaItems.forEach((item) => {
+		this.itemsInArea.forEach((item) => {
 			this._selectedIds.add(item.id);
 		});
-		this.destroySelectionArea();
+		this.destroyArea();
 	}
 }

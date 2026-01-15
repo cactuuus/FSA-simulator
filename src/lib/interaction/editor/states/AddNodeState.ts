@@ -1,22 +1,21 @@
-import { State } from '$lib/application/interaction/State';
-import type { EventContext } from '$lib/application/interaction/types';
+import { EditorState } from './EditorState';
+import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node } from '$lib/automata/models';
-import { fsaGraph } from '$lib/stores/fsa.svelte';
 
-export class AddNodeState extends State {
+export class AddNodeState extends EditorState {
 	static readonly NAME = 'add-node';
 	private _node: Node | null = null;
 
 	handleClick(ctx: EventContext): void {
 		if (ctx.isCanvas) {
-			const newNode = fsaGraph.addNode(ctx.pointerPos);
-			this.editorCtx.selectionManager.select(newNode);
+			const newNode = this.editorCtx.fsaGraph.addNode(ctx.pointerPos);
+			this.editorCtx.selection.select(newNode);
 		}
 	}
 
 	handleDragStart(ctx: EventContext): void {
 		if (ctx.isCanvas) {
-			const newNode = fsaGraph.addNode(ctx.pointerPos);
+			const newNode = this.editorCtx.fsaGraph.addNode(ctx.pointerPos);
 			this._node = newNode;
 		}
 	}
@@ -29,7 +28,7 @@ export class AddNodeState extends State {
 
 	handleDragEnd(_ctx: EventContext): void {
 		if (this._node) {
-			this.editorCtx.selectionManager.select(this._node);
+			this.editorCtx.selection.select(this._node);
 		}
 		this._node = null;
 	}

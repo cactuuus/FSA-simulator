@@ -2,41 +2,39 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { Actions, Toast, TitleEditor } from '$lib/ui';
-	import { viewport, saveViewport, loadViewport } from '$lib/stores/viewport.svelte';
 	import { onMount, untrack } from 'svelte';
-	import { fsaGraph, loadWorkingGraph, saveWorkingGraph } from '$lib/stores/fsa.svelte';
+	import { app } from '$lib/stores/app.svelte';
 
 	let { children } = $props();
 	const DEBOUCE_DELAY = 10000; // milliseconds
 
 	let mounted = $state(false);
 	onMount(() => {
-		loadWorkingGraph();
-		loadViewport();
+		app.loadSession();
 		mounted = true;
 
 		// auto-save working graph changes
 		$effect(() => {
-			fsaGraph.toJSON(); // trigger reactivity to fsaGraph changes
+			// simple way to trigger reactivity on graph and viewport changes
+			app.fsaGraph.toJSON();
+			app.viewport.toJSON();
 			const timeout = setTimeout(() => {
-				untrack(() => saveWorkingGraph());
+				untrack(() => app.saveSession());
 			}, DEBOUCE_DELAY);
 			return () => clearTimeout(timeout);
 		});
 
 		// auto-save viewport changes
 		$effect(() => {
-			viewport.toJson(); // trigger reactivity to viewport changes
 			const timeout = setTimeout(() => {
-				untrack(() => saveViewport());
+				untrack(() => app.saveSession());
 			}, DEBOUCE_DELAY);
 			return () => clearTimeout(timeout);
 		});
 
 		// save before navigating away (close, refresh, etc)
 		function handleBeforeUnload() {
-			saveWorkingGraph();
-			saveViewport();
+			app.saveSession();
 		}
 		window.addEventListener('beforeunload', handleBeforeUnload);
 
@@ -62,7 +60,7 @@
 
 <header class="navbar flex min-h-12! items-end gap-6 bg-base-100">
 	<div id="banner" class="text-lg font-extrabold">
-		<TitleEditor />
+		<TitleEditor fsaGraph={app.fsaGraph} />
 	</div>
 	<div id="page-actions" class="flex grow items-end">
 		<Actions />

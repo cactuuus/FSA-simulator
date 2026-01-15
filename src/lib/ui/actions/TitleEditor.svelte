@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { fsaGraph } from '$lib/stores/fsa.svelte';
+	import type { FSAGraph } from '$lib/automata/models';
 	import { SquarePen } from '@lucide/svelte';
 
+	const { fsaGraph }: { fsaGraph: FSAGraph } = $props();
 	let modal: HTMLDialogElement;
 	let newTitle = $state<string>('');
 

@@ -4,13 +4,10 @@
 	import StartEdgeSvg from './StartEdgeSvg.svelte';
 	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
 	import SelectionArea from './SelectionArea.svelte';
-	import { fsaGraph } from '$lib/stores/fsa.svelte';
-	import { viewport } from '$lib/stores/viewport.svelte';
-	import { type EditorManager } from '$lib/application/managers';
+	import { app } from '$lib/stores/app.svelte';
 	import { SvgInputHandler } from '$lib/interaction';
 	import { onMount } from 'svelte';
 
-	const { editor }: { editor: EditorManager } = $props();
 	let svgElement: SVGSVGElement;
 	// svelte-ignore non_reactive_update - svgInputManager does not need to be reactive
 	let inputHandler: SvgInputHandler;
@@ -24,7 +21,7 @@
 		if (svgElement) {
 			const resizeObserver = new ResizeObserver((entries) => {
 				const { width, height } = entries[0].contentRect;
-				viewport.canvasSize = { width, height };
+				app.viewport.canvasSize = { width, height };
 			});
 
 			resizeObserver.observe(svgElement);
@@ -36,7 +33,7 @@
 	 * Initialize the SVG input handler on mount.
 	 */
 	onMount(() => {
-		inputHandler = new SvgInputHandler(svgElement, fsaGraph, () => editor.currentState);
+		inputHandler = new SvgInputHandler(svgElement, app.fsaGraph, () => app.editor.currentState);
 	});
 
 	/**
@@ -49,9 +46,9 @@
 			const towardsPoint = inputHandler.getPointerPosFromEvent(e);
 			const direction = e.deltaY < 0 ? 1 : -1;
 			if (direction > 0) {
-				viewport.zoomIn(towardsPoint);
+				app.viewport.zoomIn(towardsPoint);
 			} else {
-				viewport.zoomOut(towardsPoint);
+				app.viewport.zoomOut(towardsPoint);
 			}
 		}
 	}
@@ -65,7 +62,7 @@
 	<!-- Ignore the above warnings. For now, the drawing board won't be keyboard accessible.-->
 	<svg
 		bind:this={svgElement}
-		viewBox={viewport.viewBox}
+		viewBox={app.viewport.viewBox}
 		id="fsa-diagram"
 		class="h-full w-full touch-none"
 		onpointerdown={inputHandler.handlePointerDown.bind(inputHandler)}
@@ -73,37 +70,37 @@
 		onpointerup={inputHandler.handlePointerUp.bind(inputHandler)}
 		ondblclick={inputHandler.handleDoubleClick.bind(inputHandler)}
 		onwheel={handleWheel}
-		data-state={editor.currentState?.name}
+		data-state={app.editor.currentState?.name}
 	>
 		<!--
 			Note: SVG renders elements in the order they appear in the code.
 		 -->
-		{#if fsaGraph.startNode}
-			<StartEdgeSvg startingNode={fsaGraph.startNode} />
+		{#if app.fsaGraph.startNode}
+			<StartEdgeSvg startingNode={app.fsaGraph.startNode} />
 		{/if}
 
-		{#each fsaGraph.edges as edge (edge.id)}
+		{#each app.fsaGraph.edges as edge (edge.id)}
 			<EdgeSvg
 				{edge}
-				isSelected={editor.selectionManager.isSelected(edge)}
-				isInSelectionArea={editor.selectionManager.isInSelectionArea(edge)}
+				isSelected={app.editor.selection.isSelected(edge)}
+				isInSelectionArea={app.editor.selection.isInArea(edge)}
 			/>
 		{/each}
 
-		{#if editor.draftEdgeManager.draftEdge}
-			<DraftEdgeSvg draftEdge={editor.draftEdgeManager.draftEdge} />
+		{#if app.editor.draftEdge.draftEdge}
+			<DraftEdgeSvg draftEdge={app.editor.draftEdge.draftEdge} />
 		{/if}
 
-		{#each fsaGraph.nodes as node (node.id)}
+		{#each app.fsaGraph.nodes as node (node.id)}
 			<NodeSvg
 				{node}
-				isSelected={editor.selectionManager.isSelected(node)}
-				isInSelectionArea={editor.selectionManager.isInSelectionArea(node)}
+				isSelected={app.editor.selection.isSelected(node)}
+				isInSelectionArea={app.editor.selection.isInArea(node)}
 			/>
 		{/each}
 
-		{#if editor.selectionManager.selectionArea}
-			{@const { start, end } = editor.selectionManager.selectionArea}
+		{#if app.editor.selection.area}
+			{@const { start, end } = app.editor.selection.area}
 			<SelectionArea {start} {end} />
 		{/if}
 	</svg>

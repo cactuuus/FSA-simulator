@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { fsaGraph } from '$lib/stores/fsa.svelte';
-	import { Node } from '$lib/automata/models';
+	import { Node, type FSAGraph } from '$lib/automata/models';
 
-	const { node }: { node: Node } = $props();
+	const { node, fsaGraph }: { node: Node; fsaGraph: FSAGraph } = $props();
 </script>
 
 <div class="flex flex-col gap-4">

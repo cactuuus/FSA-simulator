@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { Folder, Download, ChevronDown, Loader, TriangleAlert } from '@lucide/svelte';
-	import {
-		uploadWorkingGraph,
-		downloadWorkingGraph,
-		clearWorkingGraph
-	} from '$lib/stores/fsa.svelte';
-	import { resetViewport } from '$lib/stores/viewport.svelte';
+	import { app } from '$lib/stores/app.svelte';
 	import { notifyError } from '$lib/utils/notifications.svelte';
 	import { UserFacingError } from '$lib/utils';
 
@@ -38,7 +33,7 @@
 			if (!file.name.endsWith('.fsa')) {
 				throw new UserFacingError("Invalid file type, select a '.fsa' file.");
 			}
-			await uploadWorkingGraph(file).catch((error: Error) => {
+			await app.uploadGraph(file).catch((error: Error) => {
 				notifyError(error);
 			});
 		} catch (error) {
@@ -50,7 +45,7 @@
 	 * Downloads the current graph to disk.
 	 */
 	async function downloadGraph() {
-		await downloadWorkingGraph().catch((error: Error) => {
+		await app.downloadGraph().catch((error: Error) => {
 			notifyError(error);
 		});
 	}
@@ -61,8 +56,7 @@
 	 */
 	async function confirmClearGraph(e: SubmitEvent) {
 		e.preventDefault();
-		clearWorkingGraph();
-		resetViewport();
+		app.resetSession();
 		confirmClearFsaModal.close();
 	}
 </script>

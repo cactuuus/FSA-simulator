@@ -1,20 +1,12 @@
-import type { EventContext, EditorContext } from '$lib/application/interaction/types';
+import type { EventContext } from './SvgInputHandler';
 
 export abstract class State {
 	static readonly NAME: string;
-	protected editorCtx: EditorContext;
-
-	constructor(editorContext: EditorContext) {
-		this.editorCtx = editorContext;
-	}
-
 	get name(): string {
 		return (this.constructor as typeof State).NAME;
 	}
-
 	onEnter(): void {}
 	onExit(): void {}
-
 	handleDoubleClick(_ctx: EventContext): void {}
 	handleDragStart?(_ctx: EventContext): void {}
 	handleDragMove?(_ctx: EventContext): void {}
