@@ -3,7 +3,7 @@ import { Node, Edge } from '$lib/automata/models';
 import type { Point } from '$lib/geometry/types';
 import type { State, EventContext } from '$lib/application/interaction';
 
-export class SvgInputManager {
+export class SvgInputHandler {
 	private _svgElement: SVGSVGElement;
 	private _getCurrentState: () => State | null;
 
@@ -43,7 +43,7 @@ export class SvgInputManager {
 		// Determine if we should continue or start dragging
 		if (this._isDragging) {
 			currentState.handleDragMove?.(ctx);
-		} else if (distance > SvgInputManager.DRAG_DISTANCE_THRESHOLD) {
+		} else if (distance > SvgInputHandler.DRAG_DISTANCE_THRESHOLD) {
 			this._isDragging = true;
 			currentState.handleDragStart?.(this._pointerDownCtx);
 		}

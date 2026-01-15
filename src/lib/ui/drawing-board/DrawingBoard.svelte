@@ -6,13 +6,14 @@
 	import SelectionArea from './SelectionArea.svelte';
 	import { fsaGraph } from '$lib/stores/fsa.svelte';
 	import { viewport, CANVAS_ZOOM_STEP } from '$lib/stores/viewport.svelte';
-	import { SvgInputManager, type EditorManager } from '$lib/application/managers';
+	import { type EditorManager } from '$lib/application/managers';
+	import { SvgInputHandler } from '$lib/interaction';
 	import { onMount } from 'svelte';
 
 	const { editor }: { editor: EditorManager } = $props();
 	let svgElement: SVGSVGElement;
 	// svelte-ignore non_reactive_update - svgInputManager does not need to be reactive
-	let svgInputManager: SvgInputManager;
+	let inputHandler: SvgInputHandler;
 
 	/**
 	 * Observe size changes of the SVG element to update viewport size.
@@ -32,10 +33,10 @@
 	});
 
 	/**
-	 * Initialize the SVG input manager on mount.
+	 * Initialize the SVG input handler on mount.
 	 */
 	onMount(() => {
-		svgInputManager = new SvgInputManager(svgElement, () => editor.currentState);
+		inputHandler = new SvgInputHandler(svgElement, () => editor.currentState);
 	});
 
 	/**
@@ -45,8 +46,13 @@
 	function handleWheel(e: WheelEvent) {
 		if (e.ctrlKey) {
 			e.preventDefault();
-			const zoomAmount = e.deltaY < 0 ? CANVAS_ZOOM_STEP : -CANVAS_ZOOM_STEP;
-			viewport.adjustZoom(zoomAmount, svgInputManager.getPointerPosFromEvent(e));
+			const towardsPoint = inputHandler.getPointerPosFromEvent(e);
+			const direction = e.deltaY < 0 ? 1 : -1;
+			if (direction > 0) {
+				viewport.zoomIn(towardsPoint);
+			} else {
+				viewport.zoomOut(towardsPoint);
+			}
 		}
 	}
 </script>
@@ -62,10 +68,10 @@
 		viewBox={viewport.viewBox}
 		id="fsa-diagram"
 		class="h-full w-full touch-none"
-		onpointerdown={svgInputManager.handlePointerDown.bind(svgInputManager)}
-		onpointermove={svgInputManager.handlePointerMove.bind(svgInputManager)}
-		onpointerup={svgInputManager.handlePointerUp.bind(svgInputManager)}
-		ondblclick={svgInputManager.handleDoubleClick.bind(svgInputManager)}
+		onpointerdown={inputHandler.handlePointerDown.bind(inputHandler)}
+		onpointermove={inputHandler.handlePointerMove.bind(inputHandler)}
+		onpointerup={inputHandler.handlePointerUp.bind(inputHandler)}
+		ondblclick={inputHandler.handleDoubleClick.bind(inputHandler)}
 		onwheel={handleWheel}
 		data-state={editor.currentState?.name}
 	>
