@@ -2,12 +2,27 @@ import { EditorState } from './EditorState';
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node, Edge } from '$lib/automata/models';
 import { angleTo } from '$lib/geometry';
-import { getControlPointFromLabelPos } from '$lib/utils';
+import { getControlPointFromLabelPos } from '$lib/utils/edgeUtils';
 
+/**
+ * State for selecting and manipulating nodes and edges in the FSA graph.
+ * By far the most complex state, handling selectiong of single and multiple items, selection box creation, movement of nodes (and by extension edges), adjustment of edge control points and loopback angles, and toggling accepting states.
+ *
+ * - Single click on empty canvas: clears selection.
+ * - Single click on node/edge: selects/deselects the item (with Ctrl to multi-select).
+ * - Double click on node: toggles its accepting state.
+ * - Dragging on empty canvas: creates a selection box to select multiple items. When drag ends, selects all items within the box (with Ctrl to multi-select).
+ * - Dragging on item: on start drag, if the item is not selected, selects the item first (with Ctrl to multi-select). Then, depending on the type and number of selected items:
+ *  	- Single selected edge: adjusts its control point or loopback angle based on cursor position.
+ * 		- One or more selected nodes: moves all selected nodes according to cursor movement.
+ */
 export class SelectState extends EditorState {
 	static readonly NAME = 'select';
 	private _startPointerPos: { x: number; y: number } | null = null;
 
+	/**
+	 * Resets internal state and destroys the selection box, if present.
+	 */
 	private resetState() {
 		this.editorCtx.selection.destroyArea();
 		this._startPointerPos = null;

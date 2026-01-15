@@ -7,13 +7,14 @@ import { notifyError, notifyWarning } from '$lib/utils/notifications.svelte';
 
 type AppMode = 'editing' | 'simulating';
 
-class AppManager {
-	// core state
+/**
+ * Main application manager, holding references to core components such as the FSA graph, viewport, editor and simulation manager. This is basically the representation of the whole application state.
+ * It also manages application-wide operations such as session management and FSA import/export.
+ */
+export class AppManager {
 	private _mode = $state<AppMode>('editing');
 	readonly fsaGraph: FSAGraph;
 	readonly viewport: Viewport;
-
-	// sub-managers
 	readonly editor: EditorManager;
 	// readonly simulationManager: SimulationManager;
 
@@ -24,16 +25,25 @@ class AppManager {
 		// this.simulationManager = new SimulationManager();
 	}
 
+	/**
+	 * Checks if the app is currently in editor mode.
+	 * @returns True if in editor mode, false otherwise.
+	 */
 	isEditing(): boolean {
 		return this._mode === 'editing';
 	}
 
+	/**
+	 * Checks if the app is currently in simulation mode.
+	 * @returns True if in simulation mode, false otherwise.
+	 */
 	isSimulating(): boolean {
 		return this._mode === 'simulating';
 	}
 
-	// graph import/export
-
+	/**
+	 * Downloads the current FSA graph as an '.fsa' file.
+	 */
 	async downloadGraph(): Promise<void> {
 		if (this.fsaGraph.isEmpty) {
 			throw new UserFacingError('Cannot download an empty graph.');
@@ -51,6 +61,10 @@ class AppManager {
 		URL.revokeObjectURL(url);
 	}
 
+	/**
+	 * Import an FSA graph from a given file.
+	 * @param file The file containing the FSA graph data.
+	 */
 	async uploadGraph(file: File): Promise<void> {
 		const text = await file.text();
 		const json = JSON.parse(text);
@@ -64,8 +78,9 @@ class AppManager {
 		}
 	}
 
-	// session management
-
+	/**
+	 * Saves the current session (FSA graph and viewport state) to localStorage.
+	 */
 	saveSession(): void {
 		if (!browser) return;
 		try {
@@ -76,14 +91,20 @@ class AppManager {
 		}
 	}
 
+	/**
+	 * Loads the session (FSA graph and viewport state) from localStorage.
+	 */
 	loadSession(): void {
 		if (!browser) return;
 		const savedGraph = localStorage.getItem('working-fsa');
 		const savedViewport = localStorage.getItem('viewport-state');
-		if (savedViewport) this.viewport.fromJSON(JSON.parse(savedViewport));
+		if (savedViewport) this.viewport.loadFromJSON(JSON.parse(savedViewport));
 		if (savedGraph) this.fsaGraph.loadFromJSON(JSON.parse(savedGraph));
 	}
 
+	/**
+	 * Resets the current session by clearing the FSA graph and viewport state. LocalStorage is then updated by saving the cleared state.
+	 */
 	resetSession(): void {
 		if (!browser) return;
 		this.fsaGraph.reset();

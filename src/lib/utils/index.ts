@@ -1,11 +1,4 @@
 export {
-	getRegularEdgePath,
-	getStartEdgePath,
-	getDraftEdgePath,
-	getEdgeLabelPosition,
-	getControlPointFromLabelPos
-} from './edgeUtils';
-export {
 	notifyError,
 	notifySuccess,
 	notifyInfo,

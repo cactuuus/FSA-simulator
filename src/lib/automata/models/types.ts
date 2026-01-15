@@ -12,7 +12,11 @@ export interface FSAItem {
  * edges for convenience when drawing them.
  */
 export interface BaseEdge {
+	/**
+	 * Indicates wether the edge connects a node to itself (aka source and target are the same).
+	 */
 	isLoopback(): boolean;
+
 	get sourcePoint(): Point;
 	get targetPoint(): Point;
 	get loopbackAngle(): number;

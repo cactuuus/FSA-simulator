@@ -26,19 +26,30 @@ export class Node implements FSAItem, Serializable<SerializedNode> {
 		return this._pos;
 	}
 
+	/**
+	 * Move the node by a given offset.
+	 * @param delta The change in position, given as a x and y offset.
+	 */
 	moveBy(delta: Point): void {
 		this._pos = { x: this._pos.x + delta.x, y: this._pos.y + delta.y };
 	}
 
+	/**
+	 * Move the node to a new position.
+	 * @param newPos The new position of the node.
+	 */
 	moveTo(newPos: Point): void {
 		this._pos = newPos;
 	}
 
+	/**
+	 * Toggle the accepting status of the node.
+	 */
 	toggleAccepting(): void {
 		this.isAccepting = !this.isAccepting;
 	}
 
-	// about pos: I cannot figure out why but in this instance pos is not serializing correctly unless unpacked
+	// about pos: I cannot figure out why but in this instance ( and other similar cases) pos is not serializing correctly unless manually unpacked. In Edge for example, the serializing the point controlOffset works fine. I think it might have something to do with controlOffset being nullable? So possibly some edge case in Svelte's reactivity system.
 	toJSON(): SerializedNode {
 		return {
 			id: this.id,

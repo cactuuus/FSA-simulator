@@ -1,5 +1,9 @@
 import type { Point } from '$lib/geometry/types';
 
+/**
+ * Manages the viewport (aka the portion of the area visible by the user) of the SVG element, including panning and zooming functionalities.
+ * Also provides serialization methods to save and restore viewport state.
+ */
 export class Viewport {
 	readonly ZOOM_STEP: number = 0.1;
 	readonly MIN_ZOOM: number = 0.5;
@@ -13,38 +17,59 @@ export class Viewport {
 		 ${this.canvasSize.width / this._zoomLevel} ${this.canvasSize.height / this._zoomLevel}`
 	);
 
-	get zoomLevel(): number {
-		return this._zoomLevel;
-	}
-
-	get prettyZoomLevel(): string {
-		return (this._zoomLevel * 100).toFixed(0) + '%';
-	}
-
 	get panOffset(): Point {
 		return this._panOffset;
 	}
 
-	// actions
+	get zoomLevel(): number {
+		return this._zoomLevel;
+	}
 
+	/**
+	 * Returns the zoom level as a pretty string (for example, "100%").
+	 */
+	get prettyZoomLevel(): string {
+		return (this._zoomLevel * 100).toFixed(0) + '%';
+	}
+
+	/**
+	 * Resets the viewport to the default pan and zoom values.
+	 */
 	reset(): void {
 		this._panOffset = { x: 0, y: 0 };
 		this._zoomLevel = 1;
 	}
 
+	/**
+	 * Pans the canvas by a given amount, adjusted for the current zoom level.
+	 * @param delta The amount to pan the canvas by, in term of x and y.
+	 */
 	panCanvas(delta: { x: number; y: number }): void {
 		this._panOffset.x -= delta.x / this._zoomLevel;
 		this._panOffset.y -= delta.y / this._zoomLevel;
 	}
 
+	/**
+	 * Zooms in on the canvas, optionally towards a specific point.
+	 * @param towardsPoint The point towards which to zoom in.
+	 */
 	zoomIn(towardsPoint?: Point): void {
 		this.adjustZoom(this.ZOOM_STEP, towardsPoint);
 	}
 
+	/**
+	 * Zooms in on the canvas, optionally towards a specific point.
+	 * @param towardsPoint The point towards which to zoom out.
+	 */
 	zoomOut(towardsPoint?: Point): void {
 		this.adjustZoom(-this.ZOOM_STEP, towardsPoint);
 	}
 
+	/**
+	 * Private method to adjust the zoom level, clamped between MIN_ZOOM and MAX_ZOOM.
+	 * @param difference The amount to adjust the zoom level by.
+	 * @param towardsPoint The point towards which to adjust the zoom. If not provided, defaults to the center of the canvas.
+	 */
 	private adjustZoom(difference: number, towardsPoint?: Point): void {
 		// Default to center of canvas if no towardsPoint provided
 		if (!towardsPoint) {
@@ -64,13 +89,19 @@ export class Viewport {
 		this._panOffset.y += yAdjustment;
 	}
 
-	// serialisation -- useful for maintaining state across sessions
-
+	/**
+	 * Serializes the current viewport state to a JSON object.
+	 * @returns A JSON object representing the current viewport state.
+	 */
 	toJSON(): { pan: Point; zoom: number } {
 		return { pan: { x: this._panOffset.x, y: this._panOffset.y }, zoom: this._zoomLevel };
 	}
 
-	fromJSON(json: { pan: Point; zoom: number }): void {
+	/**
+	 * Restores the viewport state from a JSON object.
+	 * @param json A JSON object representing the viewport state.
+	 */
+	loadFromJSON(json: { pan: Point; zoom: number }): void {
 		this._panOffset = json.pan;
 		this._zoomLevel = json.zoom;
 	}

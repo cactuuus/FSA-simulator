@@ -6,6 +6,7 @@ import type { DraftEdgeHandler } from '$lib/interaction/editor/DraftEdgeHandler.
 
 /**
  * Abstract base class for editor states, extending the generic State class.
+ * Each editor state has access to the editor context, which is the place where to include all core components needed by editor states.
  */
 export abstract class EditorState extends State {
 	protected editorCtx: EditorContext;
@@ -17,7 +18,7 @@ export abstract class EditorState extends State {
 }
 
 /**
- * Context for the editor, providing access to core components.
+ * Context for the editor, providing access to core components needed by editor states.
  */
 export interface EditorContext {
 	fsaGraph: FSAGraph;

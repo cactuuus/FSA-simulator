@@ -10,6 +10,9 @@ import { DraftEdgeHandler } from './DraftEdgeHandler.svelte';
 import type { FSAGraph } from '$lib/automata/models/FSAGraph.svelte';
 import type { Viewport } from '../Viewport.svelte';
 
+/**
+ * Representation of the 'editor' side of the application. It manages the editor states and generally holds references to all components needed for editing.
+ */
 export class EditorManager {
 	readonly fsaGraph: FSAGraph;
 	readonly viewport: Viewport;
@@ -25,12 +28,22 @@ export class EditorManager {
 		this.transitionTo(SelectState.NAME);
 	}
 
+	/**
+	 * Transitions the editor to a new state.
+	 * @param newState The name of the new state to transition to.
+	 */
 	transitionTo(newState: string): void {
 		this._currentState?.onExit?.();
 		this._currentState = this.initialiseState(newState);
 		this._currentState?.onEnter?.();
 	}
 
+	/**
+	 * Initializes a new editor state based on the provided state name.
+	 * Throws an error if the state name is unknown (shouldn't happen!).
+	 * @param stateName The name of the state to initialize.
+	 * @returns An instance of the corresponding EditorState.
+	 */
 	private initialiseState(stateName: string): EditorState {
 		const editorContext: EditorContext = {
 			fsaGraph: this.fsaGraph,

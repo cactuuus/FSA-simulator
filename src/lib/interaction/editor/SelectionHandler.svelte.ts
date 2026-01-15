@@ -2,6 +2,10 @@ import { SvelteSet } from 'svelte/reactivity';
 import type { Point } from '$lib/geometry';
 import type { FSAItem, Edge, Node, FSAGraph } from '$lib/automata/models';
 
+/**
+ * Handler for selection of items in the editor.
+ * Needed as selection itself can be complicated: this handles references to selected items, and handles logic for selection area as well.
+ */
 export class SelectionHandler {
 	private _fsaGraph: FSAGraph;
 	private _selectedIds = new SvelteSet<string>();
@@ -24,6 +28,11 @@ export class SelectionHandler {
 			.filter((item): item is FSAItem => item !== null)
 	);
 
+	/**
+	 * List of items currently in the selection area. Similar to `items` above, this filters out any invalid IDs.
+	 *
+	 * NOTE: this also means that any operation perfomed on _idsWithinArea triggers a O(n) update here.
+	 */
 	itemsInArea: FSAItem[] = $derived(
 		Array.from(this._idsWithinArea)
 			.map((id) => this._fsaGraph.getItemFromId(id))

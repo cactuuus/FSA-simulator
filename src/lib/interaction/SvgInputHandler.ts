@@ -13,6 +13,10 @@ export interface EventContext {
 	pointerPos: Point;
 }
 
+/**
+ * Handler for SVG input events.
+ * It translates raw pointer events from the SVG element into higher-level events. It also manages drag detection.
+ */
 export class SvgInputHandler {
 	private _svgElement: SVGSVGElement;
 	private _fsaGraph: FSAGraph;

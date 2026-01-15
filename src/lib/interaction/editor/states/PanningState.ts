@@ -7,6 +7,8 @@ import type { Point } from '$lib/geometry';
  * This state uses mouse position relative to the viewport to calculate panning deltas, instead of
  * using SVG coordinates produces gittering, as the latter produces gittering due to continuous
  * transformations between coordinate systems during panning.
+ *
+ * - Dragging (anywhere): pans the viewport according to pointer movement.
  */
 export class PanningState extends EditorState {
 	static readonly NAME = 'pan';
