@@ -5,7 +5,7 @@
 	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
 	import SelectionArea from './SelectionArea.svelte';
 	import { fsaGraph } from '$lib/stores/fsa.svelte';
-	import { viewport, CANVAS_ZOOM_STEP } from '$lib/stores/viewport.svelte';
+	import { viewport } from '$lib/stores/viewport.svelte';
 	import { type EditorManager } from '$lib/application/managers';
 	import { SvgInputHandler } from '$lib/interaction';
 	import { onMount } from 'svelte';
@@ -36,7 +36,7 @@
 	 * Initialize the SVG input handler on mount.
 	 */
 	onMount(() => {
-		inputHandler = new SvgInputHandler(svgElement, () => editor.currentState);
+		inputHandler = new SvgInputHandler(svgElement, fsaGraph, () => editor.currentState);
 	});
 
 	/**

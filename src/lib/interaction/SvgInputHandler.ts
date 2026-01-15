@@ -1,10 +1,10 @@
-import { fsaGraph } from '$lib/stores/fsa.svelte';
-import { Node, Edge } from '$lib/automata/models';
+import { Node, Edge, type FSAGraph } from '$lib/automata/models';
 import type { Point } from '$lib/geometry/types';
 import type { State, EventContext } from '$lib/application/interaction';
 
 export class SvgInputHandler {
 	private _svgElement: SVGSVGElement;
+	private _fsaGraph: FSAGraph;
 	private _getCurrentState: () => State | null;
 
 	private _pointerDownPos: Point | null = null;
@@ -13,8 +13,9 @@ export class SvgInputHandler {
 
 	private static readonly DRAG_DISTANCE_THRESHOLD = 20; // pixels
 
-	constructor(svgElement: SVGSVGElement, getCurrentState: () => State | null) {
+	constructor(svgElement: SVGSVGElement, fsaGraph: FSAGraph, getCurrentState: () => State | null) {
 		this._svgElement = svgElement;
+		this._fsaGraph = fsaGraph;
 		this._getCurrentState = getCurrentState;
 	}
 
@@ -93,7 +94,7 @@ export class SvgInputHandler {
 	private createEventContext(e: PointerEvent | MouseEvent): EventContext {
 		const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-id]');
 		const elementId = element?.getAttribute('data-id') ?? null;
-		const fsaItem = elementId ? fsaGraph.getItemFromId(elementId) : null;
+		const fsaItem = elementId ? this._fsaGraph.getItemFromId(elementId) : null;
 
 		return {
 			event: e,
