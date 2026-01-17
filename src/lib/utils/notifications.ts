@@ -1,10 +1,14 @@
-import { UserFacingError } from '$lib/utils';
-
+/**
+ * Representation of a notification event.
+ */
 export interface NotificationEvent {
 	type: NotificationType;
 	message: string;
 }
 
+/**
+ * Types of notifications that can be sent.
+ */
 export enum NotificationType {
 	Info = 'Info',
 	Success = 'Success',
@@ -12,30 +16,22 @@ export enum NotificationType {
 	Warning = 'Warning'
 }
 
-function logError(error: unknown): void {
+/**
+ * Notifies the user with an error message.
+ * @param message The error message to display.
+ */
+export function notifyError(message: string): void {
 	window.dispatchEvent(
 		new CustomEvent('notify', {
-			detail: {
-				type: NotificationType.Error,
-				message: 'An unexpected error occurred, see console for details.'
-			}
+			detail: { type: NotificationType.Error, message }
 		})
 	);
-	console.error(error);
 }
 
-export function notifyError(error: unknown): void {
-	if (error instanceof UserFacingError) {
-		window.dispatchEvent(
-			new CustomEvent('notify', {
-				detail: { type: NotificationType.Error, message: error.message }
-			})
-		);
-	} else {
-		logError(error);
-	}
-}
-
+/**
+ * Notifies the user with a success message.
+ * @param message The success message to display.
+ */
 export function notifySuccess(message: string): void {
 	window.dispatchEvent(
 		new CustomEvent('notify', {
@@ -44,6 +40,10 @@ export function notifySuccess(message: string): void {
 	);
 }
 
+/**
+ * Notifies the user with an info message.
+ * @param message The informational message to display.
+ */
 export function notifyInfo(message: string): void {
 	window.dispatchEvent(
 		new CustomEvent('notify', {
@@ -52,6 +52,10 @@ export function notifyInfo(message: string): void {
 	);
 }
 
+/**
+ * Notifies the user with a warning message.
+ * @param message The warning message to display.
+ */
 export function notifyWarning(message: string): void {
 	window.dispatchEvent(
 		new CustomEvent('notify', {

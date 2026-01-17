@@ -1,5 +1,7 @@
 import type { Point } from '$lib/geometry';
-import { type BaseEdge, Edge, Node } from '$lib/automata/models';
+import { Node } from '$lib/automata/models/Node.svelte';
+import { Edge } from '$lib/automata/models/Edge.svelte';
+import type { BaseEdge } from '$lib/automata/models/types';
 
 /**
  * Represents a temporary edge being drawn on the canvas. Used purely for visual feedback during
@@ -18,6 +20,11 @@ export class DraftEdge implements BaseEdge {
 		this._isDuplicate = isDuplicate;
 	}
 
+	/**
+	 * Updates the target of the draft edge.
+	 * @param to The new target, either a Point or a Node.
+	 * @param isDuplicate Indicates if an edge like this one is already present in the FSA.
+	 */
 	updateTarget(to: Point | Node, isDuplicate: boolean): void {
 		if (to instanceof Node) {
 			this._to = to;
@@ -27,6 +34,13 @@ export class DraftEdge implements BaseEdge {
 			this._pointingAtNode = false;
 		}
 		this._isDuplicate = isDuplicate;
+	}
+
+	isLoopback(): boolean {
+		if (this._to instanceof Node) {
+			return this.from.id === this._to.id;
+		}
+		return false;
 	}
 
 	get sourcePoint(): Point {
@@ -50,12 +64,5 @@ export class DraftEdge implements BaseEdge {
 
 	get isDuplicate(): boolean {
 		return this._isDuplicate;
-	}
-
-	isLoopback(): boolean {
-		if (this._to instanceof Node) {
-			return this.from.id === this._to.id;
-		}
-		return false;
 	}
 }

@@ -1,14 +1,20 @@
+import { EditorState } from './EditorState';
+import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node } from '$lib/automata/models';
-import { State, type EventContext } from '$lib/application/interaction';
 
-export class AddNodeState extends State {
+/**
+ * State for adding a new node to the FSA graph.
+ * - Single click on empty canvas: adds a new node at the clicked position and selects it.
+ * - Dragging on empty canvas: creates a new node. While dragging, moves the node with the cursor. On drag end, selects the node.
+ */
+export class AddNodeState extends EditorState {
 	static readonly NAME = 'add-node';
 	private _node: Node | null = null;
 
 	handleClick(ctx: EventContext): void {
 		if (ctx.isCanvas) {
 			const newNode = this.editorCtx.fsaGraph.addNode(ctx.pointerPos);
-			this.editorCtx.selectionManager.select(newNode);
+			this.editorCtx.selection.select(newNode);
 		}
 	}
 
@@ -27,7 +33,7 @@ export class AddNodeState extends State {
 
 	handleDragEnd(_ctx: EventContext): void {
 		if (this._node) {
-			this.editorCtx.selectionManager.select(this._node);
+			this.editorCtx.selection.select(this._node);
 		}
 		this._node = null;
 	}

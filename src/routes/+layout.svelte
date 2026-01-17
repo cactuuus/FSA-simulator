@@ -1,14 +1,45 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { Actions, Toast } from '$lib/ui';
-	import { onMount } from 'svelte';
+	import { Actions, Toast, TitleEditor } from '$lib/ui';
+	import { onMount, untrack } from 'svelte';
+	import { app } from '$lib/stores/app.svelte';
+	import { notifyWarning } from '$lib/utils/notifications';
 
 	let { children } = $props();
-
+	const DEBOUCE_DELAY = 10000; // milliseconds
 	let mounted = $state(false);
+
 	onMount(() => {
+		const hasStorage = app.canUseSessionStorage();
+		if (hasStorage) {
+			app.loadSession();
+		} else {
+			notifyWarning('Session storage is not available. Session data will not be saved.');
+		}
 		mounted = true;
+
+		if (hasStorage) {
+			// auto-save working graph and viewport changes
+			$effect(() => {
+				// simple way to trigger reactivity on graph and viewport changes
+				app.fsaGraph.toJSON();
+				app.viewport.toJSON();
+				const timeout = setTimeout(() => {
+					untrack(() => app.saveSession());
+				}, DEBOUCE_DELAY);
+				return () => clearTimeout(timeout);
+			});
+
+			// save before navigating away (close, refresh, etc)
+			function handleBeforeUnload() {
+				app.saveSession();
+			}
+			window.addEventListener('beforeunload', handleBeforeUnload);
+			return () => {
+				window.removeEventListener('beforeunload', handleBeforeUnload);
+			};
+		}
 	});
 </script>
 
@@ -27,7 +58,9 @@
 {/if}
 
 <header class="navbar flex min-h-12! items-end gap-6 bg-base-100">
-	<h1 id="banner" class="text-xl font-extrabold">FSA Simulator</h1>
+	<div id="banner" class="text-lg font-extrabold">
+		<TitleEditor fsaGraph={app.fsaGraph} />
+	</div>
 	<div id="page-actions" class="flex grow items-end">
 		<Actions />
 	</div>

@@ -1,78 +1,84 @@
-import { FSAGraph } from '$lib/automata/models';
-import { EditorManager, ViewportManager } from '$lib/application/managers';
-import type { SerializedFSAGraph } from '$lib/automata/serialisation';
-import { notifyError, notifyWarning, UserFacingError } from '$lib/utils';
+import { EditorManager } from '$lib/interaction/editor';
+import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
+import { Viewport, type SerializedViewport } from '$lib/interaction';
+import { storage } from '$lib/utils/storage';
 
 type AppMode = 'editing' | 'simulating';
 
-class AppManager {
-	// core state
-	private _fsaGraph = new FSAGraph();
-	private _viewportManager = new ViewportManager();
-	private _mode = $state<AppMode>('editing');
-	title = $state<string>('Untitled');
+/**
+ * Main application manager, holding references to core components such as the FSA graph, viewport, editor and simulation manager. This is basically the representation of the whole application state.
+ * It also manages application-wide operations such as session management and FSA import/export.
+ */
+export class AppManager {
+	static readonly STORAGE_KEY_FSA = 'working-fsa';
+	static readonly STORAGE_KEY_VIEWPORT = 'viewport-state';
 
-	// sub-managers
-	private _editorManager: EditorManager;
+	private _mode = $state<AppMode>('editing');
+	readonly fsaGraph: FSAGraph;
+	readonly viewport: Viewport;
+	readonly editor: EditorManager;
 	// readonly simulationManager: SimulationManager;
 
 	constructor() {
-		this._editorManager = new EditorManager(this._fsaGraph, this._viewportManager);
+		this.fsaGraph = new FSAGraph();
+		this.viewport = new Viewport();
+		this.editor = new EditorManager(this.fsaGraph, this.viewport);
 		// this.simulationManager = new SimulationManager();
 	}
 
-	get fsaGraph(): FSAGraph {
-		return this._fsaGraph;
-	}
-
-	get editor(): EditorManager {
-		return this._editorManager;
-	}
-
+	/**
+	 * Checks if the app is currently in editor mode.
+	 * @returns True if in editor mode, false otherwise.
+	 */
 	isEditing(): boolean {
 		return this._mode === 'editing';
 	}
 
+	/**
+	 * Checks if the app is currently in simulation mode.
+	 * @returns True if in simulation mode, false otherwise.
+	 */
 	isSimulating(): boolean {
 		return this._mode === 'simulating';
 	}
 
-	canDownloadGraph(): boolean {
-		return !this._fsaGraph.isEmpty;
+	/**
+	 * Checks if session storage can be used.
+	 * @returns True if session storage is available, false otherwise.
+	 */
+	canUseSessionStorage(): boolean {
+		return storage.isAvailable();
 	}
 
-	async downloadGraph(): Promise<void> {
-		if (this._fsaGraph.isEmpty) {
-			throw new UserFacingError('Cannot download an empty graph.');
-		}
-
-		const filename = `${this.title}.fsa`;
-		const data = JSON.stringify(this._fsaGraph.toJSON());
-		const blob = new Blob([data], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = filename;
-		a.click();
-
-		URL.revokeObjectURL(url);
+	/**
+	 * Saves the current session (FSA graph and viewport state).
+	 */
+	saveSession(): void {
+		if (!storage.isAvailable()) return;
+		storage.save(AppManager.STORAGE_KEY_FSA, this.fsaGraph.toJSON());
+		storage.save(AppManager.STORAGE_KEY_VIEWPORT, this.viewport.toJSON());
 	}
 
-	async uploadGraph(file: File): Promise<void> {
-		const text = await file.text();
-		const json = JSON.parse(text) as SerializedFSAGraph;
-		const backup = this._fsaGraph.toJSON();
+	/**
+	 * Loads the session (FSA graph and viewport state).
+	 */
+	loadSession(): void {
+		if (!storage.isAvailable()) return;
+		const savedGraph = storage.load<SerializedFSAGraph>(AppManager.STORAGE_KEY_FSA);
+		const savedViewport = storage.load<SerializedViewport>(AppManager.STORAGE_KEY_VIEWPORT);
+		if (savedViewport) this.viewport.loadFromJSON(savedViewport);
+		if (savedGraph) this.fsaGraph.loadFromJSON(savedGraph);
+	}
 
-		try {
-			this._fsaGraph.loadFromJSON(json);
-			this.title = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-			// TODO -- possibly need to reset editor/simulation state here
-		} catch (error: unknown) {
-			this._fsaGraph.loadFromJSON(backup);
-			notifyError(error);
-			notifyWarning('Invalid FSA data in the uploaded file, upload aborted.');
-		}
+	/**
+	 * Resets the current session by clearing the FSA graph and viewport state. LocalStorage is then updated by saving the cleared state.
+	 */
+	resetSession(): void {
+		if (!storage.isAvailable()) return;
+		this.fsaGraph.reset();
+		this.viewport.reset();
+		storage.remove(AppManager.STORAGE_KEY_FSA);
+		storage.remove(AppManager.STORAGE_KEY_VIEWPORT);
 	}
 }
 

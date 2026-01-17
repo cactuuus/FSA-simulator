@@ -1,7 +1,24 @@
 import { type Point, midPoint, vectorBetween } from '$lib/geometry';
-import { Node, type FSAItem, type BaseEdge, TransitionSymbol } from '$lib/automata/models';
-import type { SerializedEdge, Serializable } from '$lib/automata/serialisation';
-import { UserFacingError } from '$lib/utils';
+import { Node } from '$lib/automata/models/Node.svelte';
+import {
+	TransitionSymbol,
+	type SerializedTransitionSymbol
+} from '$lib/automata/models/TransitionSymbol.svelte';
+import type { BaseEdge, FSAItem } from '$lib/automata/models/types';
+import type { Serializable } from '$lib/utils/serialization';
+
+/**
+ * Serialized representation of an Edge.
+ */
+export interface SerializedEdge {
+	fromNodeId: string;
+	toNodeId: string;
+	transitionSymbols: SerializedTransitionSymbol[];
+	controlOffset: Point | null;
+	loopbackAngle: number;
+	forceStraight: boolean;
+	forceAlignCenter: boolean;
+}
 
 /**
  * Represents a directed edge between two nodes in the FSA. It can have multiple transition
@@ -9,10 +26,6 @@ import { UserFacingError } from '$lib/utils';
  */
 export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	static readonly LOOPBACK_DEFAULT_ANGLE = Math.PI / 2; // default angle of loopback edges
-	static readonly LOOPBACK_SIZE = 40; // fixed offset for loopback size
-	static readonly LABEL_OFFSET = 40; // distance of the label from the arrow
-	static readonly LINE_HEIGHT = 20; // height of each line in the label
-	static readonly LABEL_DISTANCE_BIAS = 0.5; // distance bias placing label between bezier midpoint and control point
 
 	readonly id: string;
 	readonly from: Node;
@@ -32,6 +45,15 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		this.addTransition();
 	}
 
+	/**
+	 * Creates an ID for an edge based on its source and target nodes.
+	 * Since this is not a random ID, calling this with the same nodes will always return
+	 * the same ID. Also, since no duplicate edges are allowed, this ID is guaranteed to be unique
+	 * within an FSA.
+	 * @param from The source node.
+	 * @param to The target node.
+	 * @returns A string representing the unique ID of the edge.
+	 */
 	static createId(from: Node, to: Node): string {
 		return `${from.id}-->${to.id}`;
 	}
@@ -48,8 +70,8 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		if (this.isStraight()) {
 			return this._midpoint;
 		}
-		const offset = this.forceAlignCenter ? this.getOffestSnappedToCenter() : this._controlOffset;
-		// if the isStraight check is passed, it is guaranteed that controlOffsset is not null
+		const offset = this.forceAlignCenter ? this.getOffsetSnappedToCenter() : this._controlOffset;
+		// if the isStraight check is passed, it is guaranteed that controlOffset is not null
 		return {
 			x: this._midpoint.x + offset!.x,
 			y: this._midpoint.y + offset!.y
@@ -68,24 +90,43 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return this.from.id === this.to.id;
 	}
 
+	/**
+	 * Indicates whether the edge is straight (no curvature).
+	 * @returns True if the edge is straight, false otherwise.
+	 */
 	isStraight(): boolean {
 		return this.forceStraight || this._controlOffset === null;
 	}
 
+	/**
+	 * Adds a new transition symbol to the edge (EPSILON by default).
+	 */
 	addTransition(): void {
 		this._transitionSymbols.push(new TransitionSymbol(TransitionSymbol.EPSILON));
 	}
 
+	/**
+	 * Removes a transition symbol at the specified index.
+	 * @param index The index of the transition symbol to remove.
+	 */
 	removeTransition(index: number): void {
 		if (index >= 0 && index < this._transitionSymbols.length) {
 			this._transitionSymbols.splice(index, 1);
 		}
 	}
 
+	/**
+	 * Adjusts the angle of the loopback edge.
+	 * @param newAngle The new angle in radians.
+	 */
 	adjustLoopbackAngle(newAngle: number): void {
 		this._loopbackAngle = newAngle;
 	}
 
+	/**
+	 * Updates the control point (used to adjust the curvature of the edge) position.
+	 * @param newPosition The new position of the control point.
+	 */
 	updateControlPoint(newPosition: Point): void {
 		this._controlOffset = {
 			x: newPosition.x - this._midpoint.x,
@@ -93,7 +134,11 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		};
 	}
 
-	private getOffestSnappedToCenter(): Point {
+	/**
+	 * Calculates the control offset snapped to the center line between source and target, forcing the control point to align with the center line, and therefore resulting in a symmetric curve.
+	 * @returns The centered control offset point.
+	 */
+	private getOffsetSnappedToCenter(): Point {
 		if (this._controlOffset === null || this.isLoopback()) {
 			return { x: 0, y: 0 };
 		}
@@ -126,11 +171,11 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	static fromJSON(json: SerializedEdge, nodesMap: Map<string, Node>): Edge {
 		const fromNode = nodesMap.get(json.fromNodeId);
 		const toNode = nodesMap.get(json.toNodeId);
-		if (!fromNode || !toNode) {
-			console.error(
-				`Invalid node IDs: ${json.fromNodeId}, ${json.toNodeId}.\nOne or both nodes do not exist.`
-			);
-			throw new UserFacingError(`Invalid node ID in edge data. See console for details.`);
+		if (!fromNode) {
+			throw new Error(`Edge references missing source node: ${json.fromNodeId}`);
+		}
+		if (!toNode) {
+			throw new Error(`Edge references missing target node: ${json.toNodeId}`);
 		}
 		const edge = new Edge(fromNode, toNode);
 		edge._transitionSymbols = json.transitionSymbols.map((tsJson) =>

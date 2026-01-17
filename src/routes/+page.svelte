@@ -5,7 +5,7 @@
 		SelectState,
 		DrawEdgeState,
 		PanningState
-	} from '$lib/application/interaction';
+	} from '$lib/interaction/editor/states';
 	import { app } from '$lib/stores/app.svelte';
 	import { DrawingBoard, SelectedItemPanel } from '$lib/ui';
 	import {
@@ -56,10 +56,10 @@
 			setActive(tool.state);
 		} else if (e.key === 'Escape') {
 			e.preventDefault();
-			app.editor.selectionManager.clearSelection();
+			app.editor.selection.clear();
 		} else if (e.key === 'Delete') {
 			e.preventDefault();
-			app.editor.selectionManager.deleteSelectedItems();
+			app.editor.selection.deleteAll();
 		}
 	}
 
@@ -72,7 +72,7 @@
 </script>
 
 <section class="relative h-full w-full">
-	<DrawingBoard editor={app.editor} />
+	<DrawingBoard />
 
 	<ul
 		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow"
@@ -94,7 +94,7 @@
 	</ul>
 
 	<div class="absolute top-2 right-2">
-		<SelectedItemPanel selectionManager={app.editor.selectionManager} />
+		<SelectedItemPanel selection={app.editor.selection} fsaGraph={app.editor.fsaGraph} />
 	</div>
 
 	<div
@@ -107,18 +107,18 @@
 	<div
 		class="absolute right-2 bottom-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
-		<span class="mr-2">{app.editor.viewportManager.prettyZoomLevel}</span>
+		<span class="mr-2">{app.viewport.prettyZoomLevel}</span>
 
 		<button
 			class="btn btn-square btn-ghost btn-sm"
-			onclick={() => app.editor.viewportManager.adjustZoom(0.1)}
+			onclick={() => app.viewport.zoomIn()}
 			aria-label="Zoom In"
 		>
 			<Plus class="h-4 w-4" />
 		</button>
 		<button
 			class="btn btn-square btn-ghost btn-sm"
-			onclick={() => app.editor.viewportManager.adjustZoom(-0.1)}
+			onclick={() => app.viewport.zoomOut()}
 			aria-label="Zoom Out"
 		>
 			<Minus class="h-4 w-4" />

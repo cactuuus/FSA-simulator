@@ -1,4 +1,13 @@
-import type { SerializedTransitionSymbol, Serializable } from '$lib/automata/serialisation';
+import type { Serializable } from '$lib/utils/serialization';
+
+/**
+ * Serialized representation of a TransitionSymbol.
+ */
+export interface SerializedTransitionSymbol {
+	consume: string;
+	pop: string;
+	push: string;
+}
 
 /**
  * Defines the transition symbol for an edge in the FSA. It includes the input symbol to consume,
@@ -17,18 +26,39 @@ export class TransitionSymbol implements Serializable<SerializedTransitionSymbol
 		this.pop = pop;
 	}
 
+	/**
+	 * **PDA only**:
+	 * Checks if the transition symbol includes a pop operation.
+	 * @returns True if there is a pop operation, false otherwise.
+	 */
 	hasPop(): boolean {
 		return this.pop !== '';
 	}
 
+	/**
+	 * **PDA only**:
+	 * Checks if the transition symbol includes a push operation.
+	 * @returns True if there is a push operation, false otherwise.
+	 */
 	hasPush(): boolean {
 		return this.push !== '';
 	}
 
+	/**
+	 * **PDA only**:
+	 * Checks if the transition symbol requires any stack operation (push or pop).
+	 * @returns True if there is a push or pop operation, false otherwise.
+	 */
 	requiresStackOp(): boolean {
 		return this.hasPop() || this.hasPush();
 	}
 
+	/**
+	 * Returns a string representation of the transition symbol.
+	 * For PDAs, it includes stack operations in the format: "consume, pop ⟶ push".
+	 * For FSAs, it simply returns the consume symbol.
+	 * @returns A string representing the transition symbol.
+	 */
 	toString(): string {
 		if (this.requiresStackOp()) {
 			const popOperation = this.hasPop() ? this.pop : '?';

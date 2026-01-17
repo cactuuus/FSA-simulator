@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Node, type FSAGraph } from '$lib/automata/models';
 
-	const { node, fsa }: { node: Node; fsa: FSAGraph } = $props();
+	const { node, fsaGraph }: { node: Node; fsaGraph: FSAGraph } = $props();
 </script>
 
 <div class="flex flex-col gap-4">
@@ -29,10 +29,10 @@
 			id="isStarting"
 			type="checkbox"
 			class="checkbox checkbox-sm checkbox-success"
-			checked={fsa.startNode?.id === node.id}
+			checked={fsaGraph.startNode?.id === node.id}
 			onchange={(event) => {
 				const checked = event.currentTarget.checked;
-				fsa.startNode = checked ? node : null;
+				fsaGraph.startNode = checked ? node : null;
 			}}
 		/>
 	</label>

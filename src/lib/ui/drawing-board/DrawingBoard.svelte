@@ -4,14 +4,13 @@
 	import StartEdgeSvg from './StartEdgeSvg.svelte';
 	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
 	import SelectionArea from './SelectionArea.svelte';
-	import { SvgInputManager, ViewportManager } from '$lib/application/managers';
-	import type { EditorManager } from '$lib/application/managers/EditorManager.svelte';
+	import { app } from '$lib/stores/app.svelte';
+	import { SvgInputHandler } from '$lib/interaction';
 	import { onMount } from 'svelte';
 
-	const { editor }: { editor: EditorManager } = $props();
 	let svgElement: SVGSVGElement;
 	// svelte-ignore non_reactive_update - svgInputManager does not need to be reactive
-	let svgInputManager: SvgInputManager;
+	let inputHandler: SvgInputHandler;
 
 	/**
 	 * Observe size changes of the SVG element to update viewport size.
@@ -22,7 +21,7 @@
 		if (svgElement) {
 			const resizeObserver = new ResizeObserver((entries) => {
 				const { width, height } = entries[0].contentRect;
-				editor.viewportManager.canvasSize = { width, height };
+				app.viewport.canvasSize = { width, height };
 			});
 
 			resizeObserver.observe(svgElement);
@@ -31,10 +30,10 @@
 	});
 
 	/**
-	 * Initialize the SVG input manager on mount.
+	 * Initialize the SVG input handler on mount.
 	 */
 	onMount(() => {
-		svgInputManager = new SvgInputManager(svgElement, editor.fsaGraph, () => editor.currentState);
+		inputHandler = new SvgInputHandler(svgElement, app.fsaGraph, () => app.editor.currentState);
 	});
 
 	/**
@@ -44,9 +43,13 @@
 	function handleWheel(e: WheelEvent) {
 		if (e.ctrlKey) {
 			e.preventDefault();
-			const zoomAmount =
-				e.deltaY < 0 ? ViewportManager.CANVAS_ZOOM_STEP : -ViewportManager.CANVAS_ZOOM_STEP;
-			editor.viewportManager.adjustZoom(zoomAmount, svgInputManager.getPointerPosFromEvent(e));
+			const towardsPoint = inputHandler.getPointerPosFromEvent(e);
+			const direction = e.deltaY < 0 ? 1 : -1;
+			if (direction > 0) {
+				app.viewport.zoomIn(towardsPoint);
+			} else {
+				app.viewport.zoomOut(towardsPoint);
+			}
 		}
 	}
 </script>
@@ -59,45 +62,45 @@
 	<!-- Ignore the above warnings. For now, the drawing board won't be keyboard accessible.-->
 	<svg
 		bind:this={svgElement}
-		viewBox={editor.viewportManager.viewBox}
+		viewBox={app.viewport.viewBox}
 		id="fsa-diagram"
 		class="h-full w-full touch-none"
-		onpointerdown={svgInputManager.handlePointerDown.bind(svgInputManager)}
-		onpointermove={svgInputManager.handlePointerMove.bind(svgInputManager)}
-		onpointerup={svgInputManager.handlePointerUp.bind(svgInputManager)}
-		ondblclick={svgInputManager.handleDoubleClick.bind(svgInputManager)}
+		onpointerdown={inputHandler.handlePointerDown.bind(inputHandler)}
+		onpointermove={inputHandler.handlePointerMove.bind(inputHandler)}
+		onpointerup={inputHandler.handlePointerUp.bind(inputHandler)}
+		ondblclick={inputHandler.handleDoubleClick.bind(inputHandler)}
 		onwheel={handleWheel}
-		data-state={editor.currentState?.name}
+		data-state={app.editor.currentState?.name}
 	>
 		<!--
 			Note: SVG renders elements in the order they appear in the code.
 		 -->
-		{#if editor.fsaGraph.startNode}
-			<StartEdgeSvg startingNode={editor.fsaGraph.startNode} />
+		{#if app.fsaGraph.startNode}
+			<StartEdgeSvg startingNode={app.fsaGraph.startNode} />
 		{/if}
 
-		{#each editor.fsaGraph.edges as edge (edge.id)}
+		{#each app.fsaGraph.edges as edge (edge.id)}
 			<EdgeSvg
 				{edge}
-				isSelected={editor.selectionManager.isSelected(edge)}
-				isInSelectionArea={editor.selectionManager.isInSelectionArea(edge)}
+				isSelected={app.editor.selection.isSelected(edge)}
+				isInSelectionArea={app.editor.selection.isInArea(edge)}
 			/>
 		{/each}
 
-		{#if editor.draftEdgeManager.draftEdge}
-			<DraftEdgeSvg draftEdge={editor.draftEdgeManager.draftEdge} />
+		{#if app.editor.draftEdge.get}
+			<DraftEdgeSvg draftEdge={app.editor.draftEdge.get} />
 		{/if}
 
-		{#each editor.fsaGraph.nodes as node (node.id)}
+		{#each app.fsaGraph.nodes as node (node.id)}
 			<NodeSvg
 				{node}
-				isSelected={editor.selectionManager.isSelected(node)}
-				isInSelectionArea={editor.selectionManager.isInSelectionArea(node)}
+				isSelected={app.editor.selection.isSelected(node)}
+				isInSelectionArea={app.editor.selection.isInArea(node)}
 			/>
 		{/each}
 
-		{#if editor.selectionManager.selectionArea}
-			{@const { start, end } = editor.selectionManager.selectionArea}
+		{#if app.editor.selection.area}
+			{@const { start, end } = app.editor.selection.area}
 			<SelectionArea {start} {end} />
 		{/if}
 	</svg>

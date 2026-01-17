@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { type NotificationEvent, NotificationType } from '$lib/utils';
+	import { type NotificationEvent, NotificationType } from '$lib/utils/notifications';
 	import {
 		X,
 		CircleCheck,

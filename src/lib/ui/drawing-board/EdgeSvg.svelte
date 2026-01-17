@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Edge } from '$lib/automata/models';
-	import { getRegularEdgePath, getEdgeLabelPosition } from '$lib/utils';
+	import { getRegularEdgePath, getEdgeLabelPosition, LINE_HEIGHT } from '$lib/utils/edgeUtils';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
 	const {
@@ -26,7 +26,7 @@
 
 	<text class="edge-label" x={labelPosition.x} y={labelPosition.y}>
 		{#each edge.label as label, index}
-			<tspan x={labelPosition.x} dy={index === 0 ? 0 : Edge.LINE_HEIGHT} dominant-baseline="middle">
+			<tspan x={labelPosition.x} dy={index === 0 ? 0 : LINE_HEIGHT} dominant-baseline="middle">
 				{label}
 			</tspan>
 		{/each}

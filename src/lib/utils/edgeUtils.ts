@@ -8,6 +8,11 @@ import {
 } from '$lib/geometry';
 import { Edge, Node, DraftEdge, type BaseEdge } from '$lib/automata/models';
 
+export const LABEL_DISTANCE_BIAS = 0.5; // distance bias placing label between bezier midpoint and control point
+export const LOOPBACK_SIZE = 40; // fixed offset for loopback size
+export const LABEL_OFFSET = 40; // distance of the label from the arrow
+export const LINE_HEIGHT = 20; // height of each line in the label
+
 /**
  * Generate SVG path for quadratic Bezier curve with node edge termination.
  * Handles both straight edges (when control point is at midpoint) and curved edges.
@@ -32,7 +37,7 @@ export function getEdgeLabelPosition(edge: Edge): Point {
 	let position: Point;
 
 	if (edge.isLoopback()) {
-		const offset = Edge.LOOPBACK_SIZE + Edge.LABEL_OFFSET + Node.RADIUS;
+		const offset = LOOPBACK_SIZE + LABEL_OFFSET + Node.RADIUS;
 		position = pointOnCircle(edge.sourcePoint, offset, edge.loopbackAngle);
 	} else {
 		const curveMidpoint = pointOnBezierCurve(
@@ -42,12 +47,12 @@ export function getEdgeLabelPosition(edge: Edge): Point {
 			edge.targetPoint
 		);
 		position = {
-			x: curveMidpoint.x + (edge.controlPoint.x - curveMidpoint.x) * Edge.LABEL_DISTANCE_BIAS,
-			y: curveMidpoint.y + (edge.controlPoint.y - curveMidpoint.y) * Edge.LABEL_DISTANCE_BIAS
+			x: curveMidpoint.x + (edge.controlPoint.x - curveMidpoint.x) * LABEL_DISTANCE_BIAS,
+			y: curveMidpoint.y + (edge.controlPoint.y - curveMidpoint.y) * LABEL_DISTANCE_BIAS
 		};
 	}
 
-	const verticalOffset = ((edge.label.length - 1) * Edge.LINE_HEIGHT) / 2;
+	const verticalOffset = ((edge.label.length - 1) * LINE_HEIGHT) / 2;
 	return {
 		x: position.x,
 		y: position.y - verticalOffset
@@ -66,8 +71,8 @@ export function getEdgeLabelPosition(edge: Edge): Point {
  * @return The calculated control point.
  */
 export function getControlPointFromLabelPos(edge: Edge, labelPos: Point): Point {
-	const midWeight = (1 - Edge.LABEL_DISTANCE_BIAS) * 0.25;
-	const controlWeight = 0.5 + 0.5 * Edge.LABEL_DISTANCE_BIAS;
+	const midWeight = (1 - LABEL_DISTANCE_BIAS) * 0.25;
+	const controlWeight = 0.5 + 0.5 * LABEL_DISTANCE_BIAS;
 	const midContribution = {
 		x: midWeight * (edge.sourcePoint.x + edge.targetPoint.x),
 		y: midWeight * (edge.sourcePoint.y + edge.targetPoint.y)
@@ -87,7 +92,7 @@ export function getLoopbackPath(edge: BaseEdge): string {
 	const start = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.loopbackAngle + Math.PI / 4);
 	const end = pointOnCircle(edge.sourcePoint, Node.RADIUS, edge.loopbackAngle - Math.PI / 4);
 	return `M ${start.x} ${start.y}
-			A ${Edge.LOOPBACK_SIZE} ${Edge.LOOPBACK_SIZE}, 0, 1, 0, ${end.x} ${end.y}`;
+			A ${LOOPBACK_SIZE} ${LOOPBACK_SIZE}, 0, 1, 0, ${end.x} ${end.y}`;
 }
 
 /**

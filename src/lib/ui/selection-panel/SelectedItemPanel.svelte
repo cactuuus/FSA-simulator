@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { SelectionManager } from '$lib/application/managers';
-	import { type FSAItem, Node, Edge } from '$lib/automata/models';
+	import { type FSAItem, type FSAGraph, Node, Edge } from '$lib/automata/models';
+	import { SelectionHandler } from '$lib/interaction/editor';
 	import NodeDetails from './NodeDetails.svelte';
 	import EdgeDetails from './EdgeDetails.svelte';
 	import { ChevronDown, Trash2 } from '@lucide/svelte';
 
-	const { selectionManager }: { selectionManager: SelectionManager } = $props();
-	const items: FSAItem[] = $derived(selectionManager.selectedItems);
+	const { selection, fsaGraph }: { selection: SelectionHandler; fsaGraph: FSAGraph } = $props();
+	const items: FSAItem[] = $derived(selection.items);
 	let showContent = $state(true);
 </script>
 
@@ -29,15 +29,12 @@
 		{:else if items.length === 1}
 			{@const item = items[0]}
 			{#if item instanceof Node}
-				<NodeDetails node={item} fsa={selectionManager.fsaGraph} />
+				<NodeDetails node={item} {fsaGraph} />
 			{:else if item instanceof Edge}
 				<EdgeDetails edge={item} />
 			{/if}
 			<hr class="my-4 border-base-content/70" />
-			<button
-				class="btn w-full btn-sm btn-error"
-				onclick={() => selectionManager.deleteSelectedItems()}
-			>
+			<button class="btn w-full btn-sm btn-error" onclick={() => selection.deleteAll()}>
 				<Trash2 class="h-4 w-4" /> Delete Item
 			</button>
 		{:else}
@@ -61,10 +58,7 @@
 				{/each}
 			</ul>
 			<hr class="my-4 border-base-content/70" />
-			<button
-				class="btn w-full btn-sm btn-error"
-				onclick={() => selectionManager.deleteSelectedItems()}
-			>
+			<button class="btn w-full btn-sm btn-error" onclick={() => selection.deleteAll()}>
 				<Trash2 class="h-4 w-4" /> Delete {items.length} Items
 			</button>
 		{/if}

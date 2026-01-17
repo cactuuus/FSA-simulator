@@ -1,9 +1,23 @@
-import type { State } from '../interaction';
 import { Node, Edge, type FSAGraph } from '$lib/automata/models';
-import type { EventContext } from '../interaction/types';
 import type { Point } from '$lib/geometry/types';
+import type { State } from './State';
 
-export class SvgInputManager {
+/**
+ * Context for pointer events, providing information about the event and its target.
+ */
+export interface EventContext {
+	event: PointerEvent | MouseEvent;
+	node?: Node;
+	edge?: Edge;
+	isCanvas: boolean;
+	pointerPos: Point;
+}
+
+/**
+ * Handler for SVG input events.
+ * It translates raw pointer events from the SVG element into higher-level events. It also manages drag detection.
+ */
+export class SvgInputHandler {
 	private _svgElement: SVGSVGElement;
 	private _fsaGraph: FSAGraph;
 	private _getCurrentState: () => State | null;
@@ -45,7 +59,7 @@ export class SvgInputManager {
 		// Determine if we should continue or start dragging
 		if (this._isDragging) {
 			currentState.handleDragMove?.(ctx);
-		} else if (distance > SvgInputManager.DRAG_DISTANCE_THRESHOLD) {
+		} else if (distance > SvgInputHandler.DRAG_DISTANCE_THRESHOLD) {
 			this._isDragging = true;
 			currentState.handleDragStart?.(this._pointerDownCtx);
 		}
