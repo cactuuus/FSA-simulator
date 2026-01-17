@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import { EditorManager } from '$lib/interaction/editor';
 import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
 import { Viewport, type SerializedViewport } from '$lib/interaction';
@@ -44,9 +43,18 @@ export class AppManager {
 	}
 
 	/**
+	 * Checks if session storage can be used.
+	 * @returns True if session storage is available, false otherwise.
+	 */
+	canUseSessionStorage(): boolean {
+		return storage.isAvailable();
+	}
+
+	/**
 	 * Saves the current session (FSA graph and viewport state).
 	 */
 	saveSession(): void {
+		if (!storage.isAvailable()) return;
 		storage.save(AppManager.STORAGE_KEY_FSA, this.fsaGraph.toJSON());
 		storage.save(AppManager.STORAGE_KEY_VIEWPORT, this.viewport.toJSON());
 	}
@@ -55,6 +63,7 @@ export class AppManager {
 	 * Loads the session (FSA graph and viewport state).
 	 */
 	loadSession(): void {
+		if (!storage.isAvailable()) return;
 		const savedGraph = storage.load<SerializedFSAGraph>(AppManager.STORAGE_KEY_FSA);
 		const savedViewport = storage.load<SerializedViewport>(AppManager.STORAGE_KEY_VIEWPORT);
 		if (savedViewport) this.viewport.loadFromJSON(savedViewport);
@@ -65,7 +74,7 @@ export class AppManager {
 	 * Resets the current session by clearing the FSA graph and viewport state. LocalStorage is then updated by saving the cleared state.
 	 */
 	resetSession(): void {
-		if (!browser) return;
+		if (!storage.isAvailable()) return;
 		this.fsaGraph.reset();
 		this.viewport.reset();
 		storage.remove(AppManager.STORAGE_KEY_FSA);

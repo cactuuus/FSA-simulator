@@ -4,35 +4,42 @@
 	import { Actions, Toast, TitleEditor } from '$lib/ui';
 	import { onMount, untrack } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
+	import { notifyWarning } from '$lib/utils/notifications';
 
 	let { children } = $props();
 	const DEBOUCE_DELAY = 10000; // milliseconds
-
 	let mounted = $state(false);
+
 	onMount(() => {
-		app.loadSession();
+		const hasStorage = app.canUseSessionStorage();
+		if (hasStorage) {
+			app.loadSession();
+		} else {
+			notifyWarning('Session storage is not available. Session data will not be saved.');
+		}
 		mounted = true;
 
-		// auto-save working graph and viewport changes
-		$effect(() => {
-			// simple way to trigger reactivity on graph and viewport changes
-			app.fsaGraph.toJSON();
-			app.viewport.toJSON();
-			const timeout = setTimeout(() => {
-				untrack(() => app.saveSession());
-			}, DEBOUCE_DELAY);
-			return () => clearTimeout(timeout);
-		});
+		if (hasStorage) {
+			// auto-save working graph and viewport changes
+			$effect(() => {
+				// simple way to trigger reactivity on graph and viewport changes
+				app.fsaGraph.toJSON();
+				app.viewport.toJSON();
+				const timeout = setTimeout(() => {
+					untrack(() => app.saveSession());
+				}, DEBOUCE_DELAY);
+				return () => clearTimeout(timeout);
+			});
 
-		// save before navigating away (close, refresh, etc)
-		function handleBeforeUnload() {
-			app.saveSession();
+			// save before navigating away (close, refresh, etc)
+			function handleBeforeUnload() {
+				app.saveSession();
+			}
+			window.addEventListener('beforeunload', handleBeforeUnload);
+			return () => {
+				window.removeEventListener('beforeunload', handleBeforeUnload);
+			};
 		}
-		window.addEventListener('beforeunload', handleBeforeUnload);
-
-		return () => {
-			window.removeEventListener('beforeunload', handleBeforeUnload);
-		};
 	});
 </script>
 
