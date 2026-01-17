@@ -1,8 +1,24 @@
 import { type Point, midPoint, vectorBetween } from '$lib/geometry';
 import { Node } from '$lib/automata/models/Node.svelte';
-import { TransitionSymbol } from '$lib/automata/models/TransitionSymbol.svelte';
+import {
+	TransitionSymbol,
+	type SerializedTransitionSymbol
+} from '$lib/automata/models/TransitionSymbol.svelte';
 import type { BaseEdge, FSAItem } from '$lib/automata/models/types';
-import type { SerializedEdge, Serializable } from '$lib/automata/serialisation';
+import type { Serializable } from '$lib/utils/serialization';
+
+/**
+ * Serialized representation of an Edge.
+ */
+export interface SerializedEdge {
+	fromNodeId: string;
+	toNodeId: string;
+	transitionSymbols: SerializedTransitionSymbol[];
+	controlOffset: Point | null;
+	loopbackAngle: number;
+	forceStraight: boolean;
+	forceAlignCenter: boolean;
+}
 
 /**
  * Represents a directed edge between two nodes in the FSA. It can have multiple transition

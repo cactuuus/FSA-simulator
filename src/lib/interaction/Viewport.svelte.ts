@@ -1,10 +1,19 @@
 import type { Point } from '$lib/geometry/types';
+import type { Serializable } from '$lib/utils/serialization';
+
+/**
+ * Serialized representation of the Viewport state.
+ */
+export type SerializedViewport = {
+	panOffset: Point;
+	zoomOffset: number;
+};
 
 /**
  * Manages the viewport (aka the portion of the area visible by the user) of the SVG element, including panning and zooming functionalities.
  * Also provides serialization methods to save and restore viewport state.
  */
-export class Viewport {
+export class Viewport implements Serializable<SerializedViewport> {
 	readonly ZOOM_STEP: number = 0.1;
 	readonly MIN_ZOOM: number = 0.5;
 	readonly MAX_ZOOM: number = 2;
@@ -93,16 +102,19 @@ export class Viewport {
 	 * Serializes the current viewport state to a JSON object.
 	 * @returns A JSON object representing the current viewport state.
 	 */
-	toJSON(): { pan: Point; zoom: number } {
-		return { pan: { x: this._panOffset.x, y: this._panOffset.y }, zoom: this._zoomLevel };
+	toJSON(): SerializedViewport {
+		return {
+			panOffset: { x: this._panOffset.x, y: this._panOffset.y },
+			zoomOffset: this._zoomLevel
+		};
 	}
 
 	/**
 	 * Restores the viewport state from a JSON object.
 	 * @param json A JSON object representing the viewport state.
 	 */
-	loadFromJSON(json: { pan: Point; zoom: number }): void {
-		this._panOffset = json.pan;
-		this._zoomLevel = json.zoom;
+	loadFromJSON(json: SerializedViewport): void {
+		this._panOffset = json.panOffset ?? { x: 0, y: 0 };
+		this._zoomLevel = json.zoomOffset ?? 1;
 	}
 }

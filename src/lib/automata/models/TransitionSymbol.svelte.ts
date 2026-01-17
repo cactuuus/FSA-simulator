@@ -1,4 +1,13 @@
-import type { SerializedTransitionSymbol, Serializable } from '$lib/automata/serialisation';
+import type { Serializable } from '$lib/utils/serialization';
+
+/**
+ * Serialized representation of a TransitionSymbol.
+ */
+export interface SerializedTransitionSymbol {
+	consume: string;
+	pop: string;
+	push: string;
+}
 
 /**
  * Defines the transition symbol for an edge in the FSA. It includes the input symbol to consume,

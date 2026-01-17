@@ -1,6 +1,16 @@
 import type { Point } from '$lib/geometry';
 import type { FSAItem } from '$lib/automata/models/types';
-import type { SerializedNode, Serializable } from '$lib/automata/serialisation';
+import type { Serializable } from '$lib/utils/serialization';
+
+/**
+ * Serialized representation of a Node.
+ */
+export interface SerializedNode {
+	id: string;
+	pos: Point;
+	label: string;
+	isAccepting: boolean;
+}
 
 /**
  * Represents a state in the finite state automaton (FSA). Each node has a position, label,

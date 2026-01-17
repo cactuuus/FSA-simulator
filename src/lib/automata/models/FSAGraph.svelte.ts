@@ -1,9 +1,19 @@
 import type { Point } from '$lib/geometry';
-import { Node } from '$lib/automata/models/Node.svelte';
-import { Edge } from '$lib/automata/models/Edge.svelte';
+import { Node, type SerializedNode } from '$lib/automata/models/Node.svelte';
+import { Edge, type SerializedEdge } from '$lib/automata/models/Edge.svelte';
 import type { FSAItem } from '$lib/automata/models/types';
 import { SvelteMap } from 'svelte/reactivity';
-import type { SerializedFSAGraph, Serializable } from '$lib/automata/serialisation';
+import type { Serializable } from '$lib/utils/serialization';
+
+/**
+ * Serialized representation of an entire FSA graph.
+ */
+export interface SerializedFSAGraph {
+	title: string;
+	nodes: SerializedNode[];
+	edges: SerializedEdge[];
+	startNodeId: string | null;
+}
 
 /**
  * Overall representation of a finite state automaton (FSA) graph. It manages nodes and edges,

@@ -13,19 +13,11 @@
 		app.loadSession();
 		mounted = true;
 
-		// auto-save working graph changes
+		// auto-save working graph and viewport changes
 		$effect(() => {
 			// simple way to trigger reactivity on graph and viewport changes
 			app.fsaGraph.toJSON();
 			app.viewport.toJSON();
-			const timeout = setTimeout(() => {
-				untrack(() => app.saveSession());
-			}, DEBOUCE_DELAY);
-			return () => clearTimeout(timeout);
-		});
-
-		// auto-save viewport changes
-		$effect(() => {
 			const timeout = setTimeout(() => {
 				untrack(() => app.saveSession());
 			}, DEBOUCE_DELAY);

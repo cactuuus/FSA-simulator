@@ -1,7 +1,8 @@
 import { browser } from '$app/environment';
 import { EditorManager } from '$lib/interaction/editor';
-import { FSAGraph } from '$lib/automata/models';
-import { Viewport } from '$lib/interaction';
+import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
+import { Viewport, type SerializedViewport } from '$lib/interaction';
+import { storage } from '$lib/utils/storage';
 
 type AppMode = 'editing' | 'simulating';
 
@@ -10,6 +11,9 @@ type AppMode = 'editing' | 'simulating';
  * It also manages application-wide operations such as session management and FSA import/export.
  */
 export class AppManager {
+	static readonly STORAGE_KEY_FSA = 'working-fsa';
+	static readonly STORAGE_KEY_VIEWPORT = 'viewport-state';
+
 	private _mode = $state<AppMode>('editing');
 	readonly fsaGraph: FSAGraph;
 	readonly viewport: Viewport;
@@ -40,27 +44,21 @@ export class AppManager {
 	}
 
 	/**
-	 * Saves the current session (FSA graph and viewport state) to localStorage.
+	 * Saves the current session (FSA graph and viewport state).
 	 */
 	saveSession(): void {
-		if (!browser) return;
-		try {
-			localStorage.setItem('working-fsa', JSON.stringify(this.fsaGraph.toJSON()));
-			localStorage.setItem('viewport-state', JSON.stringify(this.viewport.toJSON()));
-		} catch (error) {
-			console.error('Failed to write to localStorage:', error);
-		}
+		storage.save(AppManager.STORAGE_KEY_FSA, this.fsaGraph.toJSON());
+		storage.save(AppManager.STORAGE_KEY_VIEWPORT, this.viewport.toJSON());
 	}
 
 	/**
-	 * Loads the session (FSA graph and viewport state) from localStorage.
+	 * Loads the session (FSA graph and viewport state).
 	 */
 	loadSession(): void {
-		if (!browser) return;
-		const savedGraph = localStorage.getItem('working-fsa');
-		const savedViewport = localStorage.getItem('viewport-state');
-		if (savedViewport) this.viewport.loadFromJSON(JSON.parse(savedViewport));
-		if (savedGraph) this.fsaGraph.loadFromJSON(JSON.parse(savedGraph));
+		const savedGraph = storage.load<SerializedFSAGraph>(AppManager.STORAGE_KEY_FSA);
+		const savedViewport = storage.load<SerializedViewport>(AppManager.STORAGE_KEY_VIEWPORT);
+		if (savedViewport) this.viewport.loadFromJSON(savedViewport);
+		if (savedGraph) this.fsaGraph.loadFromJSON(savedGraph);
 	}
 
 	/**
@@ -70,7 +68,8 @@ export class AppManager {
 		if (!browser) return;
 		this.fsaGraph.reset();
 		this.viewport.reset();
-		this.saveSession();
+		storage.remove(AppManager.STORAGE_KEY_FSA);
+		storage.remove(AppManager.STORAGE_KEY_VIEWPORT);
 	}
 }
 
