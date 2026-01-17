@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Node } from '$lib/automata/models';
-	import { getStartEdgePath } from '$lib/utils';
+	import { getStartEdgePath } from '$lib/utils/edgeUtils';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
 	const { startingNode }: { startingNode: Node } = $props();

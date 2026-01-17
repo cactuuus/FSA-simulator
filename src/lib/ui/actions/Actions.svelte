@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { Folder, Download, ChevronDown, Loader, TriangleAlert } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import { notifyError } from '$lib/utils/notifications.svelte';
-	import { UserFacingError } from '$lib/utils';
+	import { notifyError, notifySuccess } from '$lib/utils/notifications';
 
 	let confirmClearFsaModal: HTMLDialogElement;
 
@@ -14,40 +13,64 @@
 		input.type = 'file';
 		input.accept = '.fsa';
 		input.multiple = false;
-		input.onchange = () => handleFileUpload(input.files);
+		input.onchange = () => handleGraphUpload(input.files);
 		input.click();
 	}
 
 	/**
-	 * Handles the file upload process.
+	 * Handles the graph upload process. If any error occurs during the upload, the previous graph state is restored.
 	 * @param files The list of files selected by the user (should be only one).
 	 */
-	async function handleFileUpload(files: FileList | null) {
+	async function handleGraphUpload(files: FileList | null) {
+		if (!files || files.length === 0) {
+			notifyError('No file selected.');
+			return;
+		}
+		if (files.length > 1) {
+			notifyError('Please select only one file.');
+			return;
+		}
+		const file = files[0];
+		if (!file.name.endsWith('.fsa')) {
+			notifyError("Invalid file type, select a '.fsa' file.");
+			return;
+		}
+		const backup = app.fsaGraph.toJSON();
 		try {
-			if (!files || files.length === 0) {
-				throw new UserFacingError('No file selected.');
-			} else if (files.length > 1) {
-				throw new UserFacingError('Please select only one file.');
-			}
-			const file = files[0];
-			if (!file.name.endsWith('.fsa')) {
-				throw new UserFacingError("Invalid file type, select a '.fsa' file.");
-			}
-			await app.uploadGraph(file).catch((error: Error) => {
-				notifyError(error);
-			});
-		} catch (error) {
-			notifyError(error);
+			const text = await file.text();
+			const json = JSON.parse(text);
+			app.fsaGraph.loadFromJSON(json);
+			notifySuccess('Graph imported & loaded successfully.');
+		} catch (error: unknown) {
+			app.fsaGraph.loadFromJSON(backup);
+			console.error('Failed to import graph:', error);
+			notifyError(
+				'Failed to import graph. The file may be corrupted or from an incompatible version.'
+			);
 		}
 	}
 
 	/**
 	 * Downloads the current graph to disk.
+	 *
 	 */
 	async function downloadGraph() {
-		await app.downloadGraph().catch((error: Error) => {
-			notifyError(error);
-		});
+		try {
+			const filename = `${app.fsaGraph.title}.fsa`;
+			const data = JSON.stringify(app.fsaGraph.toJSON());
+			const blob = new Blob([data], { type: 'application/json' });
+			const url = URL.createObjectURL(blob);
+
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = filename;
+			a.click();
+			URL.revokeObjectURL(url);
+			notifySuccess('Your graph download should have started, check your downloads folder.');
+		} catch (error: unknown) {
+			console.error('Failed to download graph:', error);
+			notifyError('Failed to download graph, an unexpected error occurred. Please try again.');
+		}
 	}
 
 	/**
@@ -55,9 +78,14 @@
 	 * @param e The submit event from the confirmation form.
 	 */
 	async function confirmClearGraph(e: SubmitEvent) {
-		e.preventDefault();
-		app.resetSession();
-		confirmClearFsaModal.close();
+		try {
+			e.preventDefault();
+			app.resetSession();
+			confirmClearFsaModal.close();
+		} catch (error: unknown) {
+			console.error('Failed to clear graph:', error);
+			notifyError('Failed to clear graph, an unexpected error occurred. Please try again.');
+		}
 	}
 </script>
 

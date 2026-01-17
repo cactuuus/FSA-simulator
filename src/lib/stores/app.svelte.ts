@@ -2,8 +2,6 @@ import { browser } from '$app/environment';
 import { EditorManager } from '$lib/interaction/editor';
 import { FSAGraph } from '$lib/automata/models';
 import { Viewport } from '$lib/interaction';
-import { UserFacingError } from '$lib/utils/errors';
-import { notifyError, notifyWarning } from '$lib/utils/notifications.svelte';
 
 type AppMode = 'editing' | 'simulating';
 
@@ -39,43 +37,6 @@ export class AppManager {
 	 */
 	isSimulating(): boolean {
 		return this._mode === 'simulating';
-	}
-
-	/**
-	 * Downloads the current FSA graph as an '.fsa' file.
-	 */
-	async downloadGraph(): Promise<void> {
-		if (this.fsaGraph.isEmpty) {
-			throw new UserFacingError('Cannot download an empty graph.');
-		}
-		const filename = `${this.fsaGraph.title}.fsa`;
-		const data = JSON.stringify(this.fsaGraph.toJSON());
-		const blob = new Blob([data], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = filename;
-		a.click();
-
-		URL.revokeObjectURL(url);
-	}
-
-	/**
-	 * Import an FSA graph from a given file.
-	 * @param file The file containing the FSA graph data.
-	 */
-	async uploadGraph(file: File): Promise<void> {
-		const text = await file.text();
-		const json = JSON.parse(text);
-		const backup = this.fsaGraph.toJSON();
-		try {
-			this.fsaGraph.loadFromJSON(json);
-		} catch (error: unknown) {
-			this.fsaGraph.loadFromJSON(backup);
-			notifyError(error);
-			notifyWarning('Invalid FSA data in the uploaded file, upload aborted.');
-		}
 	}
 
 	/**

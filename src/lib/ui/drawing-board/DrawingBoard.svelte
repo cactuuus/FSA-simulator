@@ -87,8 +87,8 @@
 			/>
 		{/each}
 
-		{#if app.editor.draftEdge.draftEdge}
-			<DraftEdgeSvg draftEdge={app.editor.draftEdge.draftEdge} />
+		{#if app.editor.draftEdge.get}
+			<DraftEdgeSvg draftEdge={app.editor.draftEdge.get} />
 		{/if}
 
 		{#each app.fsaGraph.nodes as node (node.id)}

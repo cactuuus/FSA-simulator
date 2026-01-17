@@ -3,7 +3,6 @@ import { Node } from '$lib/automata/models/Node.svelte';
 import { TransitionSymbol } from '$lib/automata/models/TransitionSymbol.svelte';
 import type { BaseEdge, FSAItem } from '$lib/automata/models/types';
 import type { SerializedEdge, Serializable } from '$lib/automata/serialisation';
-import { UserFacingError } from '$lib/utils';
 
 /**
  * Represents a directed edge between two nodes in the FSA. It can have multiple transition
@@ -156,11 +155,11 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	static fromJSON(json: SerializedEdge, nodesMap: Map<string, Node>): Edge {
 		const fromNode = nodesMap.get(json.fromNodeId);
 		const toNode = nodesMap.get(json.toNodeId);
-		if (!fromNode || !toNode) {
-			console.error(
-				`Invalid node IDs: ${json.fromNodeId}, ${json.toNodeId}.\nOne or both nodes do not exist.`
-			);
-			throw new UserFacingError(`Invalid node ID in edge data. See console for details.`);
+		if (!fromNode) {
+			throw new Error(`Edge references missing source node: ${json.fromNodeId}`);
+		}
+		if (!toNode) {
+			throw new Error(`Edge references missing target node: ${json.toNodeId}`);
 		}
 		const edge = new Edge(fromNode, toNode);
 		edge._transitionSymbols = json.transitionSymbols.map((tsJson) =>
