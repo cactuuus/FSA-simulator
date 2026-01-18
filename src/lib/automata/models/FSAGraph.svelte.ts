@@ -52,6 +52,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 */
 	addEdge(from: Node, to: Node): Edge {
 		const newEdge = new Edge(from, to);
+		newEdge.addTransition(this._isPDA);
 		this.edgesMap.set(newEdge.id, newEdge);
 		return newEdge;
 	}

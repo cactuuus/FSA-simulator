@@ -42,7 +42,6 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		this.from = from;
 		this.to = to;
 		this.id = Edge.createId(from, to);
-		this.addTransition();
 	}
 
 	/**
