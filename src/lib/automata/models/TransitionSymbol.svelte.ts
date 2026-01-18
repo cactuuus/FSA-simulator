@@ -23,7 +23,7 @@ export class TransitionSymbol implements Serializable<SerializedTransitionSymbol
 	private _pop = $state<string | null>(TransitionSymbol.DISABLED);
 	private _push = $state<string | null>(TransitionSymbol.DISABLED);
 
-	constructor(consume: string = '', push: string | null = null, pop: string | null = null) {
+	constructor(consume: string = '', pop: string | null = null, push: string | null = null) {
 		this._consume = consume;
 		this._pop = pop;
 		this._push = push;
