@@ -10,6 +10,7 @@ import type { Serializable } from '$lib/utils/serialization';
  */
 export interface SerializedFSAGraph {
 	title: string;
+	isPDA: boolean;
 	nodes: SerializedNode[];
 	edges: SerializedEdge[];
 	startNodeId: string | null;
@@ -21,6 +22,7 @@ export interface SerializedFSAGraph {
  */
 export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	private _title = $state<string | null>();
+	private _isPDA = $state<boolean>(false);
 	readonly nodesMap = new SvelteMap<string, Node>();
 	readonly edgesMap = new SvelteMap<string, Edge>();
 	startNode = $state<Node | null>(null);
@@ -115,9 +117,24 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 */
 	reset(): void {
 		this._title = null;
+		this._isPDA = false;
 		this.nodesMap.clear();
 		this.edgesMap.clear();
 		this.startNode = null;
+	}
+
+	/**
+	 * Toggle PDA mode for the FSA graph.
+	 * Note: When switching from PDA to non-PDA, all stack operations in transition symbols will be lost.
+	 * @param value True to enable PDA mode, false to disable.
+	 */
+	togglePDA(value: boolean): void {
+		this.edges.forEach((edge) => {
+			edge.transitionSymbols.forEach((transition) => {
+				transition.toggleStackOps(value);
+			});
+		});
+		this._isPDA = value;
 	}
 
 	get nodes(): Node[] {
@@ -126,6 +143,10 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 
 	get edges(): Edge[] {
 		return Array.from(this.edgesMap.values());
+	}
+
+	get isPDA(): boolean {
+		return this._isPDA;
 	}
 
 	get title(): string {
@@ -139,6 +160,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	toJSON(): SerializedFSAGraph {
 		return {
 			title: this.title,
+			isPDA: this.isPDA,
 			nodes: this.nodes.map((node) => node.toJSON()),
 			edges: this.edges.map((edge) => edge.toJSON()),
 			startNodeId: this.startNode ? this.startNode.id : null
@@ -147,6 +169,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 
 	loadFromJSON(json: SerializedFSAGraph): void {
 		this.title = json.title;
+		this._isPDA = json.isPDA ?? false;
 		this.nodesMap.clear();
 		this.edgesMap.clear();
 		json.nodes.forEach((nodeJson) => {

@@ -31,7 +31,7 @@
 			{#if item instanceof Node}
 				<NodeDetails node={item} {fsaGraph} />
 			{:else if item instanceof Edge}
-				<EdgeDetails edge={item} />
+				<EdgeDetails edge={item} {fsaGraph} />
 			{/if}
 			<hr class="my-4 border-base-content/70" />
 			<button class="btn w-full btn-sm btn-error" onclick={() => selection.deleteAll()}>

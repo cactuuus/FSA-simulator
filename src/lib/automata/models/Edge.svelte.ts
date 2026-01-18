@@ -99,10 +99,11 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	}
 
 	/**
-	 * Adds a new transition symbol to the edge (EPSILON by default).
+	 * Adds a new transition symbol to the edge, with or without stack operations.
+	 * @param withStackOps True to create the transition symbol with stack operations, false otherwise.
 	 */
-	addTransition(): void {
-		this._transitionSymbols.push(new TransitionSymbol(TransitionSymbol.EPSILON));
+	addTransition(withStackOps: boolean = false): void {
+		this._transitionSymbols.push(TransitionSymbol.createEmpty(withStackOps));
 	}
 
 	/**

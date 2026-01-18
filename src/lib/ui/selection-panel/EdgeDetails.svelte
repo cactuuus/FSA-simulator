@@ -1,20 +1,26 @@
 <script lang="ts">
-	import type { Edge } from '$lib/automata/models';
+	import { TransitionSymbol, type Edge, FSAGraph } from '$lib/automata/models';
 	import { X, Plus } from '@lucide/svelte';
 
-	const { edge }: { edge: Edge } = $props();
+	const { edge, fsaGraph }: { edge: Edge; fsaGraph: FSAGraph } = $props();
 	const canDeleteTransition = $derived(edge.transitionSymbols.length > 1);
 </script>
 
 <div class="flex flex-col gap-4">
 	<div class="flex flex-col gap-2">
-		<h2>Symbols</h2>
+		<div class="flex items-center justify-between">
+			<h2>Symbols</h2>
+			<button class="btn btn-sm btn-warning" onclick={() => fsaGraph.togglePDA(!fsaGraph.isPDA)}>
+				{fsaGraph.isPDA ? 'Disable PDA Mode' : 'Enable PDA Mode'}
+			</button>
+		</div>
+		<p class=" text-sm text-base-content/70"></p>
 		<div class="flex max-h-120 flex-col gap-2 overflow-y-auto">
 			{#each edge.transitionSymbols as symbol, index}
-				<fieldset class="fieldset flex items-center gap-2 rounded-box bg-base-300 p-2">
+				<fieldset class="fieldset flex items-end gap-2 rounded-box bg-base-300 p-2">
 					<legend class="fieldset-legend w-full py-0">
 						<span class="badge border-0 bg-base-300 badge-sm">
-							[{index + 1}] {symbol.toString()}
+							{symbol.toString()}
 						</span>
 						<button
 							class="btn float-right btn-xs btn-error"
@@ -25,40 +31,43 @@
 							<X class="h-4 w-4" /> Remove
 						</button>
 					</legend>
-					<label for="consume-{index}" class="mr-3 flex-1">
+					<label for="consume-{index}" class="flex-1">
 						Consume
 						<input
 							id="consume-{index}"
 							type="text"
 							class="input-bordered input mt-1 w-full"
-							bind:value={symbol.consume}
+							bind:value={symbol.consumeRawValue}
+							placeholder={TransitionSymbol.EPSILON}
 						/>
 					</label>
-					<label for="pop-{index}" class="flex-1">
-						Pop (PDA)
-						<input
-							id="pop-{index}"
-							type="text"
-							class="input-bordered input mt-1 w-full"
-							bind:value={symbol.pop}
-							placeholder="null"
-						/>
-					</label>
-					<label for="push-{index}" class="flex-1">
-						Push (PDA)
-						<input
-							id="push-{index}"
-							type="text"
-							class="input-bordered input mt-1 w-full"
-							bind:value={symbol.push}
-							placeholder="null"
-						/>
-					</label>
+					{#if fsaGraph.isPDA}
+						<label for="pop-{index}" class="flex-1">
+							Pop (PDA)
+							<input
+								id="pop-{index}"
+								type="text"
+								class="input-bordered input mt-1 w-full"
+								bind:value={symbol.popRawValue}
+								placeholder={TransitionSymbol.EPSILON}
+							/>
+						</label>
+						<label for="push-{index}" class="flex-1">
+							Push (PDA)
+							<input
+								id="push-{index}"
+								type="text"
+								class="input-bordered input mt-1 w-full"
+								bind:value={symbol.pushRawValue}
+								placeholder={TransitionSymbol.EPSILON}
+							/>
+						</label>
+					{/if}
 				</fieldset>
 			{/each}
 		</div>
 	</div>
-	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition()}>
+	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition(fsaGraph.isPDA)}>
 		<Plus class="h-4 w-4" /> Add Symbol
 	</button>
 	{#if !edge.isLoopback()}
