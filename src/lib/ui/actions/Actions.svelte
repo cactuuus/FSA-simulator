@@ -102,7 +102,7 @@
 	 * Handles the PDA mode toggle process by showing a confirmation modal.
 	 */
 	function openTogglePdaModal() {
-		pendingPdaState = !app.fsaGraph.isPDA;
+		pendingPdaState = !app.fsaGraph.hasStackOps;
 		togglePdaModal.showModal();
 	}
 
@@ -112,7 +112,7 @@
 	 */
 	function togglePda(e: SubmitEvent) {
 		e.preventDefault();
-		app.fsaGraph.togglePDA(pendingPdaState);
+		app.fsaGraph.hasStackOps = pendingPdaState;
 		togglePdaModal.close();
 	}
 </script>
@@ -149,7 +149,7 @@
 	<ul tabindex="-1" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
 		<li>
 			<button onclick={() => openTogglePdaModal()}>
-				{#if app.fsaGraph.isPDA}
+				{#if app.fsaGraph.hasStackOps}
 					<X class="h-4 w-4" /> Disable PDA mode
 				{:else}
 					<Layers class="h-4 w-4" /> Enable PDA mode

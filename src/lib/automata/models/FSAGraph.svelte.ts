@@ -1,6 +1,7 @@
 import type { Point } from '$lib/geometry';
 import { Node, type SerializedNode } from '$lib/automata/models/Node.svelte';
 import { Edge, type SerializedEdge } from '$lib/automata/models/Edge.svelte';
+import { TransitionSymbol } from './TransitionSymbol.svelte';
 import type { FSAItem } from '$lib/automata/models/types';
 import { SvelteMap } from 'svelte/reactivity';
 import type { Serializable } from '$lib/utils/serialization';
@@ -10,10 +11,20 @@ import type { Serializable } from '$lib/utils/serialization';
  */
 export interface SerializedFSAGraph {
 	title: string;
-	isPDA: boolean;
+	hasStackOps: boolean;
 	nodes: SerializedNode[];
 	edges: SerializedEdge[];
 	startNodeId: string | null;
+}
+
+/**
+ * Types of finite state automata.
+ */
+export enum FSAType {
+	DFA = 'DFA',
+	NFA = 'NFA',
+	PDA = 'PDA',
+	DPDA = 'DPDA'
 }
 
 /**
@@ -22,11 +33,28 @@ export interface SerializedFSAGraph {
  */
 export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	private _title = $state<string | null>();
-	private _isPDA = $state<boolean>(false);
+	private _hasStackOps = $state<boolean>(false);
 	readonly nodesMap = new SvelteMap<string, Node>();
 	readonly edgesMap = new SvelteMap<string, Edge>();
 	startNode = $state<Node | null>(null);
 	isEmpty: boolean = $derived(this.nodesMap.size === 0);
+
+	nodes = $derived(Array.from(this.nodesMap.values()));
+	edges = $derived(Array.from(this.edgesMap.values()));
+	edgesBySource = $derived.by<Map<string, Edge[]>>(() => {
+		const edgesBySource: Map<string, Edge[]> = new SvelteMap();
+		for (const edge of this.edges) {
+			if (!edgesBySource.has(edge.from.id)) {
+				edgesBySource.set(edge.from.id, []);
+			}
+			edgesBySource.get(edge.from.id)!.push(edge);
+		}
+		return edgesBySource;
+	});
+	type = $derived.by(() => {
+		if (this.hasStackOps) return this.isDeterministic() ? FSAType.DPDA : FSAType.PDA;
+		return this.isDeterministic() ? FSAType.DFA : FSAType.NFA;
+	});
 
 	/**
 	 * Adds a new node to the FSA at the specified position.
@@ -52,7 +80,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 */
 	addEdge(from: Node, to: Node): Edge {
 		const newEdge = new Edge(from, to);
-		newEdge.addTransition(this._isPDA);
+		newEdge.addTransition(this.hasStackOps);
 		this.edgesMap.set(newEdge.id, newEdge);
 		return newEdge;
 	}
@@ -118,36 +146,60 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 */
 	reset(): void {
 		this._title = null;
-		this._isPDA = false;
+		this._hasStackOps = false;
 		this.nodesMap.clear();
 		this.edgesMap.clear();
 		this.startNode = null;
 	}
 
 	/**
-	 * Toggle PDA mode for the FSA graph.
-	 * Note: When switching from PDA to non-PDA, all stack operations in transition symbols will be lost.
-	 * @param value True to enable PDA mode, false to disable.
+	 * Checks if the FSA is deterministic.
+	 * @returns True if the FSA is deterministic, false otherwise.
 	 */
-	togglePDA(value: boolean): void {
-		this.edges.forEach((edge) => {
-			edge.transitionSymbols.forEach((transition) => {
+	isDeterministic(): boolean {
+		for (const node of this.nodes) {
+			const outgoingEdges = this.edgesBySource.get(node.id) ?? [];
+			const transitions = outgoingEdges.flatMap((edge: Edge) => edge.transitionSymbols) ?? [];
+
+			for (let i = 0; i < transitions.length; i++) {
+				const t1 = transitions[i];
+				// for non-PDA only, also check for simple epsilon transitions
+				if (!this.hasStackOps && transitions[i].consume === TransitionSymbol.EPSILON) return false;
+				for (let j = i + 1; j < transitions.length; j++) {
+					const t2 = transitions[j];
+					const consumeConflict =
+						t1.consume === t2.consume ||
+						t1.consume === TransitionSymbol.EPSILON ||
+						t2.consume === TransitionSymbol.EPSILON;
+					if (!this.hasStackOps && consumeConflict) return false;
+
+					const popConflict =
+						t1.pop === t2.pop ||
+						t1.pop === TransitionSymbol.EPSILON ||
+						t2.pop === TransitionSymbol.EPSILON;
+					if (consumeConflict && popConflict) return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	get hasStackOps(): boolean {
+		return this._hasStackOps;
+	}
+
+	/**
+	 * Toggle stack operations for the FSA graph, effectively switching between PDA and non-PDA.
+	 * Note: When switching from PDA to non-PDA, all stack operations in transition symbols will be lost.
+	 * @param value True to enable stack operations, false to disable.
+	 */
+	set hasStackOps(value: boolean) {
+		this.edges.forEach((edge: Edge) => {
+			edge.transitionSymbols.forEach((transition: TransitionSymbol) => {
 				transition.toggleStackOps(value);
 			});
 		});
-		this._isPDA = value;
-	}
-
-	get nodes(): Node[] {
-		return Array.from(this.nodesMap.values());
-	}
-
-	get edges(): Edge[] {
-		return Array.from(this.edgesMap.values());
-	}
-
-	get isPDA(): boolean {
-		return this._isPDA;
+		this._hasStackOps = value;
 	}
 
 	get title(): string {
@@ -161,7 +213,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	toJSON(): SerializedFSAGraph {
 		return {
 			title: this.title,
-			isPDA: this.isPDA,
+			hasStackOps: this.hasStackOps,
 			nodes: this.nodes.map((node) => node.toJSON()),
 			edges: this.edges.map((edge) => edge.toJSON()),
 			startNodeId: this.startNode ? this.startNode.id : null
@@ -170,7 +222,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 
 	loadFromJSON(json: SerializedFSAGraph): void {
 		this.title = json.title;
-		this._isPDA = json.isPDA ?? false;
+		this.hasStackOps = json.hasStackOps ?? false;
 		this.nodesMap.clear();
 		this.edgesMap.clear();
 		json.nodes.forEach((nodeJson) => {

@@ -101,7 +101,9 @@
 		class="absolute bottom-2 left-2 flex h-10 items-center rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
 		<span>
-			Nodes: {app.editor.fsaGraph.nodes.length} | Edges: {app.editor.fsaGraph.edges.length}
+			{app.editor.fsaGraph.type}
+			| Nodes: {app.editor.fsaGraph.nodes.length}
+			| Edges: {app.editor.fsaGraph.edges.length}
 		</span>
 	</div>
 	<div

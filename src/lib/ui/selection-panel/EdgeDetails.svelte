@@ -14,7 +14,7 @@
 				class="badge flex cursor-help items-center badge-sm badge-neutral"
 				title="PDA mode allows to use stack operations (pop & push) in transitions. You can toggle it in 'FSA -> Enable/Disable PDA mode'"
 			>
-				<span>PDA {fsaGraph.isPDA ? 'enabled' : 'disabled'}</span>
+				<span>PDA {fsaGraph.hasStackOps ? 'enabled' : 'disabled'}</span>
 				<CircleQuestionMark class="h-4 w-4 pb-0.5" />
 			</div>
 		</div>
@@ -45,7 +45,7 @@
 							placeholder={TransitionSymbol.EPSILON}
 						/>
 					</label>
-					{#if fsaGraph.isPDA}
+					{#if fsaGraph.hasStackOps}
 						<label for="pop-{index}" class="flex-1">
 							Pop (PDA)
 							<input
@@ -71,7 +71,7 @@
 			{/each}
 		</div>
 	</div>
-	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition(fsaGraph.isPDA)}>
+	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition(fsaGraph.hasStackOps)}>
 		<Plus class="h-4 w-4" /> Add Symbol
 	</button>
 	{#if !edge.isLoopback()}
