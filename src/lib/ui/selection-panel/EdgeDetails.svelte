@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { TransitionSymbol, type Edge, FSAGraph } from '$lib/automata/models';
-	import { X, Plus } from '@lucide/svelte';
+	import { X, Plus, CircleQuestionMark } from '@lucide/svelte';
 
 	const { edge, fsaGraph }: { edge: Edge; fsaGraph: FSAGraph } = $props();
 	const canDeleteTransition = $derived(edge.transitionSymbols.length > 1);
@@ -10,9 +10,13 @@
 	<div class="flex flex-col gap-2">
 		<div class="flex items-center justify-between">
 			<h2>Symbols</h2>
-			<button class="btn btn-sm btn-warning" onclick={() => fsaGraph.togglePDA(!fsaGraph.isPDA)}>
-				{fsaGraph.isPDA ? 'Disable PDA Mode' : 'Enable PDA Mode'}
-			</button>
+			<div
+				class="badge flex cursor-help items-center badge-sm badge-neutral"
+				title="PDA mode allows to use stack operations (pop & push) in transitions. You can toggle it in 'FSA -> Enable/Disable PDA mode'"
+			>
+				<span>PDA {fsaGraph.isPDA ? 'enabled' : 'disabled'}</span>
+				<CircleQuestionMark class="h-4 w-4 pb-0.5" />
+			</div>
 		</div>
 		<p class=" text-sm text-base-content/70"></p>
 		<div class="flex max-h-120 flex-col gap-2 overflow-y-auto">

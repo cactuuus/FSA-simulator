@@ -1,9 +1,20 @@
 <script lang="ts">
-	import { Folder, Download, ChevronDown, Loader, TriangleAlert } from '@lucide/svelte';
+	import {
+		Folder,
+		Download,
+		ChevronDown,
+		Loader,
+		TriangleAlert,
+		Info,
+		Layers,
+		X
+	} from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyError, notifySuccess } from '$lib/utils/notifications';
 
-	let confirmClearFsaModal: HTMLDialogElement;
+	let clearFsaModal: HTMLDialogElement;
+	let togglePdaModal: HTMLDialogElement;
+	let pendingPdaState = $state<boolean>(false); // used instead of a direct bind to avoid rsponsiveness issues with UI
 
 	/**
 	 * Opens the system's file dialog to select a .json file to upload.
@@ -52,7 +63,6 @@
 
 	/**
 	 * Downloads the current graph to disk.
-	 *
 	 */
 	async function downloadGraph() {
 		try {
@@ -77,25 +87,44 @@
 	 * Clears the current FSA graph then closes the confirmation dialog.
 	 * @param e The submit event from the confirmation form.
 	 */
-	async function confirmClearGraph(e: SubmitEvent) {
+	async function clearFsa(e: SubmitEvent) {
 		try {
 			e.preventDefault();
 			app.resetSession();
-			confirmClearFsaModal.close();
+			clearFsaModal.close();
 		} catch (error: unknown) {
 			console.error('Failed to clear graph:', error);
 			notifyError('Failed to clear graph, an unexpected error occurred. Please try again.');
 		}
 	}
+
+	/**
+	 * Handles the PDA mode toggle process by showing a confirmation modal.
+	 */
+	function openTogglePdaModal() {
+		pendingPdaState = !app.fsaGraph.isPDA;
+		togglePdaModal.showModal();
+	}
+
+	/**
+	 * Carries out the PDA toggle action then closes the confirmation modal.
+	 * @param e The submit event from the confirmation form.
+	 */
+	function togglePda(e: SubmitEvent) {
+		e.preventDefault();
+		app.fsaGraph.togglePDA(pendingPdaState);
+		togglePdaModal.close();
+	}
 </script>
 
+<!-- File menu -->
 <div class="dropdown dropdown-start">
-	<button tabindex="0" class="flex items-center gap-0.5 hover:text-secondary">
+	<button tabindex="0" class="flex items-center gap-0.5 px-2 hover:text-secondary">
 		File <ChevronDown class="h-4 w-4" />
 	</button>
 	<ul tabindex="-1" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
 		<li>
-			<button onclick={() => confirmClearFsaModal.showModal()}>
+			<button onclick={() => clearFsaModal.showModal()}>
 				<Loader class="h-4 w-4" /> New
 			</button>
 		</li>
@@ -112,7 +141,26 @@
 	</ul>
 </div>
 
-<dialog id="confirm-clear-fsa-modal" bind:this={confirmClearFsaModal} class="modal">
+<!-- FSA graph menu -->
+<div class="dropdown dropdown-start">
+	<button tabindex="0" class="flex items-center gap-0.5 px-2 hover:text-secondary">
+		FSA <ChevronDown class="h-4 w-4" />
+	</button>
+	<ul tabindex="-1" class="dropdown-content menu z-1 w-52 rounded-box bg-base-100 p-2 shadow-sm">
+		<li>
+			<button onclick={() => openTogglePdaModal()}>
+				{#if app.fsaGraph.isPDA}
+					<X class="h-4 w-4" /> Disable PDA mode
+				{:else}
+					<Layers class="h-4 w-4" /> Enable PDA mode
+				{/if}
+			</button>
+		</li>
+	</ul>
+</div>
+
+<!-- Clear FSA confirmation modal -->
+<dialog id="confirm-clear-fsa-modal" bind:this={clearFsaModal} class="modal">
 	<div class="modal-box">
 		<h3 class="flex items-center gap-2 text-lg font-bold text-error">
 			<TriangleAlert class="h-5 w-5" />
@@ -123,12 +171,52 @@
 			disk if you don't want to lose your work.
 		</p>
 		<div class="modal-action mt-4">
-			<form class="w-full" onsubmit={confirmClearGraph}>
+			<form class="w-full" onsubmit={clearFsa}>
 				<div class="flex justify-end gap-4">
-					<button type="button" class="btn" onclick={() => confirmClearFsaModal.close()}>
-						Cancel
-					</button>
+					<button type="button" class="btn" onclick={() => clearFsaModal.close()}> Cancel </button>
 					<button type="submit" class="btn btn-error">Confirm</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</dialog>
+
+<!-- Toggle PDA on/off confirmation modal -->
+<dialog id="confirm-toggle-pda-modal" bind:this={togglePdaModal} class="modal">
+	<div class="modal-box">
+		{#if pendingPdaState}
+			<!-- Enabling PDA -->
+			<h3 class="flex items-center gap-2 text-lg font-bold text-info">
+				<Info class="h-5 w-5" />
+				<span>Enable PDA Mode</span>
+			</h3>
+			<p class="pt-4">
+				This will turn your FSA into a PDA (Push Down Automaton), enabling stack operations (pop &
+				push) for all transitions.
+				<br />
+				You can always revert this change later, by disabling PDA mode.
+			</p>
+		{:else}
+			<!-- Disabling PDA -->
+			<h3 class="flex items-center gap-2 text-lg font-bold text-error">
+				<TriangleAlert class="h-5 w-5" />
+				<span>Disable PDA Mode</span>
+			</h3>
+			<p class="pt-4">
+				This will remove all stack operations (pop & push) from all transitions.
+				<br />
+				<strong>
+					Note that even re-enabling PDA later will not restore their current symbols!
+				</strong>
+			</p>
+		{/if}
+		<div class="modal-action mt-4">
+			<form class="w-full" onsubmit={togglePda}>
+				<div class="flex justify-end gap-4">
+					<button type="button" class="btn" onclick={() => togglePdaModal.close()}> Cancel </button>
+					<button type="submit" class="btn {pendingPdaState ? 'btn-info' : 'btn-error'}">
+						Confirm
+					</button>
 				</div>
 			</form>
 		</div>
