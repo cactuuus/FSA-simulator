@@ -3,7 +3,7 @@ import { Node, type SerializedNode } from '$lib/automata/models/Node.svelte';
 import { Edge, type SerializedEdge } from '$lib/automata/models/Edge.svelte';
 import { TransitionSymbol } from './TransitionSymbol.svelte';
 import type { FSAItem } from '$lib/automata/models/types';
-import { SvelteMap } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import type { Serializable } from '$lib/utils/serialization';
 
 /**
@@ -182,6 +182,18 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 			}
 		}
 		return true;
+	}
+
+	get alphabet(): Set<string> {
+		const alphabet = new SvelteSet<string>();
+		this.edges.forEach((edge: Edge) => {
+			edge.transitionSymbols.forEach((transition: TransitionSymbol) => {
+				alphabet.add(transition.consume);
+			});
+		});
+		// ensure epsilon is not included in the alphabet, just in case it was added
+		alphabet.delete(TransitionSymbol.EPSILON);
+		return alphabet;
 	}
 
 	get hasStackOps(): boolean {
