@@ -26,8 +26,9 @@
 
 	--text-size: 16px;
 	--text-style: 'Ubuntu Mono', monospace;
-	--text-stroke-width: 8px;
+	--text-stroke-width: 5px;
 	--text-weight: bold;
+	--text-halo-opacity: 0.85;
 
 	/* node specific styling */
 	--node-radius: 30px;
@@ -65,17 +66,23 @@ input[type='text'] {
 	padding: 0.15rem 0.5rem;
 }
 
+#drawing-board {
+	background-color: var(--board-bg-color);
+}
+
 .node {
 	stroke: var(--draw-color);
 	fill: transparent;
 	stroke-width: var(--node-stroke-width);
 
-	text {
+	.node-label {
 		pointer-events: none;
 		paint-order: stroke fill;
 		stroke-linejoin: round;
 		stroke: var(--board-bg-color);
 		fill: var(--draw-color);
+		stroke-width: var(--text-stroke-width);
+		stroke-opacity: var(--text-halo-opacity);
 		font-weight: var(--text-weight);
 		font-family: var(--text-style);
 		font-size: var(--text-size);
@@ -100,7 +107,6 @@ input[type='text'] {
 
 .edge {
 	fill: none;
-	color: var(--draw-color);
 	stroke: var(--draw-color);
 	stroke-width: var(--edge-stroke-width);
 
@@ -110,6 +116,7 @@ input[type='text'] {
 		stroke: var(--board-bg-color);
 		fill: var(--draw-color);
 		stroke-width: var(--text-stroke-width);
+		stroke-opacity: var(--text-halo-opacity);
 		font-weight: var(--text-weight);
 		font-family: var(--text-style);
 		font-size: var(--text-size);

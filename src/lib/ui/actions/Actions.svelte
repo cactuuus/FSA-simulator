@@ -7,10 +7,12 @@
 		TriangleAlert,
 		Info,
 		Layers,
-		X
+		X,
+		ImageDown
 	} from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import { notifyError, notifySuccess } from '$lib/utils/notifications';
+	import { cleanAndSerializeSvgGraph } from '$lib/utils/exportToSvg';
+	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
 
 	let clearFsaModal: HTMLDialogElement;
 	let togglePdaModal: HTMLDialogElement;
@@ -65,6 +67,10 @@
 	 * Downloads the current graph to disk.
 	 */
 	async function downloadGraph() {
+		if (app.fsaGraph.isEmpty) {
+			notifyWarning('The graph is empty, nothing to download.');
+			return;
+		}
 		try {
 			const filename = `${app.fsaGraph.title}.fsa`;
 			const data = JSON.stringify(app.fsaGraph.toJSON());
@@ -95,6 +101,35 @@
 		} catch (error: unknown) {
 			console.error('Failed to clear graph:', error);
 			notifyError('Failed to clear graph, an unexpected error occurred. Please try again.');
+		}
+	}
+
+	/**
+	 * Exports the current FSA graph as an SVG file and triggers a download.
+	 *
+	 * POTENTIAL FOR IMPROVEMENT: Right now, styles for exporting are hardcoded, and the download is triggered immediately. We could use a more dynamic approach, like:
+	 * - show a modal to let the user customise the SVG styling (maybe even the format?)
+	 * - show a preview of the SVG before downloading.
+	 */
+	async function exportAsSvg() {
+		if (app.fsaGraph.isEmpty) {
+			notifyWarning('The graph is empty, nothing to download.');
+			return;
+		}
+		try {
+			const rawSvg = document.getElementById('drawing-board') as SVGSVGElement | null;
+			const serialisedSvgGraph = cleanAndSerializeSvgGraph(rawSvg!);
+			const blob = new Blob([serialisedSvgGraph], { type: 'image/svg+xml' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${app.fsaGraph.title}.svg`;
+			a.click();
+			URL.revokeObjectURL(url);
+			notifySuccess('Your SVG download should have started, check your downloads folder.');
+		} catch (error: unknown) {
+			console.error('Failed to export SVG:', error);
+			notifyError('Failed to export SVG, an unexpected error occurred. Please try again.');
 		}
 	}
 
@@ -136,6 +171,11 @@
 		<li>
 			<button onclick={downloadGraph}>
 				<Download class="h-4 w-4" /> Save to disk
+			</button>
+		</li>
+		<li>
+			<button onclick={exportAsSvg}>
+				<ImageDown class="h-4 w-4" /> Export as SVG
 			</button>
 		</li>
 	</ul>

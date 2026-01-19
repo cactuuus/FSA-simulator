@@ -54,7 +54,7 @@
 	}
 </script>
 
-<section class="h-full w-full border border-base-300 bg-base-200">
+<section class="h-full w-full touch-none border border-base-300">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- svelte-ignore a11y_mouse_events_have_key_events -->
@@ -63,45 +63,47 @@
 	<svg
 		bind:this={svgElement}
 		viewBox={app.viewport.viewBox}
-		id="fsa-diagram"
-		class="h-full w-full touch-none"
+		id="drawing-board"
 		onpointerdown={inputHandler.handlePointerDown.bind(inputHandler)}
 		onpointermove={inputHandler.handlePointerMove.bind(inputHandler)}
 		onpointerup={inputHandler.handlePointerUp.bind(inputHandler)}
 		ondblclick={inputHandler.handleDoubleClick.bind(inputHandler)}
 		onwheel={handleWheel}
-		data-state={app.editor.currentState?.name}
 	>
 		<!--
-			Note: SVG renders elements in the order they appear in the code.
-		 -->
-		{#if app.fsaGraph.startNode}
-			<StartEdgeSvg startingNode={app.fsaGraph.startNode} />
-		{/if}
+		Note: SVG renders elements in the order they appear in the code.
+		-->
+		<g id="fsa-graph">
+			{#if app.fsaGraph.startNode}
+				<StartEdgeSvg startingNode={app.fsaGraph.startNode} />
+			{/if}
 
-		{#each app.fsaGraph.edges as edge (edge.id)}
-			<EdgeSvg
-				{edge}
-				isSelected={app.editor.selection.isSelected(edge)}
-				isInSelectionArea={app.editor.selection.isInArea(edge)}
-			/>
-		{/each}
+			{#each app.fsaGraph.edges as edge (edge.id)}
+				<EdgeSvg
+					{edge}
+					isSelected={app.editor.selection.isSelected(edge)}
+					isInSelectionArea={app.editor.selection.isInArea(edge)}
+				/>
+			{/each}
 
-		{#if app.editor.draftEdge.get}
-			<DraftEdgeSvg draftEdge={app.editor.draftEdge.get} />
-		{/if}
+			{#each app.fsaGraph.nodes as node (node.id)}
+				<NodeSvg
+					{node}
+					isSelected={app.editor.selection.isSelected(node)}
+					isInSelectionArea={app.editor.selection.isInArea(node)}
+				/>
+			{/each}
+		</g>
 
-		{#each app.fsaGraph.nodes as node (node.id)}
-			<NodeSvg
-				{node}
-				isSelected={app.editor.selection.isSelected(node)}
-				isInSelectionArea={app.editor.selection.isInArea(node)}
-			/>
-		{/each}
+		<g id="overlay-group">
+			{#if app.editor.draftEdge.get}
+				<DraftEdgeSvg draftEdge={app.editor.draftEdge.get} />
+			{/if}
 
-		{#if app.editor.selection.area}
-			{@const { start, end } = app.editor.selection.area}
-			<SelectionArea {start} {end} />
-		{/if}
+			{#if app.editor.selection.area}
+				{@const { start, end } = app.editor.selection.area}
+				<SelectionArea {start} {end} />
+			{/if}
+		</g>
 	</svg>
 </section>

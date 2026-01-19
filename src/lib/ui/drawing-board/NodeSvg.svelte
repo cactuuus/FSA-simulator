@@ -23,5 +23,7 @@
 			class="accepting-circle"
 		/>
 	{/if}
-	<text dominant-baseline="middle" x={node.pos.x} y={node.pos.y}>{node.label} </text>
+	<text class="node-label" dominant-baseline="middle" x={node.pos.x} y={node.pos.y}>
+		{node.label}
+	</text>
 </g>

@@ -33,7 +33,7 @@
 	</text>
 
 	<!-- hidden, thicker path, used for easier selection -->
-	<path d={shape} class="select-area" />
+	<path d={shape} class="select-area interaction-only" />
 </g>
 <!--
 <path
@@ -44,4 +44,5 @@
 	stroke-width="2"
 	stroke-dasharray="5,5"
 />
-<circle cx={edge.controlPoint.x} cy={edge.controlPoint.y} r="3" fill="red" /> -->
+<circle cx={edge.controlPoint.x} cy={edge.controlPoint.y} r="3" fill="red" />
+-->
