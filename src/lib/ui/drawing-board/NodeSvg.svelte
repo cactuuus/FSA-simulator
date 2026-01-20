@@ -14,7 +14,8 @@
 	class="node {isSelected ? 'selected' : ''}
 		   {isInSelectionArea ? 'in-selection-area' : ''} selectable"
 >
-	<circle cx={node.pos.x} cy={node.pos.y} r={Node.RADIUS} />
+	<circle cx={node.pos.x} cy={node.pos.y} r={Node.RADIUS} class="halo-stroke" />
+	<circle class="node-path" cx={node.pos.x} cy={node.pos.y} r={Node.RADIUS} />
 	{#if node.isAccepting}
 		<circle
 			cx={node.pos.x}

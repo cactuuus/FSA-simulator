@@ -22,6 +22,7 @@
 		<ArrowMarkerSvg id="arrow-{edge.id}" />
 	</defs>
 
+	<path d={shape} class="halo-stroke" />
 	<path d={shape} class="edge-path" marker-end="url(#arrow-{edge.id})" />
 
 	<text class="edge-label" x={labelPosition.x} y={labelPosition.y}>

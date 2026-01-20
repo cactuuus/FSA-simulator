@@ -73,12 +73,23 @@ function addEmbeddedStyling(clone: SVGSVGElement): void {
     #drawing-board {
         background-color: ${exportStyles.boardBgColor};
     }
-    .node, .edge {
+	.node {
+        fill: ${exportStyles.boardBgColor};
+		fill-opacity: ${exportStyles.textHaloOpacity};
+        color: ${exportStyles.drawColor};
+        stroke: ${exportStyles.drawColor};
+        stroke-width: ${exportStyles.graphStrokeWidth};
+	}
+    .edge {
         fill: transparent;
         color: ${exportStyles.drawColor};
         stroke: ${exportStyles.drawColor};
         stroke-width: ${exportStyles.graphStrokeWidth};
     }
+	node .accepting-circle {
+		fill: none;
+		stroke-width: calc(${exportStyles.graphStrokeWidth});
+	}
     .node .node-label, .edge .edge-label {
         paint-order: stroke fill;
         stroke-linejoin: round;
@@ -93,6 +104,12 @@ function addEmbeddedStyling(clone: SVGSVGElement): void {
     marker path {
         fill: ${exportStyles.drawColor};
     }
+	.halo-stroke {
+		fill: none;
+		stroke: ${exportStyles.boardBgColor};
+		stroke-opacity: ${exportStyles.textHaloOpacity};
+		stroke-width: calc(${exportStyles.graphStrokeWidth} * 3);
+	}
     `.trim();
 	clone.prepend(styleElement);
 }

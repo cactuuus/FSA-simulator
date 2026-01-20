@@ -4,13 +4,13 @@
  -->
 <script lang="ts">
 	const { id }: { id: string } = $props();
-	const size = 6;
+	const size = 4;
 </script>
 
 <marker
 	{id}
 	viewBox={`0 0 ${size} ${size}`}
-	refX={size}
+	refX={size - 1}
 	refY={size / 2}
 	markerWidth={size}
 	markerHeight={size}
