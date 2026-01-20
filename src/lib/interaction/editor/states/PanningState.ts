@@ -21,7 +21,7 @@ export class PanningState extends EditorState {
 	handleDragMove(ctx: EventContext): void {
 		const dx = ctx.event.clientX - (this._lastPointerPos?.x ?? 0);
 		const dy = ctx.event.clientY - (this._lastPointerPos?.y ?? 0);
-		this.editorCtx.viewport.panCanvas({ x: dx, y: dy });
+		this.editorCtx.viewport.panBy(dx, dy);
 		this._lastPointerPos = { x: ctx.event.clientX, y: ctx.event.clientY };
 	}
 

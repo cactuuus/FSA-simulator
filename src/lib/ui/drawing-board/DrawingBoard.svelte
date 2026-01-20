@@ -38,11 +38,14 @@
 
 	/**
 	 * Handle mouse wheel events.
-	 * Ctrl + Wheel to zoom in/out.
+	 * - Zoom in/out when Ctrl is pressed.
+	 * - Pan otherwise, Shift forces horizontal panning.
 	 */
 	function handleWheel(e: WheelEvent) {
+		e.preventDefault();
+		e.stopPropagation();
 		if (e.ctrlKey) {
-			e.preventDefault();
+			// Zooming in/out
 			const towardsPoint = inputHandler.getPointerPosFromEvent(e);
 			const direction = e.deltaY < 0 ? 1 : -1;
 			if (direction > 0) {
@@ -50,6 +53,15 @@
 			} else {
 				app.viewport.zoomOut(towardsPoint);
 			}
+		} else {
+			let deltaX = -e.deltaX;
+			let deltaY = -e.deltaY;
+			if (e.shiftKey) {
+				// force horizontal scrolling
+				deltaX = deltaY;
+				deltaY = 0;
+			}
+			app.viewport.panBy(deltaX, deltaY);
 		}
 	}
 </script>
