@@ -50,8 +50,13 @@ function matchViewBox(clone: SVGSVGElement, original: SVGSVGElement): void {
  * @param clone The cloned SVG element to clean.
  */
 function cleanFromUnnecessaryElements(clone: SVGSVGElement): void {
+	// remove elements that are not part of the actual graph content
 	const removableElements = ['#overlay-group', '.interaction-only'];
 	clone.querySelectorAll(removableElements.join(',')).forEach((element) => element.remove());
+
+	// remove styling classes used on the drawing board
+	clone.removeAttribute('class');
+
 	// POTENTIAL FOR IMPROVEMENT:
 	// (This is not very important as we're talking about lightweight SVGs already, but still I reckon half of their content is probably redundant)
 	// - unify arrow markers (defs element) to avoid duplicates. This requires updating all references accordingly.

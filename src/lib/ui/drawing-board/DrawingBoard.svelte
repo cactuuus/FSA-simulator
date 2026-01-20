@@ -54,7 +54,7 @@
 	}
 </script>
 
-<section class="h-full w-full touch-none border border-base-300">
+<section class="h-full w-full border border-base-300">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- svelte-ignore a11y_mouse_events_have_key_events -->
@@ -64,6 +64,7 @@
 		bind:this={svgElement}
 		viewBox={app.viewport.viewBox}
 		id="drawing-board"
+		class="h-full w-full touch-none"
 		onpointerdown={inputHandler.handlePointerDown.bind(inputHandler)}
 		onpointermove={inputHandler.handlePointerMove.bind(inputHandler)}
 		onpointerup={inputHandler.handlePointerUp.bind(inputHandler)}
