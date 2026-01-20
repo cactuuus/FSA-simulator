@@ -50,7 +50,7 @@
 <!-- Overlay to indicate the app is not mounted yet -->
 {#if !mounted}
 	<div
-		class="absolute z-100 flex h-full w-full flex-col items-center justify-center gap-4 bg-base-200/70"
+		class="absolute z-100 flex h-dvh w-full flex-col items-center justify-center gap-4 bg-base-200/70"
 	>
 		Loading...
 		<span class="loading loading-xl loading-spinner"></span>
@@ -66,7 +66,7 @@
 	</div>
 </header>
 
-<main class="relative h-[calc(100vh-3rem)] w-full">
+<main class="relative h-[calc(100dvh-3rem)] w-full">
 	{@render children?.()}
 </main>
 <Toast />
