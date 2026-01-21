@@ -39,7 +39,7 @@
 		<h3 class="text-lg font-bold">Rename FSA graph</h3>
 		<div class="modal-action mt-4">
 			<form class="w-full" onsubmit={saveAndClose}>
-				<input class="input" bind:value={newTitle} required autocomplete="off" />
+				<input id="rename-fsa" class="input" bind:value={newTitle} required autocomplete="off" />
 				<div class="mt-4 flex justify-end gap-4">
 					<button type="button" class="btn" onclick={closeModal}>Cancel</button>
 					<button type="submit" class="btn btn-success">Confirm</button>
