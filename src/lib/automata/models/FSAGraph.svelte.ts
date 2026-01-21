@@ -37,9 +37,11 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	readonly nodesMap = new SvelteMap<string, Node>();
 	readonly edgesMap = new SvelteMap<string, Edge>();
 	startNode = $state<Node | null>(null);
+	nodes: Node[] = $derived(Array.from(this.nodesMap.values()));
+	edges: Edge[] = $derived(Array.from(this.edgesMap.values()));
 	isEmpty: boolean = $derived(this.nodesMap.size === 0);
-	nodes = $derived(Array.from(this.nodesMap.values()));
-	edges = $derived(Array.from(this.edgesMap.values()));
+	hasStart: boolean = $derived(this.startNode !== null);
+	hasAcceptingNodes: boolean = $derived(this.nodes.some((node) => node.isAccepting));
 	edgesBySource = $derived.by<Map<string, Edge[]>>(() => {
 		const edgesBySource: Map<string, Edge[]> = new SvelteMap();
 		for (const edge of this.edges) {
