@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { FSAGraph } from '$lib/automata/models';
 	import { SquarePen } from '@lucide/svelte';
+	import type { FSAGraph } from '$lib/automata/models';
 
 	const { fsaGraph }: { fsaGraph: FSAGraph } = $props();
 	let modal: HTMLDialogElement;

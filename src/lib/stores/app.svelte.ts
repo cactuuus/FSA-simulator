@@ -1,7 +1,7 @@
-import { EditorManager } from '$lib/interaction/editor';
+import { storage } from '$lib/utils/storage';
 import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
 import { Viewport, type SerializedViewport } from '$lib/interaction';
-import { storage } from '$lib/utils/storage';
+import { EditorManager } from '$lib/interaction/editor';
 
 type AppMode = 'editing' | 'simulating';
 

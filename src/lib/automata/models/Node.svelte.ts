@@ -1,6 +1,6 @@
-import type { Point } from '$lib/geometry';
-import type { FSAItem } from '$lib/automata/models/types';
+import type { Point } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
+import type { FSAItem } from './types';
 
 /**
  * Serialized representation of a Node.

@@ -1,19 +1,15 @@
-import { type Point, midPoint, vectorBetween } from '$lib/geometry';
-import { Node } from '$lib/automata/models/Node.svelte';
-import {
-	TransitionSymbol,
-	type SerializedTransitionSymbol
-} from '$lib/automata/models/TransitionSymbol.svelte';
-import type { BaseEdge, FSAItem } from '$lib/automata/models/types';
+import { type Point, midPoint, vectorBetween } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
-
+import type { BaseEdge, FSAItem } from './types';
+import { Node } from './Node.svelte';
+import { Transition, type SerializedTransition } from './Transition.svelte';
 /**
  * Serialized representation of an Edge.
  */
 export interface SerializedEdge {
 	fromNodeId: string;
 	toNodeId: string;
-	transitionSymbols: SerializedTransitionSymbol[];
+	transitionSymbols: SerializedTransition[];
 	controlOffset: Point | null;
 	loopbackAngle: number;
 	forceStraight: boolean;
@@ -33,7 +29,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	readonly isLoopback: boolean;
 	private _controlOffset = $state<Point | null>(null);
 	private _loopbackAngle = $state<number>(Edge.LOOPBACK_DEFAULT_ANGLE);
-	private _transitionSymbols: TransitionSymbol[] = $state<TransitionSymbol[]>([]);
+	private _transitionSymbols: Transition[] = $state<Transition[]>([]);
 	readonly label = $derived<string[]>(this._transitionSymbols.map((ts) => ts.toString()));
 	forceStraight = $state<boolean>(false);
 	forceAlignCenter = $state<boolean>(false);
@@ -109,7 +105,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return this._loopbackAngle;
 	}
 
-	get transitionSymbols(): TransitionSymbol[] {
+	get transitionSymbols(): Transition[] {
 		return this._transitionSymbols;
 	}
 
@@ -118,7 +114,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	 * @param withStackOps True to create the transition symbol with stack operations, false otherwise.
 	 */
 	addTransition(withStackOps: boolean = false): void {
-		this._transitionSymbols.push(TransitionSymbol.createEmpty(withStackOps));
+		this._transitionSymbols.push(Transition.createEmpty(withStackOps));
 	}
 
 	/**
@@ -173,9 +169,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 			throw new Error(`Edge references missing target node: ${json.toNodeId}`);
 		}
 		const edge = new Edge(fromNode, toNode);
-		edge._transitionSymbols = json.transitionSymbols.map((tsJson) =>
-			TransitionSymbol.fromJSON(tsJson)
-		);
+		edge._transitionSymbols = json.transitionSymbols.map((tsJson) => Transition.fromJSON(tsJson));
 		edge._controlOffset = json.controlOffset ?? null;
 		edge._loopbackAngle = json.loopbackAngle ?? Edge.LOOPBACK_DEFAULT_ANGLE;
 		edge.forceStraight = json.forceStraight ?? false;

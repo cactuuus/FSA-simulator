@@ -1,4 +1,4 @@
-import { EditorState } from './EditorState';
+import { EditorState } from '$lib/interaction/editor/EditorState';
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node } from '$lib/automata/models';
 

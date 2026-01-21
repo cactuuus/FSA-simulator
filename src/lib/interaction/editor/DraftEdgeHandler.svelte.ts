@@ -1,4 +1,4 @@
-import type { Point } from '$lib/geometry';
+import type { Point } from '$lib/utils/geometry';
 import { type FSAGraph, DraftEdge, Edge, Node } from '$lib/automata/models';
 
 /**

@@ -1,8 +1,8 @@
 import { State } from '$lib/interaction';
 import type { FSAGraph } from '$lib/automata/models/FSAGraph.svelte';
 import type { Viewport } from '$lib/interaction/Viewport.svelte';
-import type { SelectionHandler } from '$lib/interaction/editor/SelectionHandler.svelte';
-import type { DraftEdgeHandler } from '$lib/interaction/editor/DraftEdgeHandler.svelte';
+import type { SelectionHandler } from './SelectionHandler.svelte';
+import type { DraftEdgeHandler } from './DraftEdgeHandler.svelte';
 
 /**
  * Abstract base class for editor states, extending the generic State class.

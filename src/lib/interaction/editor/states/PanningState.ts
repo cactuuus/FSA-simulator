@@ -1,6 +1,6 @@
-import { EditorState } from './EditorState';
+import type { Point } from '$lib/utils/geometry';
+import { EditorState } from '$lib/interaction/editor/EditorState';
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
-import type { Point } from '$lib/geometry';
 
 /**
  * State for panning the canvas by dragging.

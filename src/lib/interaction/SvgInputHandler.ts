@@ -1,6 +1,6 @@
 import { Node, Edge, type FSAGraph } from '$lib/automata/models';
-import type { Point } from '$lib/geometry/types';
-import type { State } from './State';
+import type { Point } from '$lib/utils/geometry';
+import type { State } from '$lib/interaction/State';
 
 /**
  * Context for pointer events, providing information about the event and its target.

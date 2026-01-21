@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Edge } from '$lib/automata/models';
-	import { GRAPH_GEOMETRY } from '$lib/utils/graphConfig';
-	import { getRegularEdgePath, getEdgeLabelPosition } from '$lib/utils/edgeUtils';
+	import { GRAPH_GEOMETRY, getRegularEdgePath, getEdgeLabelPosition } from '$lib/automata/visuals';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
 	const {
@@ -19,7 +18,7 @@
 		  {isInSelectionArea ? 'in-selection-area' : ''}"
 >
 	<defs>
-		<ArrowMarkerSvg id="arrow-{edge.id}" />
+		<ArrowMarkerSvg id="arrow-{edge.id}" size={GRAPH_GEOMETRY.arrowSize} />
 	</defs>
 
 	<path d={shape} class="halo-stroke" />

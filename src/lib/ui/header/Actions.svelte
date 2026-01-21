@@ -11,8 +11,8 @@
 		ImageDown
 	} from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import { cleanAndSerializeSvgGraph } from '$lib/utils/exportToSvg';
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
+	import { cleanAndSerializeSvgGraph } from '$lib/automata/visuals';
 
 	let clearFsaModal: HTMLDialogElement;
 	let togglePdaModal: HTMLDialogElement;

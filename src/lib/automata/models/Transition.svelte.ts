@@ -4,7 +4,7 @@ import type { Serializable } from '$lib/utils/serialization';
  * Serialized representation of a TransitionSymbol.
  * This can be a simple consume symbol, or include stack operations for PDAs.
  */
-export interface SerializedTransitionSymbol {
+export interface SerializedTransition {
 	consume: string;
 	pop: string | null;
 	push: string | null;
@@ -14,14 +14,14 @@ export interface SerializedTransitionSymbol {
  * Defines the transition symbol for an edge in the FSA. It includes the input symbol to consume,
  * as well as optional stack operations (pop and push) for PDAs.
  */
-export class TransitionSymbol implements Serializable<SerializedTransitionSymbol> {
+export class Transition implements Serializable<SerializedTransition> {
 	static readonly EMPTY = ''; // used for internal/raw representation of empty symbols
 	static readonly DISABLED = null; // used to indicate disabled operations (stack only)
 	static readonly EPSILON = 'ε'; // user-facing representation of empty symbols
 
-	private _consume = $state<string>(TransitionSymbol.EMPTY);
-	private _pop = $state<string | null>(TransitionSymbol.DISABLED);
-	private _push = $state<string | null>(TransitionSymbol.DISABLED);
+	private _consume = $state<string>(Transition.EMPTY);
+	private _pop = $state<string | null>(Transition.DISABLED);
+	private _push = $state<string | null>(Transition.DISABLED);
 
 	constructor(consume: string = '', pop: string | null = null, push: string | null = null) {
 		this._consume = consume;
@@ -34,32 +34,24 @@ export class TransitionSymbol implements Serializable<SerializedTransitionSymbol
 	 * @param withStackOps Whether to include stack operations (pop and push) in the transition symbol.
 	 * @returns A new TransitionSymbol instance.
 	 */
-	static createEmpty(withStackOps: boolean): TransitionSymbol {
+	static createEmpty(withStackOps: boolean): Transition {
 		if (withStackOps) {
-			return new TransitionSymbol(
-				TransitionSymbol.EMPTY,
-				TransitionSymbol.EMPTY,
-				TransitionSymbol.EMPTY
-			);
+			return new Transition(Transition.EMPTY, Transition.EMPTY, Transition.EMPTY);
 		} else {
-			return new TransitionSymbol(
-				TransitionSymbol.EMPTY,
-				TransitionSymbol.DISABLED,
-				TransitionSymbol.DISABLED
-			);
+			return new Transition(Transition.EMPTY, Transition.DISABLED, Transition.DISABLED);
 		}
 	}
 
 	get consume(): string {
-		return this._consume === TransitionSymbol.EMPTY ? TransitionSymbol.EPSILON : this._consume;
+		return this._consume === Transition.EMPTY ? Transition.EPSILON : this._consume;
 	}
 
 	get pop(): string | null {
-		return this._pop === TransitionSymbol.EMPTY ? TransitionSymbol.EPSILON : this._pop;
+		return this._pop === Transition.EMPTY ? Transition.EPSILON : this._pop;
 	}
 
 	get push(): string | null {
-		return this._push === TransitionSymbol.EMPTY ? TransitionSymbol.EPSILON : this._push;
+		return this._push === Transition.EMPTY ? Transition.EPSILON : this._push;
 	}
 
 	/**
@@ -99,20 +91,20 @@ export class TransitionSymbol implements Serializable<SerializedTransitionSymbol
 	 */
 	toggleStackOps(value: boolean): void {
 		if (!value) {
-			this._pop = TransitionSymbol.DISABLED;
-			this._push = TransitionSymbol.DISABLED;
+			this._pop = Transition.DISABLED;
+			this._push = Transition.DISABLED;
 		} else {
-			this._pop = TransitionSymbol.EMPTY;
-			this._push = TransitionSymbol.EMPTY;
+			this._pop = Transition.EMPTY;
+			this._push = Transition.EMPTY;
 		}
 	}
 
 	/**
-	 * Checks if stack operations are enabled for this transition symbol. It checks both, although they should be in sync, so there should be no case where one is enabled and the other is not.
+	 * Checks if stack operations are enabled for this transition. It checks both, although they should be in sync, so there should be no case where one is enabled and the other is not.
 	 * @returns True if both pop and push operations are enabled, false otherwise.
 	 */
 	hasStackOps(): boolean {
-		return this._pop !== TransitionSymbol.DISABLED && this._push !== TransitionSymbol.DISABLED;
+		return this._pop !== Transition.DISABLED && this._push !== Transition.DISABLED;
 	}
 
 	/**
@@ -128,7 +120,7 @@ export class TransitionSymbol implements Serializable<SerializedTransitionSymbol
 		return `${this.consume}`;
 	}
 
-	toJSON(): SerializedTransitionSymbol {
+	toJSON(): SerializedTransition {
 		return {
 			consume: this._consume,
 			pop: this._pop,
@@ -136,7 +128,7 @@ export class TransitionSymbol implements Serializable<SerializedTransitionSymbol
 		};
 	}
 
-	static fromJSON(json: SerializedTransitionSymbol): TransitionSymbol {
-		return new TransitionSymbol(json.consume, json.pop, json.push);
+	static fromJSON(json: SerializedTransition): Transition {
+		return new Transition(json.consume, json.pop, json.push);
 	}
 }

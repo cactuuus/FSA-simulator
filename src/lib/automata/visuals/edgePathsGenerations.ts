@@ -5,9 +5,9 @@ import {
 	pointOnLine,
 	midPointOnBezier,
 	angleTo
-} from '$lib/geometry';
-import { GRAPH_GEOMETRY } from './graphConfig';
+} from '$lib/utils/geometry';
 import { Edge, DraftEdge, type BaseEdge } from '$lib/automata/models';
+import { GRAPH_GEOMETRY } from './graphConfig';
 
 /**
  * Generate SVG path for quadratic Bezier curve with node edge termination.

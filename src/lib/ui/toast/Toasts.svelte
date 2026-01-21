@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { type NotificationEvent, NotificationType } from '$lib/utils/notifications';
 	import {
 		X,
 		CircleCheck,
@@ -9,6 +8,7 @@
 		CircleAlert,
 		type Icon as IconType
 	} from '@lucide/svelte';
+	import { type NotificationEvent, NotificationType } from '$lib/utils/notifications';
 
 	interface Notification extends NotificationEvent {
 		id: string;

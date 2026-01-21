@@ -1,7 +1,7 @@
-import type { Point } from '$lib/geometry';
-import { Node } from '$lib/automata/models/Node.svelte';
-import { Edge } from '$lib/automata/models/Edge.svelte';
-import type { BaseEdge } from '$lib/automata/models/types';
+import type { Point } from '$lib/utils/geometry';
+import type { BaseEdge } from './types';
+import { Node } from './Node.svelte';
+import { Edge } from './Edge.svelte';
 
 /**
  * Represents a temporary edge being drawn on the canvas. Used purely for visual feedback during

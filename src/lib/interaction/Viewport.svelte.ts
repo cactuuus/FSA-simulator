@@ -1,4 +1,4 @@
-import type { Point } from '$lib/geometry/types';
+import type { Point } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
 
 /**

@@ -1,8 +1,8 @@
-import { EditorState } from './EditorState';
+import { angleTo } from '$lib/utils/geometry';
+import { EditorState } from '$lib/interaction/editor/EditorState';
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node, Edge } from '$lib/automata/models';
-import { angleTo } from '$lib/geometry';
-import { getControlPointFromLabelPos } from '$lib/utils/edgeUtils';
+import { getControlPointFromLabelPos } from '$lib/automata/visuals';
 
 /**
  * State for selecting and manipulating nodes and edges in the FSA graph.
@@ -54,7 +54,7 @@ export class SelectState extends EditorState {
 		this._startPointerPos = ctx.pointerPos;
 
 		// case 1: clicked on empty canvas
-		if (ctx.isCanvas) {
+		if (ctx.isCanvas && this._startPointerPos) {
 			if (!ctx.event.ctrlKey) {
 				this.editorCtx.selection.clear();
 			}

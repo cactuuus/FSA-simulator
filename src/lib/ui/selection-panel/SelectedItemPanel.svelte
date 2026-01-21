@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { ChevronDown, Trash2 } from '@lucide/svelte';
 	import { type FSAItem, type FSAGraph, Node, Edge } from '$lib/automata/models';
 	import { SelectionHandler } from '$lib/interaction/editor';
 	import NodeDetails from './NodeDetails.svelte';
 	import EdgeDetails from './EdgeDetails.svelte';
-	import { ChevronDown, Trash2 } from '@lucide/svelte';
 
 	const { selection, fsaGraph }: { selection: SelectionHandler; fsaGraph: FSAGraph } = $props();
 	const items: FSAItem[] = $derived(selection.items);

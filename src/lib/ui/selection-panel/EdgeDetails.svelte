@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { TransitionSymbol, type Edge, FSAGraph } from '$lib/automata/models';
 	import { X, Plus, CircleQuestionMark } from '@lucide/svelte';
+	import { Transition, type Edge, FSAGraph } from '$lib/automata/models';
 
 	const { edge, fsaGraph }: { edge: Edge; fsaGraph: FSAGraph } = $props();
 	const canDeleteTransition = $derived(edge.transitionSymbols.length > 1);
@@ -42,7 +42,7 @@
 							type="text"
 							class="input-bordered input mt-1 w-full"
 							bind:value={symbol.consumeRawValue}
-							placeholder={TransitionSymbol.EPSILON}
+							placeholder={Transition.EPSILON}
 						/>
 					</label>
 					{#if fsaGraph.hasStackOps}
@@ -53,7 +53,7 @@
 								type="text"
 								class="input-bordered input mt-1 w-full"
 								bind:value={symbol.popRawValue}
-								placeholder={TransitionSymbol.EPSILON}
+								placeholder={Transition.EPSILON}
 							/>
 						</label>
 						<label for="push-{index}" class="flex-1">
@@ -63,7 +63,7 @@
 								type="text"
 								class="input-bordered input mt-1 w-full"
 								bind:value={symbol.pushRawValue}
-								placeholder={TransitionSymbol.EPSILON}
+								placeholder={Transition.EPSILON}
 							/>
 						</label>
 					{/if}

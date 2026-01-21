@@ -8,15 +8,10 @@ export const GRAPH_GEOMETRY = {
 	loopbackArcSize: 40,
 	labelLineHeight: 20,
 	bezierLabelDistanceBias: 0.3, // value between 0 and 1
-	get loopbackLabelOffset() {
-		return this.loopbackArcSize + this.nodeRadius + 40;
-	},
-	get edgeStartOffset() {
-		return this.nodeRadius + 4;
-	},
-	get edgeEndOffset() {
-		return this.nodeRadius + 6;
-	}
+	loopbackLabelOffset: 110, // accounting for loopback arc size & node radius
+	edgeStartOffset: 34, // accounting for node radius
+	edgeEndOffset: 36, // accounting for node radius + arrow offset
+	arrowSize: 4
 } as const;
 
 /**

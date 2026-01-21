@@ -4,11 +4,11 @@ import {
 	DrawEdgeState,
 	AddNodeState
 } from '$lib/interaction/editor/states';
-import { EditorState, type EditorContext } from './states/EditorState';
+import type { FSAGraph } from '$lib/automata/models/FSAGraph.svelte';
+import type { Viewport } from '$lib/interaction/Viewport.svelte';
+import { EditorState, type EditorContext } from './EditorState';
 import { SelectionHandler } from './SelectionHandler.svelte';
 import { DraftEdgeHandler } from './DraftEdgeHandler.svelte';
-import type { FSAGraph } from '$lib/automata/models/FSAGraph.svelte';
-import type { Viewport } from '../Viewport.svelte';
 
 /**
  * Representation of the 'editor' side of the application. It manages the editor states and generally holds references to all components needed for editing.

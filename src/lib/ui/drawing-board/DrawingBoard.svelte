@@ -1,15 +1,15 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { app } from '$lib/stores/app.svelte';
+	import { getGraphCSS } from '$lib/automata/visuals';
+	import { SvgInputHandler } from '$lib/interaction';
 	import NodeSvg from './NodeSvg.svelte';
 	import EdgeSvg from './EdgeSvg.svelte';
 	import StartEdgeSvg from './StartEdgeSvg.svelte';
 	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
 	import SelectionArea from './SelectionArea.svelte';
-	import { app } from '$lib/stores/app.svelte';
-	import { SvgInputHandler } from '$lib/interaction';
-	import { onMount } from 'svelte';
-	import { getGraphCSS } from '$lib/utils/graphConfig';
 
-	let svgElement: SVGSVGElement;
+	let drawingBoard: SVGSVGElement;
 	// svelte-ignore non_reactive_update - svgInputManager does not need to be reactive
 	let inputHandler: SvgInputHandler;
 
@@ -19,13 +19,13 @@
 	 * scaling the content.
 	 */
 	$effect(() => {
-		if (svgElement) {
+		if (drawingBoard) {
 			const resizeObserver = new ResizeObserver((entries) => {
 				const { width, height } = entries[0].contentRect;
 				app.viewport.canvasSize = { width, height };
 			});
 
-			resizeObserver.observe(svgElement);
+			resizeObserver.observe(drawingBoard);
 			return () => resizeObserver.disconnect();
 		}
 	});
@@ -34,7 +34,7 @@
 	 * Initialize the SVG input handler on mount.
 	 */
 	onMount(() => {
-		inputHandler = new SvgInputHandler(svgElement, app.fsaGraph, () => app.editor.currentState);
+		inputHandler = new SvgInputHandler(drawingBoard, app.fsaGraph, () => app.editor.currentState);
 	});
 
 	/**
@@ -74,7 +74,7 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<!-- Ignore the above warnings. For now, the drawing board won't be keyboard accessible.-->
 	<svg
-		bind:this={svgElement}
+		bind:this={drawingBoard}
 		viewBox={app.viewport.viewBox}
 		id="drawing-board"
 		class="h-full w-full touch-none"
@@ -122,6 +122,7 @@
 	</svg>
 </section>
 
+<!-- adding styles needed for the graph -->
 <svelte:head>
 	{@html `<style>${getGraphCSS('themed')}</style>`}
 </svelte:head>

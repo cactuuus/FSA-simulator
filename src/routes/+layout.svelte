@@ -1,9 +1,9 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { Actions, Toast, TitleEditor } from '$lib/ui';
 	import { onMount } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
+	import { Actions, Toasts, TitleEditor } from '$lib/ui';
 	import { notifyWarning } from '$lib/utils/notifications';
 
 	let { children } = $props();
@@ -61,4 +61,4 @@
 <main class="relative h-[calc(100dvh-3rem)] w-full">
 	{@render children?.()}
 </main>
-<Toast />
+<Toasts />

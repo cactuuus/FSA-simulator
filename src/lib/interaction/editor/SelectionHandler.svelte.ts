@@ -1,5 +1,5 @@
 import { SvelteSet } from 'svelte/reactivity';
-import type { Point } from '$lib/geometry';
+import type { Point } from '$lib/utils/geometry';
 import type { FSAItem, Edge, Node, FSAGraph } from '$lib/automata/models';
 
 /**

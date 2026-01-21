@@ -1,10 +1,10 @@
-import type { Point } from '$lib/geometry';
-import { Node, type SerializedNode } from '$lib/automata/models/Node.svelte';
-import { Edge, type SerializedEdge } from '$lib/automata/models/Edge.svelte';
-import { TransitionSymbol } from './TransitionSymbol.svelte';
-import type { FSAItem } from '$lib/automata/models/types';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+import type { Point } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
+import type { FSAItem } from './types';
+import { Node, type SerializedNode } from './Node.svelte';
+import { Edge, type SerializedEdge } from './Edge.svelte';
+import { Transition } from './Transition.svelte';
 
 /**
  * Serialized representation of an entire FSA graph.
@@ -163,19 +163,17 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 			for (let i = 0; i < transitions.length; i++) {
 				const t1 = transitions[i];
 				// for non-PDA only, also check for simple epsilon transitions
-				if (!this.hasStackOps && transitions[i].consume === TransitionSymbol.EPSILON) return false;
+				if (!this.hasStackOps && transitions[i].consume === Transition.EPSILON) return false;
 				for (let j = i + 1; j < transitions.length; j++) {
 					const t2 = transitions[j];
 					const consumeConflict =
 						t1.consume === t2.consume ||
-						t1.consume === TransitionSymbol.EPSILON ||
-						t2.consume === TransitionSymbol.EPSILON;
+						t1.consume === Transition.EPSILON ||
+						t2.consume === Transition.EPSILON;
 					if (!this.hasStackOps && consumeConflict) return false;
 
 					const popConflict =
-						t1.pop === t2.pop ||
-						t1.pop === TransitionSymbol.EPSILON ||
-						t2.pop === TransitionSymbol.EPSILON;
+						t1.pop === t2.pop || t1.pop === Transition.EPSILON || t2.pop === Transition.EPSILON;
 					if (consumeConflict && popConflict) return false;
 				}
 			}
@@ -186,12 +184,12 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	get alphabet(): Set<string> {
 		const alphabet = new SvelteSet<string>();
 		this.edges.forEach((edge: Edge) => {
-			edge.transitionSymbols.forEach((transition: TransitionSymbol) => {
+			edge.transitionSymbols.forEach((transition: Transition) => {
 				alphabet.add(transition.consume);
 			});
 		});
 		// ensure epsilon is not included in the alphabet, just in case it was added
-		alphabet.delete(TransitionSymbol.EPSILON);
+		alphabet.delete(Transition.EPSILON);
 		return alphabet;
 	}
 
@@ -206,7 +204,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 */
 	set hasStackOps(value: boolean) {
 		this.edges.forEach((edge: Edge) => {
-			edge.transitionSymbols.forEach((transition: TransitionSymbol) => {
+			edge.transitionSymbols.forEach((transition: Transition) => {
 				transition.toggleStackOps(value);
 			});
 		});

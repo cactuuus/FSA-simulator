@@ -1,4 +1,4 @@
-import type { Point } from '$lib/geometry';
+import type { Point } from '$lib/utils/geometry';
 
 /**
  * Basic interface for items in the FSA.

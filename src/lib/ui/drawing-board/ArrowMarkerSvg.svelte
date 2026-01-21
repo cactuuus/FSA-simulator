@@ -6,8 +6,7 @@
  end of the edge line, losing its 'pointiness'.
  -->
 <script lang="ts">
-	const { id }: { id: string } = $props();
-	const size = 4;
+	const { id, size }: { id: string; size: number } = $props();
 </script>
 
 <marker

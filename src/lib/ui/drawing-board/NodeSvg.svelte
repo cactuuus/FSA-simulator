@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Node } from '$lib/automata/models';
-	import { GRAPH_GEOMETRY } from '$lib/utils/graphConfig';
+	import { GRAPH_GEOMETRY } from '$lib/automata/visuals';
 
 	const {
 		node,
