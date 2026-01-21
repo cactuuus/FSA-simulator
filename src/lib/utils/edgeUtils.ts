@@ -3,17 +3,11 @@ import {
 	pointOnCircle,
 	vectorBetween,
 	pointOnLine,
-	pointOnBezierCurve,
+	midPointOnBezier,
 	angleTo
 } from '$lib/geometry';
-import { Edge, Node, DraftEdge, type BaseEdge } from '$lib/automata/models';
-
-export const LABEL_DISTANCE_BIAS = 0.5; // distance bias placing label between bezier midpoint and control point
-export const LOOPBACK_SIZE = 40; // fixed offset for loopback size
-export const LABEL_OFFSET = 40; // distance of the label from the arrow
-export const LINE_HEIGHT = 20; // height of each line in the label
-export const START_OFFSET = 3; // offset for node distance calculations, to avoid overlapping with node borders
-export const END_OFFSET = 5; // offset for node distance calculations, to avoid overlapping with node borders
+import { GRAPH_GEOMETRY } from './graphConfig';
+import { Edge, DraftEdge, type BaseEdge } from '$lib/automata/models';
 
 /**
  * Generate SVG path for quadratic Bezier curve with node edge termination.
@@ -44,24 +38,20 @@ function getQuadraticBezierPath(
  */
 export function getEdgeLabelPosition(edge: Edge): Point {
 	let position: Point;
-
 	if (edge.isLoopback()) {
-		const offset = LOOPBACK_SIZE + LABEL_OFFSET + Node.RADIUS + START_OFFSET;
-		position = pointOnCircle(edge.sourcePoint, offset, edge.loopbackAngle);
-	} else {
-		const curveMidpoint = pointOnBezierCurve(
-			0.5,
+		position = pointOnCircle(
 			edge.sourcePoint,
-			edge.controlPoint,
-			edge.targetPoint
+			GRAPH_GEOMETRY.loopbackLabelOffset,
+			edge.loopbackAngle
 		);
+	} else {
+		const midpoint = midPointOnBezier(edge.sourcePoint, edge.controlPoint, edge.targetPoint);
 		position = {
-			x: curveMidpoint.x + (edge.controlPoint.x - curveMidpoint.x) * LABEL_DISTANCE_BIAS,
-			y: curveMidpoint.y + (edge.controlPoint.y - curveMidpoint.y) * LABEL_DISTANCE_BIAS
+			x: midpoint.x + (edge.controlPoint.x - midpoint.x) * GRAPH_GEOMETRY.bezierLabelDistanceBias,
+			y: midpoint.y + (edge.controlPoint.y - midpoint.y) * GRAPH_GEOMETRY.bezierLabelDistanceBias
 		};
 	}
-
-	const verticalOffset = ((edge.label.length - 1) * LINE_HEIGHT) / 2;
+	const verticalOffset = ((edge.label.length - 1) * GRAPH_GEOMETRY.labelLineHeight) / 2;
 	return {
 		x: position.x,
 		y: position.y - verticalOffset
@@ -77,11 +67,12 @@ export function getEdgeLabelPosition(edge: Edge): Point {
  * TLDR: Allows the user to drag the label to adjust the Bezier curve.
  *
  * @param edge The edge for which to calculate the control point.
+ * @param labelPos The position of the label.
  * @return The calculated control point.
  */
 export function getControlPointFromLabelPos(edge: Edge, labelPos: Point): Point {
-	const midWeight = (1 - LABEL_DISTANCE_BIAS) * 0.25;
-	const controlWeight = 0.5 + 0.5 * LABEL_DISTANCE_BIAS;
+	const midWeight = (1 - GRAPH_GEOMETRY.bezierLabelDistanceBias) * 0.25;
+	const controlWeight = 0.5 + 0.5 * GRAPH_GEOMETRY.bezierLabelDistanceBias;
 	const midContribution = {
 		x: midWeight * (edge.sourcePoint.x + edge.targetPoint.x),
 		y: midWeight * (edge.sourcePoint.y + edge.targetPoint.y)
@@ -103,7 +94,7 @@ export function getLoopbackPath(edge: BaseEdge, startOffset: number, endOffset: 
 	const start = pointOnCircle(edge.sourcePoint, startOffset, edge.loopbackAngle + Math.PI / 4);
 	const end = pointOnCircle(edge.sourcePoint, endOffset, edge.loopbackAngle - Math.PI / 4);
 	return `M ${start.x} ${start.y}
-			A ${LOOPBACK_SIZE} ${LOOPBACK_SIZE}, 0, 1, 0, ${end.x} ${end.y}`;
+			A ${GRAPH_GEOMETRY.loopbackArcSize} ${GRAPH_GEOMETRY.loopbackArcSize}, 0, 1, 0, ${end.x} ${end.y}`;
 }
 
 /**
@@ -134,24 +125,22 @@ export function getStraightPath(
  * @returns The SVG path string representing the edge.
  */
 export function getRegularEdgePath(edge: Edge): string {
-	const adjustedStartOffset = Node.RADIUS + START_OFFSET;
-	const adjustedEndOffset = Node.RADIUS + END_OFFSET;
 	if (edge.isLoopback()) {
-		return getLoopbackPath(edge, adjustedStartOffset, adjustedEndOffset);
+		return getLoopbackPath(edge, GRAPH_GEOMETRY.edgeStartOffset, GRAPH_GEOMETRY.edgeEndOffset);
 	} else if (edge.isStraight()) {
 		return getStraightPath(
 			edge.sourcePoint,
 			edge.targetPoint,
-			adjustedStartOffset,
-			adjustedEndOffset
+			GRAPH_GEOMETRY.edgeStartOffset,
+			GRAPH_GEOMETRY.edgeEndOffset
 		);
 	} else {
 		return getQuadraticBezierPath(
 			edge.sourcePoint,
 			edge.targetPoint,
 			edge.controlPoint,
-			adjustedStartOffset,
-			adjustedEndOffset
+			GRAPH_GEOMETRY.edgeStartOffset,
+			GRAPH_GEOMETRY.edgeEndOffset
 		);
 	}
 }
@@ -165,7 +154,7 @@ export function getRegularEdgePath(edge: Edge): string {
 export function getStartEdgePath(toPoint: Point): string {
 	const length = 100;
 	const start: Point = { x: toPoint.x - length, y: toPoint.y };
-	return getStraightPath(start, toPoint, 0, Node.RADIUS + END_OFFSET);
+	return getStraightPath(start, toPoint, 0, GRAPH_GEOMETRY.edgeEndOffset);
 }
 
 /**
@@ -177,13 +166,13 @@ export function getStartEdgePath(toPoint: Point): string {
  */
 export function getDraftEdgePath(draftEdge: DraftEdge): string {
 	if (draftEdge.isLoopback()) {
-		return getLoopbackPath(draftEdge, Node.RADIUS + START_OFFSET, Node.RADIUS + END_OFFSET);
+		return getLoopbackPath(draftEdge, GRAPH_GEOMETRY.edgeStartOffset, GRAPH_GEOMETRY.edgeEndOffset);
 	} else {
 		return getStraightPath(
 			draftEdge.sourcePoint,
 			draftEdge.targetPoint,
-			Node.RADIUS + START_OFFSET,
-			draftEdge.pointingAtNode ? Node.RADIUS + END_OFFSET : 0
+			GRAPH_GEOMETRY.edgeStartOffset,
+			draftEdge.pointingAtNode ? GRAPH_GEOMETRY.edgeEndOffset : 0
 		);
 	}
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Edge } from '$lib/automata/models';
-	import { getRegularEdgePath, getEdgeLabelPosition, LINE_HEIGHT } from '$lib/utils/edgeUtils';
+	import { GRAPH_GEOMETRY } from '$lib/utils/graphConfig';
+	import { getRegularEdgePath, getEdgeLabelPosition } from '$lib/utils/edgeUtils';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
 	const {
@@ -8,7 +9,6 @@
 		isSelected,
 		isInSelectionArea
 	}: { edge: Edge; isSelected: boolean; isInSelectionArea: boolean } = $props();
-
 	const shape = $derived(getRegularEdgePath(edge));
 	const labelPosition = $derived(getEdgeLabelPosition(edge));
 </script>
@@ -27,7 +27,11 @@
 
 	<text class="edge-label" x={labelPosition.x} y={labelPosition.y}>
 		{#each edge.label as label, index}
-			<tspan x={labelPosition.x} dy={index === 0 ? 0 : LINE_HEIGHT} dominant-baseline="middle">
+			<tspan
+				x={labelPosition.x}
+				dy={index === 0 ? 0 : GRAPH_GEOMETRY.labelLineHeight}
+				dominant-baseline="middle"
+			>
 				{label}
 			</tspan>
 		{/each}

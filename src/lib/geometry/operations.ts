@@ -84,3 +84,15 @@ export function pointOnBezierCurve(t: number, start: Point, control: Point, end:
 		y: mt2 * start.y + 2 * mt * t * control.y + t2 * end.y
 	};
 }
+
+/**
+ * Calculate the midpoint on a quadratic Bezier curve.
+ * This is simply a wrapper around pointOnBezierCurve with t=0.5, made for convenience.
+ * @param start The starting point of the curve.
+ * @param control The control point of the curve.
+ * @param end The ending point of the curve.
+ * @returns The midpoint on the Bezier curve.
+ */
+export function midPointOnBezier(start: Point, control: Point, end: Point): Point {
+	return pointOnBezierCurve(0.5, start, control, end);
+}

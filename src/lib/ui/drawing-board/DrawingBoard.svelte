@@ -7,6 +7,7 @@
 	import { app } from '$lib/stores/app.svelte';
 	import { SvgInputHandler } from '$lib/interaction';
 	import { onMount } from 'svelte';
+	import { getGraphCSS } from '$lib/utils/graphConfig';
 
 	let svgElement: SVGSVGElement;
 	// svelte-ignore non_reactive_update - svgInputManager does not need to be reactive
@@ -120,3 +121,7 @@
 		</g>
 	</svg>
 </section>
+
+<svelte:head>
+	{@html `<style>${getGraphCSS('themed')}</style>`}
+</svelte:head>

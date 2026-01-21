@@ -1,17 +1,4 @@
-/**
- * Styles used for exported SVG graphs.
- * They are hardcoded here for simplicity, but could be made dynamic in the future.
- */
-const exportStyles = {
-	boardBgColor: 'white',
-	drawColor: 'black',
-	textSize: '16px',
-	textWeight: 'bold',
-	textHaloWidth: '5px',
-	textHaloOpacity: '0.85',
-	graphStrokeWidth: '2px',
-	padding: 20
-};
+import { getGraphCSS } from './graphConfig';
 
 /**
  * Cleans and serializes an SVG graph element for export.
@@ -20,9 +7,10 @@ const exportStyles = {
  * @returns Serialized SVG data in string format.
  */
 export function cleanAndSerializeSvgGraph(original: SVGSVGElement): string {
+	const defaultPadding = 20;
 	const clone = original.cloneNode(true) as SVGSVGElement;
 	cleanFromUnnecessaryElements(clone);
-	matchViewBox(clone, original);
+	matchViewBox(clone, original, defaultPadding);
 	addEmbeddedStyling(clone);
 	const serializer = new XMLSerializer();
 	const svgString = serializer.serializeToString(clone);
@@ -34,14 +22,14 @@ export function cleanAndSerializeSvgGraph(original: SVGSVGElement): string {
  * @param clone The cloned SVG element to modify.
  * @param original The original SVG element to read dimensions from.
  */
-function matchViewBox(clone: SVGSVGElement, original: SVGSVGElement): void {
+function matchViewBox(clone: SVGSVGElement, original: SVGSVGElement, padding: number): void {
 	const originalGraphComponent = original?.querySelector('#fsa-graph') as SVGGElement | null;
 	if (originalGraphComponent === null) throw new Error('Graph content not found in SVG');
 	const boundingBox = originalGraphComponent.getBBox();
 	clone.setAttribute(
 		'viewBox',
-		`${boundingBox.x - exportStyles.padding} ${boundingBox.y - exportStyles.padding}
-         ${boundingBox.width + exportStyles.padding * 2} ${boundingBox.height + exportStyles.padding * 2}`
+		`${boundingBox.x - padding} ${boundingBox.y - padding}
+         ${boundingBox.width + padding * 2} ${boundingBox.height + padding * 2}`
 	);
 }
 
@@ -69,47 +57,6 @@ function cleanFromUnnecessaryElements(clone: SVGSVGElement): void {
  */
 function addEmbeddedStyling(clone: SVGSVGElement): void {
 	const styleElement = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-	styleElement.textContent = `
-    #drawing-board {
-        background-color: ${exportStyles.boardBgColor};
-    }
-	.node {
-        fill: ${exportStyles.boardBgColor};
-		fill-opacity: ${exportStyles.textHaloOpacity};
-        color: ${exportStyles.drawColor};
-        stroke: ${exportStyles.drawColor};
-        stroke-width: ${exportStyles.graphStrokeWidth};
-	}
-    .edge {
-        fill: transparent;
-        color: ${exportStyles.drawColor};
-        stroke: ${exportStyles.drawColor};
-        stroke-width: ${exportStyles.graphStrokeWidth};
-    }
-	node .accepting-circle {
-		fill: none;
-		stroke-width: calc(${exportStyles.graphStrokeWidth});
-	}
-    .node .node-label, .edge .edge-label {
-        paint-order: stroke fill;
-        stroke-linejoin: round;
-        stroke: ${exportStyles.boardBgColor};
-        stroke-width: ${exportStyles.textHaloWidth};
-        stroke-opacity: ${exportStyles.textHaloOpacity};
-        fill: ${exportStyles.drawColor};
-        font-weight: ${exportStyles.textWeight};
-        font-size: ${exportStyles.textSize};
-        text-anchor: middle;
-    }
-    marker path {
-        fill: ${exportStyles.drawColor};
-    }
-	.halo-stroke {
-		fill: none;
-		stroke: ${exportStyles.boardBgColor};
-		stroke-opacity: ${exportStyles.textHaloOpacity};
-		stroke-width: calc(${exportStyles.graphStrokeWidth} * 3);
-	}
-    `.trim();
+	styleElement.textContent = getGraphCSS('light');
 	clone.prepend(styleElement);
 }

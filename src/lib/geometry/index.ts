@@ -5,5 +5,6 @@ export {
 	angleTo,
 	pointOnLine,
 	pointOnCircle,
-	pointOnBezierCurve
+	pointOnBezierCurve,
+	midPointOnBezier
 } from './operations';

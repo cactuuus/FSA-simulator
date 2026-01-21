@@ -1,6 +1,9 @@
 <!--
  Reusable arrowhead for varius types of edges. The id prop is used to uniquely identify each
  instance of this marker, otherwise CSS styles might not apply correctly.
+
+ NOTE: refX is adjusted to push the arrowhead a tiny bit further, as otherwise it overlaps with the
+ end of the edge line, losing its 'pointiness'.
  -->
 <script lang="ts">
 	const { id }: { id: string } = $props();

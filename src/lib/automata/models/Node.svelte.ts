@@ -17,8 +17,6 @@ export interface SerializedNode {
  * and acceptance status. Whether a node is starting or not is managed by the FSAGraph class.
  */
 export class Node implements FSAItem, Serializable<SerializedNode> {
-	static readonly RADIUS = 30;
-
 	readonly id: string;
 	private _pos = $state<Point>({ x: 0, y: 0 });
 	label = $state<string>('');
