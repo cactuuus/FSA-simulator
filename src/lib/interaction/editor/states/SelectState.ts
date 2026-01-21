@@ -83,7 +83,7 @@ export class SelectState extends EditorState {
 		const selection = this.editorCtx.selection.items;
 		if (selection.length === 1 && selection[0] instanceof Edge) {
 			const edge = selection[0] as Edge;
-			if (edge.isLoopback()) {
+			if (edge.isLoopback) {
 				const newAngle = angleTo(edge.sourcePoint, ctx.pointerPos);
 				edge.adjustLoopbackAngle(newAngle);
 			} else {

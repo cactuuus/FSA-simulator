@@ -38,7 +38,7 @@ function getQuadraticBezierPath(
  */
 export function getEdgeLabelPosition(edge: Edge): Point {
 	let position: Point;
-	if (edge.isLoopback()) {
+	if (edge.isLoopback) {
 		position = pointOnCircle(
 			edge.sourcePoint,
 			GRAPH_GEOMETRY.loopbackLabelOffset,
@@ -125,9 +125,9 @@ export function getStraightPath(
  * @returns The SVG path string representing the edge.
  */
 export function getRegularEdgePath(edge: Edge): string {
-	if (edge.isLoopback()) {
+	if (edge.isLoopback) {
 		return getLoopbackPath(edge, GRAPH_GEOMETRY.edgeStartOffset, GRAPH_GEOMETRY.edgeEndOffset);
-	} else if (edge.isStraight()) {
+	} else if (edge.isStraight) {
 		return getStraightPath(
 			edge.sourcePoint,
 			edge.targetPoint,
@@ -165,7 +165,7 @@ export function getStartEdgePath(toPoint: Point): string {
  * @returns The SVG path string representing the draft edge.
  */
 export function getDraftEdgePath(draftEdge: DraftEdge): string {
-	if (draftEdge.isLoopback()) {
+	if (draftEdge.isLoopback) {
 		return getLoopbackPath(draftEdge, GRAPH_GEOMETRY.edgeStartOffset, GRAPH_GEOMETRY.edgeEndOffset);
 	} else {
 		return getStraightPath(

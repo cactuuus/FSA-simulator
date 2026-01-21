@@ -36,7 +36,7 @@ export class DraftEdge implements BaseEdge {
 		this._isDuplicate = isDuplicate;
 	}
 
-	isLoopback(): boolean {
+	get isLoopback(): boolean {
 		if (this._to instanceof Node) {
 			return this.from.id === this._to.id;
 		}

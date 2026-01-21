@@ -74,7 +74,7 @@
 	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition(fsaGraph.hasStackOps)}>
 		<Plus class="h-4 w-4" /> Add Symbol
 	</button>
-	{#if !edge.isLoopback()}
+	{#if !edge.isLoopback}
 		<hr class="border-base-content/70" />
 		<label for="forceStraight" class="flex items-center justify-between gap-2">
 			Force Straight

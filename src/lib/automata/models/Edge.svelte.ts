@@ -30,18 +30,58 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	readonly id: string;
 	readonly from: Node;
 	readonly to: Node;
-	private _transitionSymbols: TransitionSymbol[] = $state<TransitionSymbol[]>([]);
-	readonly label = $derived<string[]>(this._transitionSymbols.map((ts) => ts.toString()));
+	readonly isLoopback: boolean;
 	private _controlOffset = $state<Point | null>(null);
 	private _loopbackAngle = $state<number>(Edge.LOOPBACK_DEFAULT_ANGLE);
-	private _midpoint = $derived<Point>(midPoint(this.sourcePoint, this.targetPoint));
+	private _transitionSymbols: TransitionSymbol[] = $state<TransitionSymbol[]>([]);
+	readonly label = $derived<string[]>(this._transitionSymbols.map((ts) => ts.toString()));
 	forceStraight = $state<boolean>(false);
 	forceAlignCenter = $state<boolean>(false);
+
+	isStraight = $derived.by<boolean>(() => {
+		return this.forceStraight || this._controlOffset === null;
+	});
+
+	controlPoint = $derived.by<Point>(() => {
+		const referencePoint = midPoint(this.sourcePoint, this.targetPoint);
+		if (this.isStraight) {
+			return referencePoint;
+		}
+		const offset = this.forceAlignCenter ? this.offsetSnappedToCenter : this._controlOffset;
+		// if the isStraight check is passed, it is guaranteed that controlOffset is not null
+		return {
+			x: referencePoint.x + offset!.x,
+			y: referencePoint.y + offset!.y
+		};
+	});
+
+	/**
+	 * Calculates the control offset snapped to the center line between source and target, forcing the control point to align with the center line, and therefore resulting in a symmetric curve.
+	 * @returns The centered control offset point.
+	 */
+	offsetSnappedToCenter = $derived.by<Point>(() => {
+		if (this._controlOffset === null || this.isLoopback) {
+			return { x: 0, y: 0 };
+		}
+		// get unit vector perpendicular to the edge (considering the edge as a stright line)
+		const edgeVector = vectorBetween(this.sourcePoint, this.targetPoint);
+		const perpVector = {
+			x: -edgeVector.y / edgeVector.magnitude,
+			y: edgeVector.x / edgeVector.magnitude
+		};
+		// distance along the perpendicular direction
+		const distance = this._controlOffset.x * perpVector.x + this._controlOffset.y * perpVector.y;
+		return {
+			x: distance * perpVector.x,
+			y: distance * perpVector.y
+		};
+	});
 
 	constructor(from: Node, to: Node) {
 		this.from = from;
 		this.to = to;
 		this.id = Edge.createId(from, to);
+		this.isLoopback = from.id === to.id;
 	}
 
 	/**
@@ -65,36 +105,12 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return this.to.pos;
 	}
 
-	get controlPoint(): Point {
-		if (this.isStraight()) {
-			return this._midpoint;
-		}
-		const offset = this.forceAlignCenter ? this.getOffsetSnappedToCenter() : this._controlOffset;
-		// if the isStraight check is passed, it is guaranteed that controlOffset is not null
-		return {
-			x: this._midpoint.x + offset!.x,
-			y: this._midpoint.y + offset!.y
-		};
-	}
-
 	get loopbackAngle(): number {
 		return this._loopbackAngle;
 	}
 
 	get transitionSymbols(): TransitionSymbol[] {
 		return this._transitionSymbols;
-	}
-
-	isLoopback(): boolean {
-		return this.from.id === this.to.id;
-	}
-
-	/**
-	 * Indicates whether the edge is straight (no curvature).
-	 * @returns True if the edge is straight, false otherwise.
-	 */
-	isStraight(): boolean {
-		return this.forceStraight || this._controlOffset === null;
 	}
 
 	/**
@@ -128,31 +144,10 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	 * @param newPosition The new position of the control point.
 	 */
 	updateControlPoint(newPosition: Point): void {
+		const referencePoint = midPoint(this.sourcePoint, this.targetPoint);
 		this._controlOffset = {
-			x: newPosition.x - this._midpoint.x,
-			y: newPosition.y - this._midpoint.y
-		};
-	}
-
-	/**
-	 * Calculates the control offset snapped to the center line between source and target, forcing the control point to align with the center line, and therefore resulting in a symmetric curve.
-	 * @returns The centered control offset point.
-	 */
-	private getOffsetSnappedToCenter(): Point {
-		if (this._controlOffset === null || this.isLoopback()) {
-			return { x: 0, y: 0 };
-		}
-		// get unit vector perpendicular to the edge (considering the edge as a stright line)
-		const edgeVector = vectorBetween(this.sourcePoint, this.targetPoint);
-		const perpVector = {
-			x: -edgeVector.y / edgeVector.magnitude,
-			y: edgeVector.x / edgeVector.magnitude
-		};
-		// distance along the perpendicular direction
-		const distance = this._controlOffset.x * perpVector.x + this._controlOffset.y * perpVector.y;
-		return {
-			x: distance * perpVector.x,
-			y: distance * perpVector.y
+			x: newPosition.x - referencePoint.x,
+			y: newPosition.y - referencePoint.y
 		};
 	}
 

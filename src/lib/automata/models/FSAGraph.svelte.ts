@@ -38,7 +38,6 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	readonly edgesMap = new SvelteMap<string, Edge>();
 	startNode = $state<Node | null>(null);
 	isEmpty: boolean = $derived(this.nodesMap.size === 0);
-
 	nodes = $derived(Array.from(this.nodesMap.values()));
 	edges = $derived(Array.from(this.edgesMap.values()));
 	edgesBySource = $derived.by<Map<string, Edge[]>>(() => {
@@ -156,7 +155,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * Checks if the FSA is deterministic.
 	 * @returns True if the FSA is deterministic, false otherwise.
 	 */
-	isDeterministic(): boolean {
+	private isDeterministic(): boolean {
 		for (const node of this.nodes) {
 			const outgoingEdges = this.edgesBySource.get(node.id) ?? [];
 			const transitions = outgoingEdges.flatMap((edge: Edge) => edge.transitionSymbols) ?? [];
