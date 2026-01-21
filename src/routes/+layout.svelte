@@ -2,12 +2,12 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { Actions, Toast, TitleEditor } from '$lib/ui';
-	import { onMount, untrack } from 'svelte';
+	import { onMount } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyWarning } from '$lib/utils/notifications';
 
 	let { children } = $props();
-	const DEBOUCE_DELAY = 10000; // milliseconds
+	const AUTOSAVE_TIMER = 10000; // milliseconds
 	let mounted = $state(false);
 
 	onMount(() => {
@@ -20,24 +20,16 @@
 		mounted = true;
 
 		if (hasStorage) {
-			// auto-save working graph and viewport changes
-			$effect(() => {
-				// simple way to trigger reactivity on graph and viewport changes
-				app.fsaGraph.toJSON();
-				app.viewport.toJSON();
-				const timeout = setTimeout(() => {
-					untrack(() => app.saveSession());
-				}, DEBOUCE_DELAY);
-				return () => clearTimeout(timeout);
-			});
-
-			// save before navigating away (close, refresh, etc)
-			function handleBeforeUnload() {
+			const autoSaveInterval = setInterval(() => {
+				app.saveSession();
+			}, AUTOSAVE_TIMER);
+			function saveBeforeClosing() {
 				app.saveSession();
 			}
-			window.addEventListener('beforeunload', handleBeforeUnload);
+			window.addEventListener('beforeunload', saveBeforeClosing);
 			return () => {
-				window.removeEventListener('beforeunload', handleBeforeUnload);
+				clearInterval(autoSaveInterval);
+				window.removeEventListener('beforeunload', saveBeforeClosing);
 			};
 		}
 	});
