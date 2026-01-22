@@ -90,6 +90,7 @@ export function getGraphCSS(
 		stroke-width: ${style.haloThickness}px;
 		stroke-opacity: ${style.haloOpacity};
 		fill: ${colors.drawColor};
+		fill-opacity: 1;
 		font-weight: ${style.textWeight};
 		font-size: ${style.textSize}px;
 		text-anchor: middle;
