@@ -10,28 +10,47 @@
 	const AUTOSAVE_TIMER = 10000; // milliseconds
 	let mounted = $state(false);
 
-	onMount(() => {
-		const hasStorage = app.canUseSessionStorage();
-		if (hasStorage) {
-			app.loadSession();
+	/**
+	 * Initializes the session by attempting to load the previous session from storage.
+	 */
+	function initializeSession(): void {
+		if (app.canUseSessionStorage()) {
+			try {
+				app.loadSession();
+			} catch (e) {
+				notifyWarning('Failed to load session data from storage. Starting a new session.');
+				app.resetSession();
+				console.error('Session load error:', e);
+			}
 		} else {
 			notifyWarning('Session storage is not available. Session data will not be saved.');
 		}
-		mounted = true;
+	}
 
-		if (hasStorage) {
-			const autoSaveInterval = setInterval(() => {
-				app.saveSession();
-			}, AUTOSAVE_TIMER);
-			function saveBeforeClosing() {
-				app.saveSession();
-			}
-			window.addEventListener('beforeunload', saveBeforeClosing);
-			return () => {
-				clearInterval(autoSaveInterval);
-				window.removeEventListener('beforeunload', saveBeforeClosing);
-			};
+	/**
+	 * Sets up autosaving of the session at regular intervals and before the window unloads.
+	 * @return A cleanup function to remove the interval and event listener.
+	 */
+	function setupAutoSave(timer: number): () => void {
+		if (!app.canUseSessionStorage()) return () => {}; // Do nothing
+		const autoSaveInterval = setInterval(() => {
+			app.saveSession();
+		}, timer);
+		function saveBeforeClosing() {
+			app.saveSession();
 		}
+		window.addEventListener('beforeunload', saveBeforeClosing);
+		return () => {
+			clearInterval(autoSaveInterval);
+			window.removeEventListener('beforeunload', saveBeforeClosing);
+		};
+	}
+
+	onMount(() => {
+		initializeSession();
+		const cleanupAutoSave = setupAutoSave(AUTOSAVE_TIMER);
+		mounted = true;
+		return cleanupAutoSave;
 	});
 </script>
 
