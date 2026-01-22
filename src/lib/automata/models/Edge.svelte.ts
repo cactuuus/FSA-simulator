@@ -9,7 +9,7 @@ import { Transition, type SerializedTransition } from './Transition.svelte';
 export interface SerializedEdge {
 	fromNodeId: string;
 	toNodeId: string;
-	transitionSymbols: SerializedTransition[];
+	transitions: SerializedTransition[];
 	controlOffset: Point | null;
 	loopbackAngle: number;
 	forceStraight: boolean;
@@ -105,7 +105,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return this._loopbackAngle;
 	}
 
-	get transitionSymbols(): Transition[] {
+	get transitions(): Transition[] {
 		return this._transitionSymbols;
 	}
 
@@ -151,7 +151,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return {
 			fromNodeId: this.from.id,
 			toNodeId: this.to.id,
-			transitionSymbols: this._transitionSymbols.map((ts) => ts.toJSON()),
+			transitions: this._transitionSymbols.map((ts) => ts.toJSON()),
 			controlOffset: this._controlOffset,
 			loopbackAngle: this._loopbackAngle,
 			forceStraight: this.forceStraight,
@@ -169,7 +169,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 			throw new Error(`Edge references missing target node: ${json.toNodeId}`);
 		}
 		const edge = new Edge(fromNode, toNode);
-		edge._transitionSymbols = json.transitionSymbols.map((tsJson) => Transition.fromJSON(tsJson));
+		edge._transitionSymbols = json.transitions.map((tsJson) => Transition.fromJSON(tsJson));
 		edge._controlOffset = json.controlOffset ?? null;
 		edge._loopbackAngle = json.loopbackAngle ?? Edge.LOOPBACK_DEFAULT_ANGLE;
 		edge.forceStraight = json.forceStraight ?? false;

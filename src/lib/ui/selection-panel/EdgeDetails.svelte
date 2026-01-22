@@ -3,7 +3,7 @@
 	import { Transition, type Edge, FSAGraph } from '$lib/automata/models';
 
 	const { edge, fsaGraph }: { edge: Edge; fsaGraph: FSAGraph } = $props();
-	const canDeleteTransition = $derived(edge.transitionSymbols.length > 1);
+	const canDeleteTransition = $derived(edge.transitions.length > 1);
 </script>
 
 <div class="flex flex-col gap-4">
@@ -20,16 +20,16 @@
 		</div>
 		<p class=" text-sm text-base-content/70"></p>
 		<div class="flex max-h-120 flex-col gap-2 overflow-y-auto">
-			{#each edge.transitionSymbols as symbol, index}
+			{#each edge.transitions as transition, index}
 				<fieldset class="fieldset flex items-end gap-2 rounded-box bg-base-300 p-2">
 					<legend class="fieldset-legend w-full py-0">
 						<span class="badge border-0 bg-base-300 badge-sm">
-							{symbol.toString()}
+							{transition.toString()}
 						</span>
 						<button
 							class="btn float-right btn-xs btn-error"
 							onclick={() => edge.removeTransition(index)}
-							title="Remove this transition symbol"
+							title="Remove this transition"
 							disabled={!canDeleteTransition}
 						>
 							<X class="h-4 w-4" /> Remove
@@ -41,7 +41,7 @@
 							id="consume-{index}"
 							type="text"
 							class="input-bordered input mt-1 w-full"
-							bind:value={symbol.consumeRawValue}
+							bind:value={transition.consumeRawValue}
 							placeholder={Transition.EPSILON}
 						/>
 					</label>
@@ -52,7 +52,7 @@
 								id="pop-{index}"
 								type="text"
 								class="input-bordered input mt-1 w-full"
-								bind:value={symbol.popRawValue}
+								bind:value={transition.popRawValue}
 								placeholder={Transition.EPSILON}
 							/>
 						</label>
@@ -62,7 +62,7 @@
 								id="push-{index}"
 								type="text"
 								class="input-bordered input mt-1 w-full"
-								bind:value={symbol.pushRawValue}
+								bind:value={transition.pushRawValue}
 								placeholder={Transition.EPSILON}
 							/>
 						</label>
@@ -72,7 +72,7 @@
 		</div>
 	</div>
 	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition(fsaGraph.hasStackOps)}>
-		<Plus class="h-4 w-4" /> Add Symbol
+		<Plus class="h-4 w-4" /> Add transition
 	</button>
 	{#if !edge.isLoopback}
 		<hr class="border-base-content/70" />

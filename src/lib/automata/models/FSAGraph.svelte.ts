@@ -160,7 +160,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	private isDeterministic(): boolean {
 		for (const node of this.nodes) {
 			const outgoingEdges = this.edgesBySource.get(node.id) ?? [];
-			const transitions = outgoingEdges.flatMap((edge: Edge) => edge.transitionSymbols) ?? [];
+			const transitions = outgoingEdges.flatMap((edge: Edge) => edge.transitions) ?? [];
 
 			for (let i = 0; i < transitions.length; i++) {
 				const t1 = transitions[i];
@@ -186,7 +186,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	get alphabet(): Set<string> {
 		const alphabet = new SvelteSet<string>();
 		this.edges.forEach((edge: Edge) => {
-			edge.transitionSymbols.forEach((transition: Transition) => {
+			edge.transitions.forEach((transition: Transition) => {
 				alphabet.add(transition.consume);
 			});
 		});
@@ -206,7 +206,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 */
 	set hasStackOps(value: boolean) {
 		this.edges.forEach((edge: Edge) => {
-			edge.transitionSymbols.forEach((transition: Transition) => {
+			edge.transitions.forEach((transition: Transition) => {
 				transition.toggleStackOps(value);
 			});
 		});
