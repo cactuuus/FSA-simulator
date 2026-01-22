@@ -14,6 +14,7 @@
 * {
 	font-family: 'Ubuntu Mono', monospace;
 	box-sizing: border-box;
+	border-collapse: collapse;
 }
 
 :root {
@@ -99,4 +100,37 @@ svg text {
 	to {
 		width: 100%;
 	}
+}
+
+#transition-table {
+	border: 1px solid oklch(from var(--color-base-content) l c h / 0.2);
+	text-align: center;
+}
+
+#transition-table td,
+#transition-table th {
+	padding: 0.5rem 0.75rem;
+}
+
+#transition-table #header-row {
+	background-color: var(--color-base-300);
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+#transition-table #header-row-consume th,
+#transition-table #sub-header-row-pop th {
+	border: 1px solid oklch(from var(--color-base-content) l c h / 0.2);
+}
+
+#transition-table th,
+#transition-table td {
+	color: var(--color-base-content);
+	border-left: 1px solid oklch(from var(--color-base-content) l c h / 0.2);
+	border-right: 1px solid oklch(from var(--color-base-content) l c h / 0.2);
+}
+
+#tranisition-table .header-row #header-row-consume th {
+	border: 1px solid oklch(from var(--color-base-content) l c h / 0.2);
 }

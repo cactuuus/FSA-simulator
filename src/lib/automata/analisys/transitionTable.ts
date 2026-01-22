@@ -3,82 +3,104 @@ import { FSAGraph, Node, Transition } from '$lib/automata/models';
 /**
  * Represents a transition table for an FSA without stack operations (basically DFA & NFA).
  * - states: list of state labels (rows).
- * - alphabet: list of input symbols (columns).
- * - content: 3D array in the format **[state][input symbol][target state]**. In other words, **content[i][j]** gives the list of target states when in **state i** and reading input **symbol j**.
+ * - inputs: list of input symbols (representing the FSA state needed for the transition) (columns).
+ * - content: 3D array where content[i][j] is a list of target state labels reachable from state i on input j.
  *
- * NOTE: **content[i][j]** can be an empty list (no transitions), a single-element list (deterministic transition), or a multi-element list (non-deterministic transitions).
+ * For FSAs with stack operations (PDAs), the input symbols also include stack pop operations, and content[i][j] includes push operations.
  */
 export interface TransitionTable {
 	states: string[];
-	alphabet: string[];
+	inputs: InputSymbol[];
 	content: string[][][];
 }
 
 /**
- * Represents a transition table for an FSA without stack operations (basically DPDA & PDA).
- * - states: list of state labels (rows).
- * - alphabet: list of input symbols paired with stack operations (columns).
- * - content: 3D array in the format **[state][(input symbol, symbol to pop)][symbol to push & target state]**. In other words, **content[(i,x)][j]** gives the list of target states with stack top when in **state i** and popping **symbol x** from the stack.
- *
- * NOTE: **content[i][j]** can be an empty list (no transitions), a single-element list (deterministic transition), or a multi-element list (non-deterministic transitions).
+ * Represents an input symbol, possibly paired with a stack operation.
+ * Mostly made as a helper for abstracting information about transitions in both PDA and non-PDA FSAs.
  */
-export interface TransitionTableWithStack {
-	states: string[];
-	alphabet: string[][];
-	content: string[][][];
+export class InputSymbol {
+	readonly consume: string;
+	readonly pop?: string;
+
+	constructor(consume: string, pop?: string) {
+		this.consume = consume;
+		this.pop = pop;
+	}
+
+	compare(other: InputSymbol): number {
+		if (this.consume === Transition.EPSILON && other.consume !== Transition.EPSILON) return 1;
+		if (other.consume === Transition.EPSILON && this.consume !== Transition.EPSILON) return -1;
+		const consumeComparison = this.consume.localeCompare(other.consume);
+		if (consumeComparison !== 0) return consumeComparison;
+		return (this.pop ?? '').localeCompare(other.pop ?? '');
+	}
+
+	static sort(symbols: Iterable<InputSymbol>): InputSymbol[] {
+		return Array.from(symbols).sort((a, b) => a.compare(b));
+	}
+
+	static fromTransition(transition: Transition): InputSymbol {
+		return new InputSymbol(transition.consume, transition.pop ?? undefined);
+	}
+
+	toString(): string {
+		return this.pop ? `${this.consume},${this.pop}` : this.consume;
+	}
 }
 
 /**
  * Generates the transition table for the given FSA.
  * @param fsa The FSA graph.
- * @returns The correcponding transition table.
- */
-export function getTransitionTable(fsa: FSAGraph) {
-	if (fsa.hasStackOps) return getTransitionTableWithStack(fsa);
-	return getTransitionTableWithoutStack(fsa);
-}
-
-/**
- * Generates the transition table for an FSA without stack operations (DFA & NFA).
- * @param fsa The FSA graph.
  * @returns The corresponding transition table.
  */
-function getTransitionTableWithoutStack(fsa: FSAGraph): TransitionTable {
-	const uniqueLabels = getNodeIdToLabelMap(fsa.nodes);
-	const sortedNodes = [...fsa.nodes].sort((a, b) => {
-		const labelA = uniqueLabels.get(a.id)!;
-		const labelB = uniqueLabels.get(b.id)!;
-		return labelA.localeCompare(labelB);
+export function getTransitionTable(fsa: FSAGraph) {
+	const { uniqueLabels, sortedNodes } = labelAndSortNodes(fsa.nodes);
+	const states = sortedNodes.map((node) => {
+		let label = uniqueLabels.get(node.id)!;
+		if (node.isAccepting) label = `[${label}]`;
+		if (node.id === fsa.startNode?.id) label = `→ ${label}`;
+		return `${label}`;
 	});
-
-	const states = sortedNodes.map((node) => uniqueLabels.get(node.id)!);
-	const alphabet = sortedAlphabet(fsa.alphabet);
-	const content = emptyTransitionMatrix(states.length, alphabet.length);
+	const inputs = getInputSymbols(fsa);
+	const content = emptyTransitionMatrix(states.length, inputs.length);
 
 	// for quick lookup of symbol index (aka column index)
 	const symbolIndex = new Map<string, number>();
-	alphabet.forEach((symbol, index) => symbolIndex.set(symbol, index));
+	inputs.forEach((symbol, index) => symbolIndex.set(symbol.toString(), index));
 
 	sortedNodes.forEach((node, row) => {
 		const outgoingEdges = fsa.edgesBySource.get(node.id) ?? [];
 		outgoingEdges.forEach((edge) => {
 			edge.transitions.forEach((transition) => {
 				const targetLabel = uniqueLabels.get(edge.to.id)!;
-				const col = symbolIndex.get(transition.consume)!;
-				content[row][col].push(targetLabel);
+				const inputSymbol = new InputSymbol(transition.consume, transition.pop ?? undefined);
+				const col = symbolIndex.get(inputSymbol.toString())!;
+
+				content[row][col].push(fsa.hasStackOps ? `${transition.push},${targetLabel}` : targetLabel);
 			});
 		});
 	});
-
-	return { states, alphabet, content };
+	return { states, inputs, content };
 }
 
-function getTransitionTableWithStack(fsa: FSAGraph): TransitionTableWithStack {
-	const table: TransitionTableWithStack = { states: [], alphabet: [], content: [] };
-
-	throw new Error('Not yet implemented');
-
-	return table;
+/**
+ * Generates unique labels for the given nodes and returns them sorted by their newly assigned uniquelabels.
+ * @param nodes The list of nodes to organise.
+ * @returns An object containing:
+ *  - uniqueLabels: A map from node IDs to their unique labels.
+ *  - sortedNodes: The list of nodes sorted by their unique labels.
+ */
+function labelAndSortNodes(nodes: Node[]): {
+	uniqueLabels: Map<string, string>;
+	sortedNodes: Node[];
+} {
+	const uniqueLabels = nodeIdToLabelMap(nodes);
+	const sortedNodes = [...nodes].sort((a, b) => {
+		const labelA = uniqueLabels.get(a.id)!;
+		const labelB = uniqueLabels.get(b.id)!;
+		return labelA.localeCompare(labelB);
+	});
+	return { uniqueLabels, sortedNodes };
 }
 
 /**
@@ -87,7 +109,7 @@ function getTransitionTableWithStack(fsa: FSAGraph): TransitionTableWithStack {
  * @param nodes The list of nodes in the FSA.
  * @returns A map from node IDs to their unique labels.
  */
-function getNodeIdToLabelMap(nodes: Node[]): Map<string, string> {
+function nodeIdToLabelMap(nodes: Node[]): Map<string, string> {
 	const seen = new Set<string>();
 	const idToLabel = new Map<string, string>();
 
@@ -106,16 +128,19 @@ function getNodeIdToLabelMap(nodes: Node[]): Map<string, string> {
 }
 
 /**
- * Returns a sorted array of the given alphabet, with EPSILON always at the end.
- * @param alphabet The input alphabet as a set of strings.
- * @returns A sorted array of the alphabet.
+ * Extracts and sorts the unique input symbols from the FSA's transitions.
+ * @param fsa The FSA graph.
+ * @returns A sorted array of unique input symbols.
  */
-function sortedAlphabet(alphabet: Set<string>): Array<string> {
-	return [...alphabet].sort((a, b) => {
-		if (a === Transition.EPSILON) return 1;
-		if (b === Transition.EPSILON) return -1;
-		return a.localeCompare(b);
+function getInputSymbols(fsa: FSAGraph): InputSymbol[] {
+	const symbols = new Map<string, InputSymbol>();
+	fsa.edges.forEach((edge) => {
+		edge.transitions.forEach((transition) => {
+			const inputSymbol = InputSymbol.fromTransition(transition);
+			symbols.set(inputSymbol.toString(), inputSymbol);
+		});
 	});
+	return InputSymbol.sort(symbols.values());
 }
 
 /**

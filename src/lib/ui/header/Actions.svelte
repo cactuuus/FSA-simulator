@@ -8,14 +8,17 @@
 		Info,
 		Layers,
 		X,
-		ImageDown
+		ImageDown,
+		Table2
 	} from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
 	import { cleanAndSerializeSvgGraph } from '$lib/automata/visuals';
+	import TransitionTable from './TransitionTable.svelte';
 
 	let clearFsaModal: HTMLDialogElement;
 	let togglePdaModal: HTMLDialogElement;
+	let transitionTableModal: HTMLDialogElement;
 	let pendingPdaState = $state<boolean>(false); // used instead of a direct bind to avoid rsponsiveness issues with UI
 
 	/**
@@ -196,6 +199,11 @@
 				{/if}
 			</button>
 		</li>
+		<li>
+			<button onclick={() => transitionTableModal.showModal()}>
+				<Table2 class="h-4 w-4" /> Transition table
+			</button>
+		</li>
 	</ul>
 </div>
 
@@ -258,6 +266,25 @@
 						Confirm
 					</button>
 				</div>
+			</form>
+		</div>
+	</div>
+</dialog>
+
+<!-- Transition table modal -->
+<dialog id="transition-table-modal" bind:this={transitionTableModal} class="modal">
+	<div class="modal-box flex max-h-10/12 max-w-5xl flex-col overflow-hidden">
+		<h3 class="text-lg font-bold">Transition Table</h3>
+		<p class="mt-2 text-base-content/70">
+			This table shows the transitions of the current FSA. Rows represent states, while columns
+			represent the input (and top-of-stack for PDAs) needed for the transition.
+		</p>
+		<div class="relative mt-4 overflow-auto">
+			<TransitionTable fsaGraph={app.fsaGraph} />
+		</div>
+		<div class="modal-action mt-4">
+			<form method="dialog">
+				<button class="btn">Close</button>
 			</form>
 		</div>
 	</div>
