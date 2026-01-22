@@ -9,11 +9,13 @@
 		Layers,
 		X,
 		ImageDown,
+		OctagonAlert,
 		Table2
 	} from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
 	import { cleanAndSerializeSvgGraph } from '$lib/automata/visuals';
+	import { validateFSA } from '$lib/automata/analisys/validation';
 	import TransitionTable from './TransitionTable.svelte';
 
 	let clearFsaModal: HTMLDialogElement;
@@ -153,6 +155,19 @@
 		app.fsaGraph.hasStackOps = pendingPdaState;
 		togglePdaModal.close();
 	}
+
+	function testValidate() {
+		const validation = validateFSA(app.fsaGraph);
+		validation.warnings.forEach((warning) => {
+			notifyWarning(`FSA Warning: ${warning}`);
+		});
+		validation.errors.forEach((error) => {
+			notifyError(`FSA Error: ${error}`);
+		});
+		if (validation.warnings.length === 0 && validation.errors.length === 0) {
+			notifySuccess('FSA Validation: No issues found!');
+		}
+	}
 </script>
 
 <!-- File menu -->
@@ -202,6 +217,12 @@
 		<li>
 			<button onclick={() => transitionTableModal.showModal()}>
 				<Table2 class="h-4 w-4" /> Transition table
+			</button>
+		</li>
+		<div class="divider m-0"></div>
+		<li class="text-warning">
+			<button onclick={() => testValidate()}>
+				<OctagonAlert class="h-4 w-4" /> Validate FSA (TEST)
 			</button>
 		</li>
 	</ul>
