@@ -115,10 +115,8 @@ function nodeIdToLabelMap(nodes: Node[]): Map<string, string> {
 
 	nodes.forEach((node) => {
 		let label = node.label;
-		let counter = 1;
 		while (seen.has(label)) {
-			label = `${node.label} (${counter})`;
-			counter++;
+			label = `${label}#`;
 		}
 		idToLabel.set(node.id, label);
 		seen.add(label);
