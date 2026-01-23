@@ -24,6 +24,7 @@
 	--selected-color: limegreen;
 	--draft-edge-color: darkorange;
 	--draft-edge-invalid-color: red;
+	--highlight-color: var(--color-secondary);
 	--selection-area-color: var(--color-secondary);
 	--hover-shadow: oklch(from var(--draw-color) l c h / 0.8);
 	--drop-shadow: drop-shadow(0 0 5px var(--hover-shadow));
@@ -92,6 +93,27 @@ svg text {
 	rx: 5px;
 }
 
+.node.highlighted,
+.node.highlighted .node-path {
+	stroke: var(--highlight-color);
+	color: var(--highlight-color);
+}
+
+.node.highlighted .node-label {
+	fill: var(--highlight-color);
+}
+
+.transition.highlighted {
+	fill: var(--highlight-color);
+}
+
+.edge:has(.transition.highlighted) .edge-path {
+	stroke: var(--highlight-color);
+}
+.edge:has(.transition.highlighted) .arrowhead {
+	color: var(--highlight-color);
+}
+
 /* Animation for toast progress bar */
 @keyframes expand {
 	from {
@@ -105,6 +127,7 @@ svg text {
 #transition-table {
 	border: 1px solid oklch(from var(--color-base-content) l c h / 0.2);
 	text-align: center;
+	cursor: default;
 }
 
 #transition-table td,
@@ -133,4 +156,16 @@ svg text {
 
 #tranisition-table .header-row #header-row-consume th {
 	border: 1px solid oklch(from var(--color-base-content) l c h / 0.2);
+}
+
+#transition-table td {
+	min-width: 5rem;
+	max-width: 15rem;
+}
+
+#transition-table .transition-output-entry:hover,
+#transition-table .header-col-state:hover,
+#transition-table .input-symbol-cell:hover,
+#transition-table .top-stack-symbol-cell:hover {
+	color: var(--highlight-color);
 }

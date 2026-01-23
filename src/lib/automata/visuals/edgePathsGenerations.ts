@@ -51,7 +51,7 @@ export function getEdgeLabelPosition(edge: Edge): Point {
 			y: midpoint.y + (edge.controlPoint.y - midpoint.y) * GRAPH_GEOMETRY.bezierLabelDistanceBias
 		};
 	}
-	const verticalOffset = ((edge.label.length - 1) * GRAPH_GEOMETRY.labelLineHeight) / 2;
+	const verticalOffset = ((edge.transitions.length - 1) * GRAPH_GEOMETRY.labelLineHeight) / 2;
 	return {
 		x: position.x,
 		y: position.y - verticalOffset

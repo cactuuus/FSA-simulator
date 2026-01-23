@@ -30,7 +30,6 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	private _controlOffset = $state<Point | null>(null);
 	private _loopbackAngle = $state<number>(Edge.LOOPBACK_DEFAULT_ANGLE);
 	private _transitionSymbols: Transition[] = $state<Transition[]>([]);
-	readonly label = $derived<string[]>(this._transitionSymbols.map((ts) => ts.toString()));
 	forceStraight = $state<boolean>(false);
 	forceAlignCenter = $state<boolean>(false);
 

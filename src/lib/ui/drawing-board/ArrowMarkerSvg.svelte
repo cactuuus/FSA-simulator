@@ -6,11 +6,12 @@
  end of the edge line, losing its 'pointiness'.
  -->
 <script lang="ts">
-	const { id, size }: { id: string; size: number } = $props();
+	const { id, size, classes }: { id: string; size: number; classes?: string } = $props();
 </script>
 
 <marker
 	{id}
+	class={classes}
 	viewBox={`0 0 ${size} ${size}`}
 	refX={size - 1}
 	refY={size / 2}

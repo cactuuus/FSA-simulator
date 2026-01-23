@@ -9,22 +9,24 @@ import { FSAGraph, Node, Transition } from '$lib/automata/models';
  * For FSAs with stack operations (PDAs), the input symbols also include stack pop operations, and content[i][j] includes push operations.
  */
 export interface TransitionTable {
-	states: string[];
+	states: Node[];
 	inputs: InputSymbol[];
-	content: string[][][];
+	content: TransitionOutput[][][];
 }
 
 /**
- * Represents an input symbol, possibly paired with a stack operation.
- * Mostly made as a helper for abstracting information about transitions in both PDA and non-PDA FSAs.
+ * Represents uniques combinations of input symbols and pop stack operations. Used as the columns of the transition table. For non-PDAs, only the consume symbol is used.
+ * It also provides a collection of	transition IDs that share the same input symbols.
  */
 export class InputSymbol {
 	readonly consume: string;
 	readonly pop?: string;
+	transitions: Set<Transition>;
 
-	constructor(consume: string, pop?: string) {
-		this.consume = consume;
-		this.pop = pop;
+	constructor(transition: Transition) {
+		this.consume = transition.consume;
+		this.pop = transition.pop ?? undefined;
+		this.transitions = new Set([transition]);
 	}
 
 	compare(other: InputSymbol): number {
@@ -39,13 +41,17 @@ export class InputSymbol {
 		return Array.from(symbols).sort((a, b) => a.compare(b));
 	}
 
-	static fromTransition(transition: Transition): InputSymbol {
-		return new InputSymbol(transition.consume, transition.pop ?? undefined);
-	}
-
 	toString(): string {
 		return this.pop ? `${this.consume},${this.pop}` : this.consume;
 	}
+}
+
+/**
+ * Simple interface representing the output of a transition in the transition table (basically the content of each cell). Along with the target state label, the entire transition is passed, for simplicity.
+ */
+export interface TransitionOutput {
+	transition: Transition;
+	targetState: Node;
 }
 
 /**
@@ -53,14 +59,8 @@ export class InputSymbol {
  * @param fsa The FSA graph.
  * @returns The corresponding transition table.
  */
-export function getTransitionTable(fsa: FSAGraph) {
-	const { uniqueLabels, sortedNodes } = labelAndSortNodes(fsa.nodes);
-	const states = sortedNodes.map((node) => {
-		let label = uniqueLabels.get(node.id)!;
-		if (node.isAccepting) label = `[${label}]`;
-		if (node.id === fsa.startNode?.id) label = `→ ${label}`;
-		return `${label}`;
-	});
+export function getTransitionTable(fsa: FSAGraph): TransitionTable {
+	const states = fsa.nodes.sort((a, b) => a.label.localeCompare(b.label));
 	const inputs = getInputSymbols(fsa);
 	const content = emptyTransitionMatrix(states.length, inputs.length);
 
@@ -68,61 +68,18 @@ export function getTransitionTable(fsa: FSAGraph) {
 	const symbolIndex = new Map<string, number>();
 	inputs.forEach((symbol, index) => symbolIndex.set(symbol.toString(), index));
 
-	sortedNodes.forEach((node, row) => {
+	states.forEach((node, row) => {
 		const outgoingEdges = fsa.edgesBySource.get(node.id) ?? [];
 		outgoingEdges.forEach((edge) => {
 			edge.transitions.forEach((transition) => {
-				const targetLabel = uniqueLabels.get(edge.to.id)!;
-				const inputSymbol = new InputSymbol(transition.consume, transition.pop ?? undefined);
+				const targetState = edge.to;
+				const inputSymbol = new InputSymbol(transition);
 				const col = symbolIndex.get(inputSymbol.toString())!;
-
-				content[row][col].push(fsa.hasStackOps ? `${transition.push},${targetLabel}` : targetLabel);
+				content[row][col].push({ transition, targetState });
 			});
 		});
 	});
 	return { states, inputs, content };
-}
-
-/**
- * Generates unique labels for the given nodes and returns them sorted by their newly assigned uniquelabels.
- * @param nodes The list of nodes to organise.
- * @returns An object containing:
- *  - uniqueLabels: A map from node IDs to their unique labels.
- *  - sortedNodes: The list of nodes sorted by their unique labels.
- */
-function labelAndSortNodes(nodes: Node[]): {
-	uniqueLabels: Map<string, string>;
-	sortedNodes: Node[];
-} {
-	const uniqueLabels = nodeIdToLabelMap(nodes);
-	const sortedNodes = [...nodes].sort((a, b) => {
-		const labelA = uniqueLabels.get(a.id)!;
-		const labelB = uniqueLabels.get(b.id)!;
-		return labelA.localeCompare(labelB);
-	});
-	return { uniqueLabels, sortedNodes };
-}
-
-/**
- * Generates a map from node IDs to unique labels.
- * If multiple nodes share the same label, a suffix is added to make them unique (aka "q0" and "q0 (1)").
- * @param nodes The list of nodes in the FSA.
- * @returns A map from node IDs to their unique labels.
- */
-function nodeIdToLabelMap(nodes: Node[]): Map<string, string> {
-	const seen = new Set<string>();
-	const idToLabel = new Map<string, string>();
-
-	nodes.forEach((node) => {
-		let label = node.label;
-		while (seen.has(label)) {
-			label = `${label}#`;
-		}
-		idToLabel.set(node.id, label);
-		seen.add(label);
-	});
-
-	return idToLabel;
 }
 
 /**
@@ -134,8 +91,13 @@ function getInputSymbols(fsa: FSAGraph): InputSymbol[] {
 	const symbols = new Map<string, InputSymbol>();
 	fsa.edges.forEach((edge) => {
 		edge.transitions.forEach((transition) => {
-			const inputSymbol = InputSymbol.fromTransition(transition);
-			symbols.set(inputSymbol.toString(), inputSymbol);
+			const inputSymbol = new InputSymbol(transition);
+			const existing = symbols.get(inputSymbol.toString());
+			if (existing) {
+				existing.transitions.add(transition);
+			} else {
+				symbols.set(inputSymbol.toString(), inputSymbol);
+			}
 		});
 	});
 	return InputSymbol.sort(symbols.values());
@@ -147,6 +109,6 @@ function getInputSymbols(fsa: FSAGraph): InputSymbol[] {
  * @param cols Number of columns
  * @returns An empty 3D array with the given dimensions.
  */
-function emptyTransitionMatrix(rows: number, cols: number): string[][][] {
+function emptyTransitionMatrix(rows: number, cols: number): TransitionOutput[][][] {
 	return Array.from({ length: rows }, () => Array.from({ length: cols }, () => []));
 }

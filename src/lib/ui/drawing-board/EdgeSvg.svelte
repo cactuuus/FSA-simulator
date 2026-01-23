@@ -18,20 +18,22 @@
 		  {isInSelectionArea ? 'in-selection-area' : ''}"
 >
 	<defs>
-		<ArrowMarkerSvg id="arrow-{edge.id}" size={GRAPH_GEOMETRY.arrowSize} />
+		<ArrowMarkerSvg id="arrow-{edge.id}" size={GRAPH_GEOMETRY.arrowSize} classes="arrowhead" />
 	</defs>
 
 	<path d={shape} class="halo-stroke" />
 	<path d={shape} class="edge-path" marker-end="url(#arrow-{edge.id})" />
 
 	<text class="edge-label" x={labelPosition.x} y={labelPosition.y}>
-		{#each edge.label as label, index}
+		{#each edge.transitions as transition, index}
 			<tspan
+				data-id={transition.id}
+				class="transition"
 				x={labelPosition.x}
 				dy={index === 0 ? 0 : GRAPH_GEOMETRY.labelLineHeight}
 				dominant-baseline="middle"
 			>
-				{label}
+				{transition.toString()}
 			</tspan>
 		{/each}
 	</text>

@@ -5,6 +5,7 @@ import type { Serializable } from '$lib/utils/serialization';
  * This can be a simple consume symbol, or include stack operations for PDAs.
  */
 export interface SerializedTransition {
+	id: string;
 	consume: string;
 	pop: string | null;
 	push: string | null;
@@ -19,11 +20,18 @@ export class Transition implements Serializable<SerializedTransition> {
 	static readonly DISABLED = null; // used to indicate disabled operations (stack only)
 	static readonly EPSILON = 'ε'; // user-facing representation of empty symbols
 
+	readonly id: string;
 	private _consume = $state<string>(Transition.EMPTY);
 	private _pop = $state<string | null>(Transition.DISABLED);
 	private _push = $state<string | null>(Transition.DISABLED);
 
-	constructor(consume: string = '', pop: string | null = null, push: string | null = null) {
+	constructor(
+		consume: string = '',
+		pop: string | null = null,
+		push: string | null = null,
+		id?: string
+	) {
+		this.id = id ?? `t-${crypto.randomUUID()}`;
 		this._consume = consume;
 		this._pop = pop;
 		this._push = push;
@@ -122,6 +130,7 @@ export class Transition implements Serializable<SerializedTransition> {
 
 	toJSON(): SerializedTransition {
 		return {
+			id: this.id,
 			consume: this._consume,
 			pop: this._pop,
 			push: this._push
@@ -129,6 +138,6 @@ export class Transition implements Serializable<SerializedTransition> {
 	}
 
 	static fromJSON(json: SerializedTransition): Transition {
-		return new Transition(json.consume, json.pop, json.push);
+		return new Transition(json.consume, json.pop, json.push, json.id);
 	}
 }
