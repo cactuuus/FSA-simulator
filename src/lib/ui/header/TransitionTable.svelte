@@ -84,16 +84,18 @@
 	{@const table = getTransitionTable(fsaGraph)}
 	{@const uniqueLabels = generateUniqueLabelsMap(fsaGraph.nodes)}
 	{@const PdaMode = fsaGraph.hasStackOps}
-	<table id="transition-table" class="table w-full table-zebra text-center">
-		<thead id="header-row">
+	<table id="transition-table" class="table w-full table-zebra">
+		<thead id="table-header">
 			{#if !PdaMode}
 				<!-- Single row showing the consume input symbols -->
-				<tr id="header-row-consume">
-					<th colspan="1" class="header-col"></th>
+				<tr class="col-header">
+					<td class="spacer invisible" colspan="2"></td>
+					<th class="col-header-label v-borders h-borders">input</th>
+					<td class="spacer v-borders h-borders"></td>
 					{#each table.inputs as input}
 						{@const transitionIds = Array.from(input.transitions).map((t) => t.id)}
 						<th
-							class="input-symbol-cell"
+							class="col-header-symbol v-borders h-borders"
 							onmouseenter={() => batchToggleHighlight(transitionIds, true)}
 							onmouseleave={() => batchToggleHighlight(transitionIds, false)}
 						>
@@ -103,13 +105,15 @@
 				</tr>
 			{:else}
 				<!-- Two rows: first showing grouped consume input symbols, second showing pop symbols -->
-				<tr id="header-row-consume">
-					<th rowspan="2" class="header-col"></th>
+				<tr class="col-header">
+					<td class="spacer invisible" colspan="2"></td>
+					<th class="col-header-label v-borders h-borders">input</th>
+					<td class="spacer v-borders h-borders"></td>
 					{#each groupComputeInputs(table.inputs) as group}
 						{@const transitionIds = Array.from(group.transitions).map((t) => t.id)}
 						<th
 							colspan={group.span}
-							class="input-symbol-cell"
+							class="col-header-symbol v-borders h-borders"
 							onmouseenter={() => batchToggleHighlight(transitionIds, true)}
 							onmouseleave={() => batchToggleHighlight(transitionIds, false)}
 						>
@@ -117,11 +121,14 @@
 						</th>
 					{/each}
 				</tr>
-				<tr id="sub-header-row-pop">
+				<tr class="col-header">
+					<td class="spacer invisible" colspan="2"></td>
+					<th class="col-header-label v-borders h-borders">stack</th>
+					<td class="spacer v-borders h-borders"></td>
 					{#each table.inputs as input}
 						{@const transitionIds = Array.from(input.transitions).map((t) => t.id)}
 						<th
-							class="top-stack-symbol-cell"
+							class="col-header-symbol v-borders h-borders"
 							onmouseenter={() => batchToggleHighlight(transitionIds, true)}
 							onmouseleave={() => batchToggleHighlight(transitionIds, false)}
 						>
@@ -130,14 +137,21 @@
 					{/each}
 				</tr>
 			{/if}
+			<tr><td colspan={table.inputs.length + 2} class="spacer invisible"></td></tr>
 		</thead>
 
-		<tbody id="body-rows">
+		<tbody class="content">
 			{#each table.content as row, rowIndex}
 				{@const node = fsaGraph.nodes[rowIndex]}
 				<tr>
+					{#if rowIndex === 0}
+						<th class="row-header-label v-borders h-borders" rowspan={table.content.length}>
+							<span class="states-label">states</span>
+						</th>
+						<td class="spacer" rowspan={table.content.length}></td>
+					{/if}
 					<th
-						class="header-col-state"
+						class="row-header-state h-borders v-borders"
 						data-node-id={node.id}
 						onmouseenter={() => toggleHighlight(node.id, true)}
 						onmouseleave={() => toggleHighlight(node.id, false)}
@@ -152,8 +166,9 @@
 							{uniqueLabels.get(node)}
 						{/if}
 					</th>
+					<td class="spacer h-borders v-borders"></td>
 					{#each row as cell}
-						<td class="cell-transition-output">
+						<td class="cell h-borders v-borders">
 							{#if cell.length === 0}
 								<!-- Empty cell -->
 								&mdash;
