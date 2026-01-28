@@ -17,6 +17,8 @@
 		DrawEdgeState,
 		PanningState
 	} from '$lib/interaction/editor/states';
+	import FloatingWindow from '$lib/ui/components/FloatingWindow.svelte';
+	import TransitionTable from '$lib/ui/header/TransitionTable.svelte';
 
 	interface Tool {
 		state: string;
@@ -71,7 +73,7 @@
 	});
 </script>
 
-<section class="relative h-full w-full">
+<section class="relative h-full w-full overflow-hidden">
 	<DrawingBoard />
 
 	<ul
@@ -126,4 +128,14 @@
 			<Minus class="h-4 w-4" />
 		</button>
 	</div>
+
+	<!-- TODO: temporary, replace/refine with final transition table window -->
+	<FloatingWindow>
+		{#snippet header()}
+			<span>Transition Table</span>
+		{/snippet}
+		{#snippet content()}
+			<TransitionTable fsaGraph={app.fsaGraph} />
+		{/snippet}
+	</FloatingWindow>
 </section>

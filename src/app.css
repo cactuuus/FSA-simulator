@@ -199,3 +199,7 @@ svg text {
 #transition-table .row-header-state:hover {
 	color: var(--highlight-color);
 }
+
+#transition-table .transition-output-entry {
+	white-space: nowrap;
+}

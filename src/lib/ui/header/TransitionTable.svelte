@@ -84,7 +84,7 @@
 	{@const table = getTransitionTable(fsaGraph)}
 	{@const uniqueLabels = generateUniqueLabelsMap(fsaGraph.nodes)}
 	{@const PdaMode = fsaGraph.hasStackOps}
-	<table id="transition-table" class="table w-full table-zebra">
+	<table id="transition-table" class="table table-zebra">
 		<thead id="table-header">
 			{#if !PdaMode}
 				<!-- Single row showing the consume input symbols -->
@@ -177,7 +177,7 @@
 									{#each cell as output}
 										{@const stateLabel = uniqueLabels.get(output.targetState)!}
 										<li
-											class="transition-output-entry"
+											class="transition-output-entry whitespace-nowrap"
 											role="presentation"
 											data-transition-id={output.transition.id}
 											onmouseenter={() => toggleHighlight(output.transition.id, true)}
