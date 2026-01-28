@@ -117,7 +117,7 @@
 
 <div
 	bind:this={windowElement}
-	class="floating-window absolute flex flex-col rounded-box bg-base-100/95 text-sm shadow"
+	class="floating-window absolute flex flex-col rounded-t-box rounded-bl-box border border-base-content/30 bg-base-100/95 text-sm shadow"
 	style="
         top: {clampedPosition.y}px; left: {clampedPosition.x}px;
         width: {size.width}px; height: {size.height}px;
@@ -127,7 +127,7 @@
 		bind:this={headerElement}
 		role="toolbar"
 		tabindex="-1"
-		class=" flex shrink-0 cursor-move items-center justify-between border-b border-base-200 px-4 py-2 font-bold"
+		class="flex shrink-0 cursor-move items-center justify-between border-b border-base-content/30 px-4 py-2 font-bold hover:bg-base-content/5"
 		style="cursor: {isMoving ? 'grabbing' : 'grab'}"
 		onpointerdown={handleMouseDown}
 	>
