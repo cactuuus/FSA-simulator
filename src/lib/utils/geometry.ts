@@ -16,6 +16,14 @@ export interface Vector {
 }
 
 /**
+ * Simple interface representing size dimensions. Similar to Point, but for width and height.
+ */
+export interface Size {
+	width: number;
+	height: number;
+}
+
+/**
  * Calculates the vector from one point to another.
  * @param from The starting point.
  * @param to The ending point.

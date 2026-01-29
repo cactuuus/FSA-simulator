@@ -6,10 +6,10 @@
 	const canDeleteTransition = $derived(edge.transitions.length > 1);
 </script>
 
-<div class="flex flex-col gap-4">
+<div class="flex w-full flex-col gap-4">
 	<div class="flex flex-col gap-2">
 		<div class="flex items-center justify-between">
-			<h2>Symbols</h2>
+			<h2>Transitions</h2>
 			<div
 				class="badge flex cursor-help items-center badge-sm badge-neutral"
 				title="PDA mode allows to use stack operations (pop & push) in transitions. You can toggle it in 'FSA -> Enable/Disable PDA mode'"
@@ -19,7 +19,7 @@
 			</div>
 		</div>
 		<p class=" text-sm text-base-content/70"></p>
-		<div class="flex max-h-120 flex-col gap-2 overflow-y-auto">
+		<div class="flex flex-col gap-2">
 			{#each edge.transitions as transition, index}
 				<fieldset class="fieldset flex items-end gap-2 rounded-box bg-base-300 p-2">
 					<legend class="fieldset-legend w-full py-0">

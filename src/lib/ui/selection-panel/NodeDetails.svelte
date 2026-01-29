@@ -4,7 +4,7 @@
 	const { node, fsaGraph }: { node: Node; fsaGraph: FSAGraph } = $props();
 </script>
 
-<div class="flex flex-col gap-4">
+<div class="flex w-full flex-col gap-4">
 	<label for="label" class="flex items-center justify-between gap-2">
 		Label
 		<input

@@ -95,10 +95,6 @@
 		{/each}
 	</ul>
 
-	<div class="absolute top-2 right-2">
-		<SelectedItemPanel selection={app.editor.selection} fsaGraph={app.editor.fsaGraph} />
-	</div>
-
 	<div
 		class="absolute bottom-2 left-2 flex h-10 items-center rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
@@ -129,13 +125,33 @@
 		</button>
 	</div>
 
-	<!-- TODO: temporary, replace/refine with final transition table window -->
-	<FloatingWindow>
+	{#if app.windows.isOpen('transition-table-window')}
+		<FloatingWindow
+			id="transition-table-window"
+			windowState={app.windows.open('transition-table-window')!}
+			onClose={() => app.windows.close('transition-table-window')}
+		>
+			{#snippet header()}
+				<span>Transition Table</span>
+			{/snippet}
+			{#snippet content()}
+				<TransitionTable fsaGraph={app.fsaGraph} />
+			{/snippet}
+		</FloatingWindow>
+	{/if}
+
+	<!-- Always open an instance of the selection panel -->
+	<FloatingWindow
+		id="selection-panel-window"
+		windowState={app.windows.open('selection-panel-window')!}
+		initialPosition={{ x: 0, y: 0 }}
+		canBeResized={false}
+	>
 		{#snippet header()}
-			<span>Transition Table</span>
+			<span>Selection Panel</span>
 		{/snippet}
 		{#snippet content()}
-			<TransitionTable fsaGraph={app.fsaGraph} />
+			<SelectedItemPanel selection={app.editor.selection} fsaGraph={app.editor.fsaGraph} />
 		{/snippet}
 	</FloatingWindow>
 </section>
