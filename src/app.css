@@ -133,6 +133,7 @@ svg text {
 
 #transition-table * {
 	color: var(--color-base-content);
+	z-index: 0 !important;
 }
 
 #transition-table .invisible {
