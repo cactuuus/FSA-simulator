@@ -19,6 +19,7 @@
 	} from '$lib/interaction/editor/states';
 	import FloatingWindow from '$lib/ui/components/FloatingWindow.svelte';
 	import TransitionTable from '$lib/ui/header/TransitionTable.svelte';
+	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 
 	interface Tool {
 		state: string;
@@ -125,11 +126,11 @@
 		</button>
 	</div>
 
-	{#if app.windows.isOpen('transition-table-window')}
+	{#if app.windows.isOpen(WINDOWS_ID.TransitionTable)}
 		<FloatingWindow
-			id="transition-table-window"
-			windowState={app.windows.open('transition-table-window')!}
-			onClose={() => app.windows.close('transition-table-window')}
+			id={WINDOWS_ID.TransitionTable}
+			windowState={app.windows.open(WINDOWS_ID.TransitionTable)!}
+			onClose={() => app.windows.close(WINDOWS_ID.TransitionTable)}
 		>
 			{#snippet header()}
 				<span>Transition Table</span>
@@ -142,8 +143,8 @@
 
 	<!-- Always open an instance of the selection panel -->
 	<FloatingWindow
-		id="selection-panel-window"
-		windowState={app.windows.open('selection-panel-window')!}
+		id={WINDOWS_ID.Selection}
+		windowState={app.windows.open(WINDOWS_ID.Selection)!}
 		initialPosition={{ x: 0, y: 0 }}
 		canBeResized={false}
 	>

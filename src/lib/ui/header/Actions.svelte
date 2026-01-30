@@ -17,6 +17,7 @@
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
 	import { cleanAndSerializeSvgGraph } from '$lib/automata/visuals';
 	import { validateFSA } from '$lib/automata/analisys/validation';
+	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 
 	let clearFsaModal: HTMLDialogElement;
 	let togglePdaModal: HTMLDialogElement;
@@ -169,9 +170,9 @@
 	}
 
 	async function openTransitionTable() {
-		app.windows.open('transition-table-window');
+		app.windows.open(WINDOWS_ID.TransitionTable);
 		await tick();
-		const window = document.getElementById('transition-table-window');
+		const window = document.getElementById(WINDOWS_ID.TransitionTable);
 		window?.focus();
 	}
 </script>
