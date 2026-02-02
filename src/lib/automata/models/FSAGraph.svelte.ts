@@ -39,22 +39,24 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	startNode = $state<Node | null>(null);
 	nodes: Node[] = $derived(Array.from(this.nodesMap.values()));
 	edges: Edge[] = $derived(Array.from(this.edgesMap.values()));
+	transitions: Transition[] = $derived(this.edges.flatMap((edge) => edge.transitions));
 	isEmpty: boolean = $derived(this.nodesMap.size === 0);
 	hasStart: boolean = $derived(this.startNode !== null);
 	hasAcceptingNodes: boolean = $derived(this.nodes.some((node) => node.isAccepting));
-	edgesBySource = $derived.by<Map<string, Edge[]>>(() => {
-		const edgesBySource: Map<string, Edge[]> = new SvelteMap();
-		for (const edge of this.edges) {
-			if (!edgesBySource.has(edge.from.id)) {
-				edgesBySource.set(edge.from.id, []);
-			}
-			edgesBySource.get(edge.from.id)!.push(edge);
-		}
-		return edgesBySource;
-	});
-	type = $derived.by(() => {
+	type: FSAType = $derived.by(() => {
 		if (this.hasStackOps) return this.isDeterministic() ? FSAType.DPDA : FSAType.PDA;
 		return this.isDeterministic() ? FSAType.DFA : FSAType.NFA;
+	});
+	adjecencyMap: Map<Node, [Transition, Node][]> = $derived.by(() => {
+		const adjMap: Map<Node, [Transition, Node][]> = new SvelteMap(
+			this.nodes.map((node) => [node, []])
+		);
+		this.edges.forEach((edge) => {
+			edge.transitions.forEach((transition) => {
+				adjMap.get(edge.from)?.push([transition, edge.to]);
+			});
+		});
+		return adjMap;
 	});
 
 	/**
@@ -143,6 +145,22 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	}
 
 	/**
+	 * Deletes a transition from the FSA graph. If the edge containing the transition ends up with no transitions, the edge itself is also deleted.
+	 * @param transition The transition to delete.
+	 */
+	deleteTransition(transition: Transition): void {
+		for (const edge of this.edges) {
+			if (edge.hasTransition(transition)) {
+				edge.removeTransition(transition);
+				if (edge.transitions.length === 0) {
+					this.edgesMap.delete(edge.id);
+				}
+				break;
+			}
+		}
+	}
+
+	/**
 	 * Resets the FSA graph to an empty state.
 	 */
 	reset(): void {
@@ -158,26 +176,21 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * @returns True if the FSA is deterministic, false otherwise.
 	 */
 	private isDeterministic(): boolean {
-		for (const node of this.nodes) {
-			const outgoingEdges = this.edgesBySource.get(node.id) ?? [];
-			const transitions = outgoingEdges.flatMap((edge: Edge) => edge.transitions) ?? [];
+		for (let i = 0; i < this.transitions.length; i++) {
+			const t1 = this.transitions[i];
+			// for non-PDA only, also check for simple epsilon transitions
+			if (!this.hasStackOps && this.transitions[i].consume === Transition.EPSILON) return false;
+			for (let j = i + 1; j < this.transitions.length; j++) {
+				const t2 = this.transitions[j];
+				const consumeConflict =
+					t1.consume === t2.consume ||
+					t1.consume === Transition.EPSILON ||
+					t2.consume === Transition.EPSILON;
+				if (!this.hasStackOps && consumeConflict) return false;
 
-			for (let i = 0; i < transitions.length; i++) {
-				const t1 = transitions[i];
-				// for non-PDA only, also check for simple epsilon transitions
-				if (!this.hasStackOps && transitions[i].consume === Transition.EPSILON) return false;
-				for (let j = i + 1; j < transitions.length; j++) {
-					const t2 = transitions[j];
-					const consumeConflict =
-						t1.consume === t2.consume ||
-						t1.consume === Transition.EPSILON ||
-						t2.consume === Transition.EPSILON;
-					if (!this.hasStackOps && consumeConflict) return false;
-
-					const popConflict =
-						t1.pop === t2.pop || t1.pop === Transition.EPSILON || t2.pop === Transition.EPSILON;
-					if (consumeConflict && popConflict) return false;
-				}
+				const popConflict =
+					t1.pop === t2.pop || t1.pop === Transition.EPSILON || t2.pop === Transition.EPSILON;
+				if (consumeConflict && popConflict) return false;
 			}
 		}
 		return true;

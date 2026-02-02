@@ -10,15 +10,13 @@
 		type Icon as IconType
 	} from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import { DrawingBoard, SelectedItemPanel } from '$lib/ui';
+	import { DrawingBoard, SelectionWindow, TransitionTableWindow } from '$lib/ui';
 	import {
 		AddNodeState,
 		SelectState,
 		DrawEdgeState,
 		PanningState
 	} from '$lib/interaction/editor/states';
-	import FloatingWindow from '$lib/ui/components/FloatingWindow.svelte';
-	import TransitionTable from '$lib/ui/header/TransitionTable.svelte';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 
 	interface Tool {
@@ -127,32 +125,9 @@
 	</div>
 
 	{#if app.windows.isOpen(WINDOWS_ID.TransitionTable)}
-		<FloatingWindow
-			id={WINDOWS_ID.TransitionTable}
-			windowState={app.windows.open(WINDOWS_ID.TransitionTable)!}
-			onClose={() => app.windows.close(WINDOWS_ID.TransitionTable)}
-		>
-			{#snippet header()}
-				<span>Transition Table</span>
-			{/snippet}
-			{#snippet content()}
-				<TransitionTable fsaGraph={app.fsaGraph} />
-			{/snippet}
-		</FloatingWindow>
+		<TransitionTableWindow />
 	{/if}
 
-	<!-- Always open an instance of the selection panel -->
-	<FloatingWindow
-		id={WINDOWS_ID.Selection}
-		windowState={app.windows.open(WINDOWS_ID.Selection)!}
-		initialPosition={{ x: 0, y: 0 }}
-		canBeResized={false}
-	>
-		{#snippet header()}
-			<span>Selection Panel</span>
-		{/snippet}
-		{#snippet content()}
-			<SelectedItemPanel selection={app.editor.selection} fsaGraph={app.editor.fsaGraph} />
-		{/snippet}
-	</FloatingWindow>
+	<!-- Instance of selection panel always present -->
+	<SelectionWindow />
 </section>

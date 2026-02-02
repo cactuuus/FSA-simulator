@@ -20,7 +20,7 @@
 		</div>
 		<p class=" text-sm text-base-content/70"></p>
 		<div class="flex flex-col gap-2">
-			{#each edge.transitions as transition, index}
+			{#each edge.transitions as transition}
 				<fieldset class="fieldset flex items-end gap-2 rounded-box bg-base-300 p-2">
 					<legend class="fieldset-legend w-full py-0">
 						<span class="badge border-0 bg-base-300 badge-sm">
@@ -28,17 +28,17 @@
 						</span>
 						<button
 							class="btn float-right btn-xs btn-error"
-							onclick={() => edge.removeTransition(index)}
+							onclick={() => edge.removeTransition(transition)}
 							title="Remove this transition"
 							disabled={!canDeleteTransition}
 						>
 							<X class="h-4 w-4" /> Remove
 						</button>
 					</legend>
-					<label for="consume-{index}" class="flex-1">
+					<label for="consume-{transition.id}" class="flex-1">
 						Consume
 						<input
-							id="consume-{index}"
+							id="consume-{transition.id}"
 							type="text"
 							class="input-bordered input mt-1 w-full"
 							bind:value={transition.consumeRawValue}
@@ -46,20 +46,20 @@
 						/>
 					</label>
 					{#if fsaGraph.hasStackOps}
-						<label for="pop-{index}" class="flex-1">
+						<label for="pop-{transition.id}" class="flex-1">
 							Pop (PDA)
 							<input
-								id="pop-{index}"
+								id="pop-{transition.id}"
 								type="text"
 								class="input-bordered input mt-1 w-full"
 								bind:value={transition.popRawValue}
 								placeholder={Transition.EPSILON}
 							/>
 						</label>
-						<label for="push-{index}" class="flex-1">
+						<label for="push-{transition.id}" class="flex-1">
 							Push (PDA)
 							<input
-								id="push-{index}"
+								id="push-{transition.id}"
 								type="text"
 								class="input-bordered input mt-1 w-full"
 								bind:value={transition.pushRawValue}

@@ -1,8 +1,10 @@
+import { SvelteMap } from 'svelte/reactivity';
 import { type Point, midPoint, vectorBetween } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
 import type { BaseEdge, FSAItem } from './types';
 import { Node } from './Node.svelte';
 import { Transition, type SerializedTransition } from './Transition.svelte';
+
 /**
  * Serialized representation of an Edge.
  */
@@ -29,7 +31,8 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	readonly isLoopback: boolean;
 	private _controlOffset = $state<Point | null>(null);
 	private _loopbackAngle = $state<number>(Edge.LOOPBACK_DEFAULT_ANGLE);
-	private _transitionSymbols: Transition[] = $state<Transition[]>([]);
+	private _transitionsMap = new SvelteMap<string, Transition>();
+	transitions = $derived<Transition[]>(Array.from(this._transitionsMap.values()));
 	forceStraight = $state<boolean>(false);
 	forceAlignCenter = $state<boolean>(false);
 
@@ -104,26 +107,30 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return this._loopbackAngle;
 	}
 
-	get transitions(): Transition[] {
-		return this._transitionSymbols;
-	}
-
 	/**
 	 * Adds a new transition symbol to the edge, with or without stack operations.
 	 * @param withStackOps True to create the transition symbol with stack operations, false otherwise.
 	 */
 	addTransition(withStackOps: boolean = false): void {
-		this._transitionSymbols.push(Transition.createEmpty(withStackOps));
+		const newTransition = Transition.createEmpty(withStackOps);
+		this._transitionsMap.set(newTransition.id, newTransition);
 	}
 
 	/**
-	 * Removes a transition symbol at the specified index.
-	 * @param index The index of the transition symbol to remove.
+	 * Checks if the edge has a specific transition.
+	 * @param transition The transition to check.
+	 * @returns True if the transition exists on the edge, false otherwise.
 	 */
-	removeTransition(index: number): void {
-		if (index >= 0 && index < this._transitionSymbols.length) {
-			this._transitionSymbols.splice(index, 1);
-		}
+	hasTransition(transition: Transition): boolean {
+		return this._transitionsMap.has(transition.id);
+	}
+
+	/**
+	 * Removes a transition.
+	 * @param transition The transition to remove.
+	 */
+	removeTransition(transition: Transition) {
+		this._transitionsMap.delete(transition.id);
 	}
 
 	/**
@@ -150,7 +157,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return {
 			fromNodeId: this.from.id,
 			toNodeId: this.to.id,
-			transitions: this._transitionSymbols.map((ts) => ts.toJSON()),
+			transitions: this.transitions.map((ts) => ts.toJSON()),
 			controlOffset: this._controlOffset,
 			loopbackAngle: this._loopbackAngle,
 			forceStraight: this.forceStraight,
@@ -168,7 +175,11 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 			throw new Error(`Edge references missing target node: ${json.toNodeId}`);
 		}
 		const edge = new Edge(fromNode, toNode);
-		edge._transitionSymbols = json.transitions.map((tsJson) => Transition.fromJSON(tsJson));
+		edge._transitionsMap = new SvelteMap();
+		json.transitions.forEach((transitionJson) => {
+			const transition = Transition.fromJSON(transitionJson);
+			edge._transitionsMap.set(transition.id, transition);
+		});
 		edge._controlOffset = json.controlOffset ?? null;
 		edge._loopbackAngle = json.loopbackAngle ?? Edge.LOOPBACK_DEFAULT_ANGLE;
 		edge.forceStraight = json.forceStraight ?? false;

@@ -68,15 +68,11 @@ export function getTransitionTable(fsa: FSAGraph): TransitionTable {
 	const symbolIndex = new Map<string, number>();
 	inputs.forEach((symbol, index) => symbolIndex.set(symbol.toString(), index));
 
-	states.forEach((node, row) => {
-		const outgoingEdges = fsa.edgesBySource.get(node.id) ?? [];
-		outgoingEdges.forEach((edge) => {
-			edge.transitions.forEach((transition) => {
-				const targetState = edge.to;
-				const inputSymbol = new InputSymbol(transition);
-				const col = symbolIndex.get(inputSymbol.toString())!;
-				content[row][col].push({ transition, targetState });
-			});
+	states.forEach((sourceState, row) => {
+		fsa.adjecencyMap.get(sourceState)?.forEach(([transition, targetState]) => {
+			const inputSymbol = new InputSymbol(transition);
+			const col = symbolIndex.get(inputSymbol.toString())!;
+			content[row][col].push({ transition, targetState });
 		});
 	});
 	return { states, inputs, content };
