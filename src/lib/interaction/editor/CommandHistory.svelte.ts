@@ -50,9 +50,10 @@ export class CommandHistory implements Serializable<SerializedCommandHistory> {
 	/**
 	 * Executes a new command and adds it to the history. This clears any redoable commands currently in the history.
 	 * @param command The command to execute.
+	 * @param execute Whether to execute the command or simply push it to the history. Defaults to true.
 	 */
-	execute(command: Command): void {
-		command.execute(this._fsa);
+	push(command: Command, execute: boolean = true): void {
+		if (execute) command.execute(this._fsa);
 		this._commands = this._commands.slice(0, this._pointer + 1);
 		this._commands.push(command);
 		this._pointer++;
