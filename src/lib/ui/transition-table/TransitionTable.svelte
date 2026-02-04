@@ -150,8 +150,7 @@
 		<thead id="table-header">
 			<!-- Row showing the consume input symbols -->
 			<tr class="col-header">
-				<td class="spacer invisible" colspan="2"></td>
-				<th class="col-header-label v-borders h-borders">input</th>
+				<th class="col-header-label v-borders h-borders" colspan="3">input</th>
 				<td class="spacer v-borders h-borders"></td>
 				{#each groupComputeInputs(table.inputs) as group}
 					{@const transitionIds = Array.from(group.transitions).map((t) => t.id)}
@@ -170,8 +169,7 @@
 			{#if PdaMode}
 				<!-- Second row showing pop (top of stack) symbols -->
 				<tr class="col-header">
-					<td class="spacer invisible" colspan="2"></td>
-					<th class="col-header-label v-borders h-borders">stack</th>
+					<th class="col-header-label v-borders h-borders" colspan="3">stack</th>
 					<td class="spacer v-borders h-borders"></td>
 					{#each table.inputs as input}
 						{@const transitionIds = Array.from(input.transitions).map((t) => t.id)}
@@ -201,7 +199,7 @@
 						<td class="spacer" rowspan={table.content.length}></td>
 					{/if}
 					<th
-						class="row-header-state h-borders v-borders"
+						class="row-header-state h-borders v-borders whitespace-nowrap"
 						data-node-id={node.id}
 						onmouseenter={() => toggleHighlight(true, node.id)}
 						onmouseleave={() => toggleHighlight(false, node.id)}
@@ -263,6 +261,7 @@
 			<form class="w-full" onsubmit={saveEdit}>
 				<input
 					id="batch-edit-transition-input"
+					type="text"
 					class="input w-full"
 					bind:value={editModalValue}
 					placeholder={Transition.EPSILON}
