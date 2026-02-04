@@ -41,10 +41,10 @@ export class SelectState extends EditorState {
 		}
 		const item = ctx.node || ctx.edge;
 		if (item) {
-			if (this.editorCtx.selection.isSelected(item)) {
-				this.editorCtx.selection.deselect(item);
+			if (this.editorCtx.selection.isSelected(item.id)) {
+				this.editorCtx.selection.deselect(item.id);
 			} else {
-				this.editorCtx.selection.select(item, ctx.event.ctrlKey);
+				this.editorCtx.selection.select(item.id);
 			}
 		}
 	}
@@ -64,8 +64,12 @@ export class SelectState extends EditorState {
 
 		const item = ctx.node || ctx.edge;
 		// case 2: clicked on a non selected item
-		if (item && !this.editorCtx.selection.isSelected(item)) {
-			this.editorCtx.selection.select(item, ctx.event.ctrlKey);
+		if (item && !this.editorCtx.selection.isSelected(item.id)) {
+			if (ctx.event.ctrlKey) {
+				this.editorCtx.selection.appendToSelection(item.id);
+			} else {
+				this.editorCtx.selection.select(item.id);
+			}
 		}
 	}
 
@@ -117,7 +121,7 @@ export class SelectState extends EditorState {
 	handleDoubleClick(ctx: EventContext): void {
 		if (ctx.node) {
 			ctx.node.toggleAccepting();
-			this.editorCtx.selection.select(ctx.node);
+			this.editorCtx.selection.select(ctx.node.id);
 		}
 	}
 }

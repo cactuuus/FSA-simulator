@@ -120,7 +120,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 */
 	deleteItem(item: FSAItem): void {
 		if (item instanceof Node) {
-			this.deleteNode(item);
+			this.deleteNode(item.id);
 		} else if (item instanceof Edge) {
 			this.edgesMap.delete(item.id);
 		}
@@ -128,18 +128,18 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 
 	/**
 	 * Deletes a node from the FSA graph, along with all associated edges.
-	 * @param node The node to delete.
+	 * @param nodeId The ID of the node to delete.
 	 */
-	deleteNode(node: Node): void {
-		this.nodesMap.delete(node.id);
+	deleteNode(nodeId: string): void {
+		this.nodesMap.delete(nodeId);
 		// remove associated edges
 		for (const edge of this.edgesMap.values()) {
-			if (edge.from.id === node.id || edge.to.id === node.id) {
+			if (edge.from.id === nodeId || edge.to.id === nodeId) {
 				this.edgesMap.delete(edge.id);
 			}
 		}
 		// unset start node if needed
-		if (this.startNode?.id === node.id) {
+		if (this.startNode?.id === nodeId) {
 			this.startNode = null;
 		}
 	}

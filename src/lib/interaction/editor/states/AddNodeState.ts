@@ -9,32 +9,32 @@ import { Node } from '$lib/automata/models';
  */
 export class AddNodeState extends EditorState {
 	static readonly NAME = 'add-node';
-	private _node: Node | null = null;
+	private _tempNode: Node | null = null;
 
 	handleClick(ctx: EventContext): void {
 		if (ctx.isCanvas) {
 			const newNode = this.editorCtx.fsaGraph.addNode(ctx.pointerPos);
-			this.editorCtx.selection.select(newNode);
+			this.editorCtx.selection.select(newNode.id);
 		}
 	}
 
 	handleDragStart(ctx: EventContext): void {
 		if (ctx.isCanvas) {
-			const newNode = this.editorCtx.fsaGraph.addNode(ctx.pointerPos);
-			this._node = newNode;
+			this._tempNode = this.editorCtx.fsaGraph.addNode(ctx.pointerPos);
 		}
 	}
 
 	handleDragMove(ctx: EventContext): void {
-		if (this._node) {
-			this._node.moveTo(ctx.pointerPos);
+		if (this._tempNode) {
+			this._tempNode.moveTo(ctx.pointerPos);
 		}
 	}
 
 	handleDragEnd(_ctx: EventContext): void {
-		if (this._node) {
-			this.editorCtx.selection.select(this._node);
+		if (this._tempNode) {
+			this.editorCtx.selection.select(this._tempNode.id);
 		}
-		this._node = null;
+
+		this._tempNode = null;
 	}
 }

@@ -18,7 +18,7 @@ export class DrawEdgeState extends EditorState {
 			this.editorCtx.draftEdge.new(ctx.node);
 			const newEdge = this.editorCtx.draftEdge.commit(ctx.node);
 			if (newEdge) {
-				this.editorCtx.selection.select(newEdge);
+				this.editorCtx.selection.select(newEdge.id);
 			}
 		}
 		this.editorCtx.draftEdge.clear();
@@ -44,7 +44,7 @@ export class DrawEdgeState extends EditorState {
 		if (ctx.node && this.editorCtx.draftEdge.get) {
 			const newEdge = this.editorCtx.draftEdge.commit(ctx.node);
 			if (newEdge) {
-				this.editorCtx.selection.select(newEdge);
+				this.editorCtx.selection.select(newEdge.id);
 			}
 		}
 		this.editorCtx.draftEdge.clear();
