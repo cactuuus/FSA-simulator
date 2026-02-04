@@ -1,5 +1,5 @@
 import type { Point } from '$lib/utils/geometry';
-import { type FSAGraph, DraftEdge, Edge, Node } from '$lib/automata/models';
+import { type FSAGraph, DraftEdge, Node } from '$lib/automata/models';
 
 /**
  * Handler for managing the draft edge lifecycle.
@@ -7,6 +7,7 @@ import { type FSAGraph, DraftEdge, Edge, Node } from '$lib/automata/models';
 export class DraftEdgeHandler {
 	private _draftEdge = $state<DraftEdge | null>(null);
 	private _fsaGraph: FSAGraph;
+	isDuplicate = $derived(this._draftEdge?.isDuplicate ?? false);
 
 	constructor(fsaGraph: FSAGraph) {
 		this._fsaGraph = fsaGraph;
@@ -34,22 +35,6 @@ export class DraftEdgeHandler {
 			}
 			this._draftEdge.updateTarget(newTarget, isDuplicate);
 		}
-	}
-
-	/**
-	 * If valid, commits the draft edge to the FSA graph, creating a new edge from the draft edge's source to the specified target node.
-	 * @param targetNode The target node to which the draft edge should connect.
-	 * @returns The newly created edge if the commit is successful, or null if the draft edge is not valid.
-	 */
-	commit(targetNode: Node): Edge | null {
-		if (!this._draftEdge) {
-			throw new Error('No draft edge to commit');
-		}
-		if (this._draftEdge.isDuplicate) {
-			console.error('Cannot commit to a duplicate edge');
-			return null;
-		}
-		return this._fsaGraph.addEdge(this._draftEdge.from, targetNode);
 	}
 
 	/**

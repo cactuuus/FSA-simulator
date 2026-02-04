@@ -3,6 +3,7 @@ import type { FSAGraph } from '$lib/automata/models/FSAGraph.svelte';
 import type { Viewport } from '$lib/interaction/Viewport.svelte';
 import type { SelectionHandler } from './SelectionHandler.svelte';
 import type { DraftEdgeHandler } from './DraftEdgeHandler.svelte';
+import type { CommandHistory } from './CommandHistory.svelte';
 
 /**
  * Abstract base class for editor states, extending the generic State class.
@@ -25,4 +26,5 @@ export interface EditorContext {
 	viewport: Viewport;
 	selection: SelectionHandler;
 	draftEdge: DraftEdgeHandler;
+	commandHistory: CommandHistory;
 }

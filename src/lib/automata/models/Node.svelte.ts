@@ -23,10 +23,14 @@ export class Node implements FSAItem, Serializable<SerializedNode> {
 	isAccepting = $state<boolean>(false);
 
 	constructor(pos: Point, label: string = '', isAccepting: boolean = false, id?: string) {
-		this.id = id ?? crypto.randomUUID();
+		this.id = id ?? Node.createId();
 		this._pos = pos;
 		this.label = label;
 		this.isAccepting = isAccepting;
+	}
+
+	static createId(): string {
+		return crypto.randomUUID();
 	}
 
 	get pos(): Point {

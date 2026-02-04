@@ -9,6 +9,7 @@ import type { Viewport } from '$lib/interaction/Viewport.svelte';
 import { EditorState, type EditorContext } from './EditorState';
 import { SelectionHandler } from './SelectionHandler.svelte';
 import { DraftEdgeHandler } from './DraftEdgeHandler.svelte';
+import type { CommandHistory } from './CommandHistory.svelte';
 
 /**
  * Representation of the 'editor' side of the application. It manages the editor states and generally holds references to all components needed for editing.
@@ -18,13 +19,15 @@ export class EditorManager {
 	readonly viewport: Viewport;
 	readonly selection: SelectionHandler;
 	readonly draftEdge: DraftEdgeHandler;
+	readonly commandHistory: CommandHistory;
 	private _currentState = $state.raw<EditorState | null>(null);
 
-	constructor(fsaGraph: FSAGraph, viewport: Viewport) {
+	constructor(fsaGraph: FSAGraph, viewport: Viewport, commandHistory: CommandHistory) {
 		this.fsaGraph = fsaGraph;
 		this.viewport = viewport;
 		this.selection = new SelectionHandler(this.fsaGraph);
 		this.draftEdge = new DraftEdgeHandler(this.fsaGraph);
+		this.commandHistory = commandHistory;
 		this.transitionTo(SelectState.NAME);
 	}
 
@@ -49,7 +52,8 @@ export class EditorManager {
 			fsaGraph: this.fsaGraph,
 			viewport: this.viewport,
 			selection: this.selection,
-			draftEdge: this.draftEdge
+			draftEdge: this.draftEdge,
+			commandHistory: this.commandHistory
 		};
 
 		switch (stateName) {

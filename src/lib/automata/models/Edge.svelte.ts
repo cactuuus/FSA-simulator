@@ -78,7 +78,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	constructor(from: Node, to: Node) {
 		this.from = from;
 		this.to = to;
-		this.id = Edge.createId(from, to);
+		this.id = Edge.createId(from.id, to.id);
 		this.isLoopback = from.id === to.id;
 	}
 
@@ -87,12 +87,12 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	 * Since this is not a random ID, calling this with the same nodes will always return
 	 * the same ID. Also, since no duplicate edges are allowed, this ID is guaranteed to be unique
 	 * within an FSA.
-	 * @param from The source node.
-	 * @param to The target node.
+	 * @param fromId The ID of the source node.
+	 * @param toId The ID of the target node.
 	 * @returns A string representing the unique ID of the edge.
 	 */
-	static createId(from: Node, to: Node): string {
-		return `${from.id}-->${to.id}`;
+	static createId(fromId: string, toId: string): string {
+		return `${fromId}-->${toId}`;
 	}
 
 	get sourcePoint(): Point {

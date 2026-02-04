@@ -1,6 +1,7 @@
 import { EditorState } from '$lib/interaction/editor/EditorState';
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node } from '$lib/automata/models';
+import { AddNodeCommand } from '$lib/interaction/editor/commands';
 
 /**
  * State for adding a new node to the FSA graph.
@@ -13,8 +14,9 @@ export class AddNodeState extends EditorState {
 
 	handleClick(ctx: EventContext): void {
 		if (ctx.isCanvas) {
-			const newNode = this.editorCtx.fsaGraph.addNode(ctx.pointerPos);
-			this.editorCtx.selection.select(newNode.id);
+			const command = new AddNodeCommand(ctx.pointerPos);
+			this.editorCtx.commandHistory.pushAndExecute(command);
+			this.editorCtx.selection.select(command.data.nodeId);
 		}
 	}
 
@@ -32,7 +34,9 @@ export class AddNodeState extends EditorState {
 
 	handleDragEnd(_ctx: EventContext): void {
 		if (this._tempNode) {
-			this.editorCtx.selection.select(this._tempNode.id);
+			const command = new AddNodeCommand(this._tempNode.pos, this._tempNode.id);
+			this.editorCtx.commandHistory.push(command);
+			this.editorCtx.selection.select(command.data.nodeId);
 		}
 
 		this._tempNode = null;

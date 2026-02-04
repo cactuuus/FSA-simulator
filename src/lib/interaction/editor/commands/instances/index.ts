@@ -1,1 +1,2 @@
 export { type AddNodeData, AddNodeCommand } from './AddNodeCommand';
+export { type AddEdgeData, AddEdgeCommand } from './AddEdgeCommand';

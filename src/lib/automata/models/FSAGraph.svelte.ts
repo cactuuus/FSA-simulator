@@ -65,9 +65,9 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * @param pos The position where the new node will be placed.
 	 * @returns The newly created node.
 	 */
-	addNode(pos: Point): Node {
+	addNode(pos: Point, id?: string): Node {
 		const label = `q${this.nodesMap.size}`;
-		const newNode = new Node(pos, label);
+		const newNode = new Node(pos, label, false, id);
 		if (this.nodesMap.size === 0) {
 			this.startNode = newNode;
 		}
@@ -95,7 +95,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * @returns True if the edge exists, false otherwise.
 	 */
 	edgeAlreadyExists(from: Node, to: Node): boolean {
-		const edgeId = Edge.createId(from, to);
+		const edgeId = Edge.createId(from.id, to.id);
 		return this.edgesMap.has(edgeId);
 	}
 
@@ -105,13 +105,31 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * @returns The item if found, or null if not found.
 	 */
 	getItemFromId(id: string): FSAItem | null {
-		const node = this.nodesMap.get(id);
+		const node = this.getNodeFromId(id);
 		if (node) return node;
 
-		const edge = this.edgesMap.get(id);
+		const edge = this.getEdgeFromId(id);
 		if (edge) return edge;
 
 		return null;
+	}
+
+	/**
+	 * Retrieves a node from the FSA graph by its ID, if it exists.
+	 * @param id The ID of the node to retrieve.
+	 * @returns The node if found, or null if not found.
+	 */
+	getNodeFromId(id: string): Node | null {
+		return this.nodesMap.get(id) ?? null;
+	}
+
+	/**
+	 * Retrieves an edge from the FSA graph by its ID, if it exists.
+	 * @param id The ID of the edge to retrieve.
+	 * @returns The edge if found, or null if not found.
+	 */
+	getEdgeFromId(id: string): Edge | null {
+		return this.edgesMap.get(id) ?? null;
 	}
 
 	/**
@@ -122,7 +140,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		if (item instanceof Node) {
 			this.deleteNode(item.id);
 		} else if (item instanceof Edge) {
-			this.edgesMap.delete(item.id);
+			this.deleteEdge(item.id);
 		}
 	}
 
@@ -142,6 +160,14 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		if (this.startNode?.id === nodeId) {
 			this.startNode = null;
 		}
+	}
+
+	/**
+	 * Deletes an edge from the FSA graph by its ID.
+	 * @param edgeId The ID of the edge to delete.
+	 */
+	deleteEdge(edgeId: string): void {
+		this.edgesMap.delete(edgeId);
 	}
 
 	/**

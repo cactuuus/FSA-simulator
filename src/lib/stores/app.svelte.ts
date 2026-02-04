@@ -2,7 +2,11 @@ import { storage } from '$lib/utils/storage';
 import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
 import { DesiredAlphabet, type SerializedDesiredAlphabet } from '$lib/automata/analisys';
 import { Viewport, type SerializedViewport } from '$lib/interaction';
-import { EditorManager } from '$lib/interaction/editor';
+import {
+	CommandHistory,
+	EditorManager,
+	type SerializedCommandHistory
+} from '$lib/interaction/editor';
 import { WindowManager, type SerializedWindowsState } from '$lib/interaction/Windows.svelte';
 
 type AppMode = 'editing' | 'simulating';
@@ -16,9 +20,11 @@ export class AppManager {
 	static readonly STORAGE_KEY_VIEWPORT = 'viewport-state';
 	static readonly STORAGE_KEY_WINDOWS = 'windows-state';
 	static readonly STORAGE_KEY_DESIRED_ALPHABET = 'desired-alphabet';
+	static readonly STORAGE_KEY_COMMAND_HISTORY = 'command-history';
 
 	private _mode = $state<AppMode>('editing');
 	readonly desiredAlphabet: DesiredAlphabet;
+	readonly commandHistory: CommandHistory;
 	readonly fsaGraph: FSAGraph;
 	readonly viewport: Viewport;
 	readonly windows: WindowManager;
@@ -30,7 +36,8 @@ export class AppManager {
 		this.fsaGraph = new FSAGraph();
 		this.viewport = new Viewport();
 		this.desiredAlphabet = new DesiredAlphabet();
-		this.editor = new EditorManager(this.fsaGraph, this.viewport);
+		this.commandHistory = new CommandHistory(this.fsaGraph);
+		this.editor = new EditorManager(this.fsaGraph, this.viewport, this.commandHistory);
 		this.windows = new WindowManager();
 		// this.simulationManager = new SimulationManager();
 	}
@@ -68,6 +75,7 @@ export class AppManager {
 		storage.save(AppManager.STORAGE_KEY_VIEWPORT, this.viewport.toJSON());
 		storage.save(AppManager.STORAGE_KEY_WINDOWS, this.windows.toJSON());
 		storage.save(AppManager.STORAGE_KEY_DESIRED_ALPHABET, this.desiredAlphabet.toJSON());
+		storage.save(AppManager.STORAGE_KEY_COMMAND_HISTORY, this.commandHistory.toJSON());
 	}
 
 	/**
@@ -81,10 +89,14 @@ export class AppManager {
 		const savedDesiredAlphabet = storage.load<SerializedDesiredAlphabet>(
 			AppManager.STORAGE_KEY_DESIRED_ALPHABET
 		);
+		const savedCommandHistory = storage.load<SerializedCommandHistory>(
+			AppManager.STORAGE_KEY_COMMAND_HISTORY
+		);
 		if (savedViewport) this.viewport.loadFromJSON(savedViewport);
 		if (savedGraph) this.fsaGraph.loadFromJSON(savedGraph);
 		if (savedWindows) this.windows.loadFromJSON(savedWindows);
 		if (savedDesiredAlphabet) this.desiredAlphabet.loadFromJSON(savedDesiredAlphabet);
+		if (savedCommandHistory) this.commandHistory.loadFromJSON(savedCommandHistory);
 	}
 
 	/**
@@ -96,10 +108,12 @@ export class AppManager {
 		this.viewport.reset();
 		this.windows.reset();
 		this.desiredAlphabet.reset();
+		this.commandHistory.reset();
 		storage.remove(AppManager.STORAGE_KEY_FSA);
 		storage.remove(AppManager.STORAGE_KEY_VIEWPORT);
 		storage.remove(AppManager.STORAGE_KEY_WINDOWS);
 		storage.remove(AppManager.STORAGE_KEY_DESIRED_ALPHABET);
+		storage.remove(AppManager.STORAGE_KEY_COMMAND_HISTORY);
 	}
 }
 

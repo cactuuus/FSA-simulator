@@ -7,6 +7,8 @@
 		MousePointer,
 		Plus,
 		Minus,
+		Redo,
+		Undo,
 		type Icon as IconType
 	} from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
@@ -18,6 +20,8 @@
 		PanningState
 	} from '$lib/interaction/editor/states';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
+	import { notifyInfo, notifyError } from '$lib/utils/notifications';
+	import { command } from '$app/server';
 
 	interface Tool {
 		state: string;
@@ -37,6 +41,28 @@
 
 	function setActive(state: string) {
 		app.editor.transitionTo(state);
+	}
+
+	function undoCommand() {
+		try {
+			if (!app.editor.commandHistory.canUndo) return;
+			const command = app.editor.commandHistory.undo();
+			notifyInfo(`Undone '${command}' command.`);
+		} catch (error) {
+			notifyError(`Failed to undo command ${command}`);
+			console.error('Error during undo:', error);
+		}
+	}
+
+	function redoCommand() {
+		try {
+			if (!app.editor.commandHistory.canRedo) return;
+			const command = app.editor.commandHistory.redo();
+			notifyInfo(`Redone '${command}' command.`);
+		} catch (error) {
+			notifyError(`Failed to redo command ${command}`);
+			console.error('Error during redo:', error);
+		}
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
@@ -61,6 +87,12 @@
 		} else if (e.key === 'Delete') {
 			e.preventDefault();
 			app.editor.selection.deleteAll();
+		} else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+			e.preventDefault();
+			undoCommand();
+		} else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+			e.preventDefault();
+			redoCommand();
 		}
 	}
 
@@ -75,6 +107,7 @@
 <section class="relative h-full w-full overflow-hidden">
 	<DrawingBoard />
 
+	<!-- Toolbar -->
 	<ul
 		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow"
 	>
@@ -85,7 +118,7 @@
 					onclick={() => setActive(tool.state)}
 					aria-label={tool.kbShortcut}
 					class="btn relative btn-square text-base-content btn-ghost btn-sm btn-secondary
-						   {tool.state === app.editor.currentState?.name ? 'btn-active' : ''}"
+							{tool.state === app.editor.currentState?.name ? 'btn-active' : ''}"
 				>
 					<Icon class="h-4 w-4" />
 					<small class="absolute right-0 -bottom-0.5 align-sub">{tool.kbShortcut}</small>
@@ -94,6 +127,31 @@
 		{/each}
 	</ul>
 
+	<!-- Undo/Redo controls -->
+	<div
+		class="absolute top-2 right-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
+	>
+		<button
+			class="btn btn-square btn-ghost btn-sm"
+			onclick={undoCommand}
+			aria-label="Undo"
+			title="Undo"
+			disabled={!app.editor.commandHistory.canUndo}
+		>
+			<Undo class="h-4 w-4" />
+		</button>
+		<button
+			class="btn btn-square btn-ghost btn-sm"
+			onclick={redoCommand}
+			aria-label="Redo"
+			title="Redo"
+			disabled={!app.editor.commandHistory.canRedo}
+		>
+			<Redo class="h-4 w-4" />
+		</button>
+	</div>
+
+	<!-- Graph info panel -->
 	<div
 		class="absolute bottom-2 left-2 flex h-10 items-center rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
@@ -103,6 +161,8 @@
 			| Edges: {app.editor.fsaGraph.edges.length}
 		</span>
 	</div>
+
+	<!-- Zoom controls -->
 	<div
 		class="absolute right-2 bottom-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>

@@ -19,4 +19,7 @@ export abstract class Command<T = unknown> implements Serializable<SerializedCom
 	abstract execute(_fsa: FSAGraph): void;
 	abstract undo(_fsa: FSAGraph): void;
 	abstract toJSON(): SerializedCommand<T>;
+	toString(): string {
+		return `${this.id}`;
+	}
 }

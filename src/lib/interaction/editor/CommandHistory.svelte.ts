@@ -48,33 +48,48 @@ export class CommandHistory implements Serializable<SerializedCommandHistory> {
 	}
 
 	/**
-	 * Executes a new command and adds it to the history. This clears any redoable commands currently in the history.
-	 * @param command The command to execute.
-	 * @param execute Whether to execute the command or simply push it to the history. Defaults to true.
+	 * Pushes a new command onto the history without executing it.
+	 * All currently available redoable commands are discarded.
+	 * @param command The command to push onto the history.
 	 */
-	push(command: Command, execute: boolean = true): void {
-		if (execute) command.execute(this._fsa);
+	push(command: Command): void {
 		this._commands = this._commands.slice(0, this._pointer + 1);
 		this._commands.push(command);
 		this._pointer++;
 	}
 
 	/**
-	 * Undoes the command currently pointed to in the history.
+	 * Pushes a new command onto the history and executes it.
+	 * All currently available redoable commands are discarded.
+	 * @param command The command to push and execute.
 	 */
-	undo(): void {
-		if (!this.canUndo) return;
-		this._commands[this._pointer].undo(this._fsa);
+	pushAndExecute(command: Command): void {
+		command.execute(this._fsa);
+		this.push(command);
+	}
+
+	/**
+	 * Undoes the command currently pointed to in the history.
+	 * @returns The command that was undone, or `null` if there was no command to undo.
+	 */
+	undo(): Command | null {
+		if (!this.canUndo) return null;
+		const command = this._commands[this._pointer];
+		command.undo(this._fsa);
 		this._pointer--;
+		return command;
 	}
 
 	/**
 	 * Redoes the command currently pointed to in the history.
+	 * @returns The command that was redone, or `null` if there was no command to redo.
 	 */
-	redo(): void {
-		if (!this.canRedo) return;
+	redo(): Command | null {
+		if (!this.canRedo) return null;
 		this._pointer++;
-		this._commands[this._pointer].execute(this._fsa);
+		const command = this._commands[this._pointer];
+		command.execute(this._fsa);
+		return command;
 	}
 
 	reset(): void {
