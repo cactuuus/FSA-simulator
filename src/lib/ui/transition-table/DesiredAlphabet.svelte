@@ -9,6 +9,7 @@
 	}: { desired: Set<string>; actual: Set<string>; type: string } = $props();
 	let modal: HTMLDialogElement;
 	let newSymbol: string = $state('');
+	const sortedDesired: string[] = $derived(Array.from(desired).sort());
 	const isDuplicate: boolean = $derived(desired.has(newSymbol.trim() || Transition.EPSILON));
 	const hasDesiredSymbols: boolean = $derived(desired.size > 0);
 	const title: string = $derived(`Desired ${type} alphabet`);
@@ -73,7 +74,7 @@
 	</button>
 	<div class="inline-flex flex-wrap gap-1 py-1">
 		{#if hasDesiredSymbols}
-			{#each desired as symbol}
+			{#each sortedDesired as symbol}
 				{#if actual.has(symbol)}
 					<div
 						class="badge cursor-help badge-soft font-mono badge-sm font-bold badge-success"
@@ -127,7 +128,7 @@
 
 			<div class="flex flex-wrap gap-2">
 				{#if hasDesiredSymbols}
-					{#each desired as symbol}
+					{#each sortedDesired as symbol}
 						<div class="badge gap-2 badge-soft font-mono badge-sm font-bold">
 							<span>{symbol}</span>
 							<button class="cursor-pointer text-error" onclick={() => removeSymbol(symbol)}>

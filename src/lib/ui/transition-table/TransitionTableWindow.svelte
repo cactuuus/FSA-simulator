@@ -20,13 +20,13 @@
 			<TransitionTable fsaGraph={app.fsaGraph} />
 			<div>
 				<DesiredAlphabet
-					desired={app.alphabetOverride.input}
+					desired={app.desiredAlphabet.input}
 					actual={app.fsaGraph.alphabet(true)}
 					type="input"
 				/>
 				{#if app.fsaGraph.hasStackOps}
 					<DesiredAlphabet
-						desired={app.alphabetOverride.stack}
+						desired={app.desiredAlphabet.stack}
 						actual={app.fsaGraph.stackAlphabet(true)}
 						type="stack"
 					/>

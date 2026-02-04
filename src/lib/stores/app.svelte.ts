@@ -1,6 +1,6 @@
-import { SvelteSet } from 'svelte/reactivity';
 import { storage } from '$lib/utils/storage';
 import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
+import { DesiredAlphabet, type SerializedDesiredAlphabet } from '$lib/automata/analisys';
 import { Viewport, type SerializedViewport } from '$lib/interaction';
 import { EditorManager } from '$lib/interaction/editor';
 import { WindowManager, type SerializedWindowsState } from '$lib/interaction/Windows.svelte';
@@ -15,12 +15,10 @@ export class AppManager {
 	static readonly STORAGE_KEY_FSA = 'working-fsa';
 	static readonly STORAGE_KEY_VIEWPORT = 'viewport-state';
 	static readonly STORAGE_KEY_WINDOWS = 'windows-state';
+	static readonly STORAGE_KEY_DESIRED_ALPHABET = 'desired-alphabet';
 
 	private _mode = $state<AppMode>('editing');
-	readonly alphabetOverride: { input: Set<string>; stack: Set<string> } = $state({
-		input: new SvelteSet(),
-		stack: new SvelteSet()
-	});
+	readonly desiredAlphabet: DesiredAlphabet;
 	readonly fsaGraph: FSAGraph;
 	readonly viewport: Viewport;
 	readonly windows: WindowManager;
@@ -31,6 +29,7 @@ export class AppManager {
 	constructor() {
 		this.fsaGraph = new FSAGraph();
 		this.viewport = new Viewport();
+		this.desiredAlphabet = new DesiredAlphabet();
 		this.editor = new EditorManager(this.fsaGraph, this.viewport);
 		this.windows = new WindowManager();
 		// this.simulationManager = new SimulationManager();
@@ -67,7 +66,8 @@ export class AppManager {
 		if (!storage.isAvailable()) return;
 		storage.save(AppManager.STORAGE_KEY_FSA, this.fsaGraph.toJSON());
 		storage.save(AppManager.STORAGE_KEY_VIEWPORT, this.viewport.toJSON());
-		storage.save('windows-state', this.windows.toJSON());
+		storage.save(AppManager.STORAGE_KEY_WINDOWS, this.windows.toJSON());
+		storage.save(AppManager.STORAGE_KEY_DESIRED_ALPHABET, this.desiredAlphabet.toJSON());
 	}
 
 	/**
@@ -78,9 +78,13 @@ export class AppManager {
 		const savedGraph = storage.load<SerializedFSAGraph>(AppManager.STORAGE_KEY_FSA);
 		const savedViewport = storage.load<SerializedViewport>(AppManager.STORAGE_KEY_VIEWPORT);
 		const savedWindows = storage.load<SerializedWindowsState>(AppManager.STORAGE_KEY_WINDOWS);
+		const savedDesiredAlphabet = storage.load<SerializedDesiredAlphabet>(
+			AppManager.STORAGE_KEY_DESIRED_ALPHABET
+		);
 		if (savedViewport) this.viewport.loadFromJSON(savedViewport);
 		if (savedGraph) this.fsaGraph.loadFromJSON(savedGraph);
 		if (savedWindows) this.windows.loadFromJSON(savedWindows);
+		if (savedDesiredAlphabet) this.desiredAlphabet.loadFromJSON(savedDesiredAlphabet);
 	}
 
 	/**
@@ -91,9 +95,11 @@ export class AppManager {
 		this.fsaGraph.reset();
 		this.viewport.reset();
 		this.windows.reset();
+		this.desiredAlphabet.reset();
 		storage.remove(AppManager.STORAGE_KEY_FSA);
 		storage.remove(AppManager.STORAGE_KEY_VIEWPORT);
 		storage.remove(AppManager.STORAGE_KEY_WINDOWS);
+		storage.remove(AppManager.STORAGE_KEY_DESIRED_ALPHABET);
 	}
 }
 
