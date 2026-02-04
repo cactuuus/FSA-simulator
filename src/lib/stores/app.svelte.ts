@@ -1,3 +1,4 @@
+import { SvelteSet } from 'svelte/reactivity';
 import { storage } from '$lib/utils/storage';
 import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
 import { Viewport, type SerializedViewport } from '$lib/interaction';
@@ -16,6 +17,10 @@ export class AppManager {
 	static readonly STORAGE_KEY_WINDOWS = 'windows-state';
 
 	private _mode = $state<AppMode>('editing');
+	readonly alphabetOverride: { input: Set<string>; stack: Set<string> } = $state({
+		input: new SvelteSet(),
+		stack: new SvelteSet()
+	});
 	readonly fsaGraph: FSAGraph;
 	readonly viewport: Viewport;
 	readonly windows: WindowManager;
