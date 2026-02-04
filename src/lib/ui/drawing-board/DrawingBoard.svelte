@@ -95,7 +95,7 @@
 			{#each app.fsaGraph.edges as edge (edge.id)}
 				<EdgeSvg
 					{edge}
-					isSelected={app.editor.selection.isSelected(edge)}
+					isSelected={app.editor.selection.isSelected(edge.id)}
 					isInSelectionArea={app.editor.selection.isInArea(edge)}
 				/>
 			{/each}
@@ -103,7 +103,7 @@
 			{#each app.fsaGraph.nodes as node (node.id)}
 				<NodeSvg
 					{node}
-					isSelected={app.editor.selection.isSelected(node)}
+					isSelected={app.editor.selection.isSelected(node.id)}
 					isInSelectionArea={app.editor.selection.isInArea(node)}
 				/>
 			{/each}
