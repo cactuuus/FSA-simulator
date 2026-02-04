@@ -196,16 +196,27 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		return true;
 	}
 
-	get alphabet(): Set<string> {
-		const alphabet = new SvelteSet<string>();
-		this.edges.forEach((edge: Edge) => {
-			edge.transitions.forEach((transition: Transition) => {
-				alphabet.add(transition.consume);
-			});
-		});
-		// ensure epsilon is not included in the alphabet, just in case it was added
-		alphabet.delete(Transition.EPSILON);
+	/**
+	 * Generates the alphabet of input symbols used in the FSA transitions.
+	 * @param includeEpsilon Whether to include the epsilon symbol in the alphabet (false by default).
+	 * @returns The set of input symbols in the FSA alphabet.
+	 */
+	alphabet(includeEpsilon: boolean = false): Set<string> {
+		const alphabet = new SvelteSet<string>(this.transitions.map((t) => t.consume));
+		if (!includeEpsilon) alphabet.delete(Transition.EPSILON);
 		return alphabet;
+	}
+
+	/**
+	 * Generates the alphabet of stack symbols used in the FSA transitions. Only applicable for PDAs, will return an empty set by default for non-PDAs.
+	 * @param includeEpsilon Whether to include the epsilon symbol in the stack alphabet (false by default).
+	 * @returns The set of stack symbols in the FSA stack alphabet.
+	 */
+	stackAlphabet(includeEpsilon: boolean = false): Set<string> {
+		if (!this.hasStackOps) return new SvelteSet<string>();
+		const stackAlphabet = new SvelteSet<string>(this.transitions.map((t) => t.pop!));
+		if (!includeEpsilon) stackAlphabet.delete(Transition.EPSILON);
+		return stackAlphabet;
 	}
 
 	get hasStackOps(): boolean {
