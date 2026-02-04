@@ -16,7 +16,7 @@
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
 	import { cleanAndSerializeSvgGraph } from '$lib/automata/visuals';
-	import { validateFSA } from '$lib/automata/analisys/validation';
+	import { validateFSA } from '$lib/automata/analisys';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 
 	let clearFsaModal: HTMLDialogElement;

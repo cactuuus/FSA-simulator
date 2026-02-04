@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Trash2 } from '@lucide/svelte';
-	import { InputSymbol, getTransitionTable } from '$lib/automata/analisys/transitionTable';
+	import { InputSymbol, getTransitionTable } from '$lib/automata/analisys';
 	import { FSAGraph, Node, Transition } from '$lib/automata/models';
 
 	const { fsaGraph }: { fsaGraph: FSAGraph } = $props();
