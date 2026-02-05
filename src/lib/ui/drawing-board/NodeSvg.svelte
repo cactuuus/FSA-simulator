@@ -11,6 +11,7 @@
 
 <g
 	data-id={node.id}
+	data-fsa-item="node"
 	class="node {isSelected ? 'selected' : ''}
 		   {isInSelectionArea ? 'in-selection-area' : ''} selectable"
 >

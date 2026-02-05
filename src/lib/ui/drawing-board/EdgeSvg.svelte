@@ -14,6 +14,7 @@
 
 <g
 	data-id={edge.id}
+	data-fsa-item="edge"
 	class="edge selectable {isSelected ? 'selected' : ''}
 		  {isInSelectionArea ? 'in-selection-area' : ''}"
 >

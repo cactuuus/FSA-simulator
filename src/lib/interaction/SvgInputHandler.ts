@@ -124,7 +124,7 @@ export class SvgInputHandler {
 	 * (relative to the viewport) can be accessed via the event object ({ e.clientX, e.clientY }).
 	 */
 	private createEventContext(e: PointerEvent | MouseEvent): EventContext {
-		const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-id]');
+		const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-fsa-item]');
 		const elementId = element?.getAttribute('data-id') ?? null;
 		const fsaItem = elementId ? this._fsaGraph.getItemFromId(elementId) : null;
 
