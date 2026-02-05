@@ -58,7 +58,7 @@
 
 	function addNotification(type: NotificationType, message: string): void {
 		const id = crypto.randomUUID();
-		queue.push({ id, type, message });
+		queue.unshift({ id, type, message });
 		setTimeout(() => {
 			removeNotification(id);
 		}, MESSAGE_DURATION);
@@ -75,20 +75,20 @@
 	});
 </script>
 
-<div class="toast toast-end w-sm max-w-11/12">
+<div class="absolute bottom-2 left-1/2 stack w-sm max-w-11/12 -translate-x-1/2">
 	{#each queue as notification (notification.id)}
 		{@const config = toastConfigMap[notification.type]}
-		<div role="alert" class="relative alert overflow-hidden bg-base-100/95 alert-soft shadow">
-			<config.icon class="h-6 w-6 shrink-0 {config.textClass}" />
-			<div>
-				<h3 class="font-bold {config.textClass}">{notification.type}</h3>
-				<div class="text-sm">{notification.message}</div>
+		<div role="alert" class="relative alert overflow-hidden bg-base-100/90 alert-soft shadow">
+			<div class="flex flex-col gap-1">
+				<h3 class="font-bold {config.textClass} flex items-center gap-2">
+					<config.icon class="h-4 w-4" />
+					{notification.type}
+				</h3>
+				<div class="ml-1 text-sm">{notification.message}</div>
 			</div>
 			<button
-				class="btn btn-square self-start btn-ghost btn-xs"
-				onclick={() => {
-					removeNotification(notification.id);
-				}}
+				class="btn absolute top-2 right-2 btn-square self-start btn-ghost btn-xs"
+				onclick={() => removeNotification(notification.id)}
 			>
 				<X class="h-4 w-4" />
 			</button>
