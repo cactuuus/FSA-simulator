@@ -6,3 +6,11 @@ export {
 } from './ToggleNodeAcceptingCommand';
 export { type MoveNodesData, MoveNodesCommand } from './MoveNodesCommand';
 export { type AdjustEdgeShapeData, AdjustEdgeShapeCommand } from './AdjustEdgeShapeCommand';
+export {
+	type ToggleEdgeStraightData,
+	ToggleEdgeStraightCommand
+} from './ToggleEdgeStraightCommand';
+export {
+	type ToggleEdgeAlignCenterData,
+	ToggleEdgeAlignCenterCommand
+} from './ToggleEdgeAlignCenterCommand';

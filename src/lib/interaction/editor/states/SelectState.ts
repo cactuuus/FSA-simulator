@@ -91,11 +91,11 @@ class AdjustEdgeShapeAction extends DragAction {
 	}
 
 	handleEnd(_eventCtx: EventContext, _editorCtx: EditorContext): void {
-		const command = new AdjustEdgeShapeCommand({
-			edgeId: this._edge.id,
-			initialControlPoint: this._initialControlPoint,
-			finalControlPoint: this._edge.controlPoint
-		});
+		const command = new AdjustEdgeShapeCommand(
+			this._edge.id,
+			this._initialControlPoint,
+			this._edge.controlPoint
+		);
 		_editorCtx.commandHistory.push(command);
 	}
 }

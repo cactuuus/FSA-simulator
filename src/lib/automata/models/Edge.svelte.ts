@@ -80,19 +80,19 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 
 	/**
 	 * Checks if the edge has a specific transition.
-	 * @param transition The transition to check.
+	 * @param id The ID of the transition to check.
 	 * @returns True if the transition exists on the edge, false otherwise.
 	 */
-	hasTransition(transition: Transition): boolean {
-		return this._transitionsMap.has(transition.id);
+	hasTransition(id: string): boolean {
+		return this._transitionsMap.has(id);
 	}
 
 	/**
 	 * Removes a transition.
-	 * @param transition The transition to remove.
+	 * @param id The ID of the transition to remove.
 	 */
-	removeTransition(transition: Transition) {
-		this._transitionsMap.delete(transition.id);
+	removeTransition(id: string) {
+		this._transitionsMap.delete(id);
 	}
 
 	/**

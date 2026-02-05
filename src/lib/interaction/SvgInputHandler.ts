@@ -126,7 +126,7 @@ export class SvgInputHandler {
 	private createEventContext(e: PointerEvent | MouseEvent): EventContext {
 		const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-fsa-item]');
 		const elementId = element?.getAttribute('data-id') ?? null;
-		const fsaItem = elementId ? this._fsaGraph.getItemFromId(elementId) : null;
+		const fsaItem = elementId ? this._fsaGraph.getItem(elementId) : null;
 
 		return {
 			event: e,

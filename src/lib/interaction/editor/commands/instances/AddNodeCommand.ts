@@ -13,9 +13,9 @@ export class AddNodeCommand extends Command<AddNodeData> {
 	id = AddNodeCommand.ID;
 	data: AddNodeData;
 
-	constructor(nodePos: Point, id?: string) {
+	constructor(nodePos: Point, nodeId?: string) {
 		super();
-		this.data = { nodeId: id ?? Node.createId(), nodePos };
+		this.data = { nodeId: nodeId ?? Node.createId(), nodePos };
 	}
 
 	execute(fsa: FSAGraph): void {
@@ -23,9 +23,6 @@ export class AddNodeCommand extends Command<AddNodeData> {
 	}
 
 	undo(fsa: FSAGraph): void {
-		if (fsa.getNodeFromId(this.data.nodeId) === null) {
-			throw new Error(`[AddNodeCommand] node with id ${this.data.nodeId} does not exist.`);
-		}
 		fsa.deleteNode(this.data.nodeId);
 	}
 

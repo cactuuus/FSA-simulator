@@ -130,7 +130,7 @@
 	function deleteFromModal(): void {
 		if (!modalContext) return;
 		modalContext.transitions.forEach((transition) => {
-			fsaGraph.deleteTransition(transition);
+			fsaGraph.deleteTransition(transition.id);
 		});
 		closeModal();
 	}

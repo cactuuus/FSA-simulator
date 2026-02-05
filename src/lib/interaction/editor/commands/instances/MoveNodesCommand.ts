@@ -20,21 +20,16 @@ export class MoveNodesCommand extends Command<MoveNodesData> {
 
 	execute(fsa: FSAGraph): void {
 		for (const nodeId of this.data.nodeIds) {
-			const node = fsa.getNodeFromId(nodeId);
-			if (!node) {
-				throw new Error(`[MoveNodesCommand] node with id ${nodeId} does not exist.`);
-			}
+			const node = fsa.requireNode(nodeId);
 			node.moveBy(this.data.offset);
 		}
 	}
 
 	undo(fsa: FSAGraph): void {
+		const invetedOffset = { x: -this.data.offset.x, y: -this.data.offset.y };
 		for (const nodeId of this.data.nodeIds) {
-			const node = fsa.getNodeFromId(nodeId);
-			if (!node) {
-				throw new Error(`[MoveNodesCommand] node with id ${nodeId} does not exist.`);
-			}
-			node.moveBy({ x: -this.data.offset.x, y: -this.data.offset.y });
+			const node = fsa.requireNode(nodeId);
+			node.moveBy(invetedOffset);
 		}
 	}
 

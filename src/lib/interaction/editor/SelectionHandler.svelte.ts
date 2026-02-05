@@ -24,7 +24,7 @@ export class SelectionHandler {
 	 */
 	items: FSAItem[] = $derived(
 		Array.from(this._selectedIds)
-			.map((id) => this._fsaGraph.getItemFromId(id))
+			.map((id) => this._fsaGraph.getItem(id))
 			.filter((item): item is FSAItem => item !== null)
 	);
 
@@ -35,7 +35,7 @@ export class SelectionHandler {
 	 */
 	itemsInArea: FSAItem[] = $derived(
 		Array.from(this._idsWithinArea)
-			.map((id) => this._fsaGraph.getItemFromId(id))
+			.map((id) => this._fsaGraph.getItem(id))
 			.filter((item): item is FSAItem => item !== null)
 	);
 
@@ -84,9 +84,7 @@ export class SelectionHandler {
 	 * Deletes all selected items.
 	 */
 	deleteAll(): void {
-		this.items.forEach((item: FSAItem) => {
-			this._fsaGraph.deleteItem(item);
-		});
+		this._fsaGraph.deleteItems(...this.items.map((item) => item.id));
 		this.clear();
 	}
 

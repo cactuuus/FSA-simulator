@@ -14,29 +14,29 @@ export class AdjustEdgeShapeCommand extends Command<AdjustEdgeShapeData> {
 	id = AdjustEdgeShapeCommand.ID;
 	data: AdjustEdgeShapeData;
 
-	constructor(data: AdjustEdgeShapeData) {
+	constructor(edgeId: string, initialControlPoint: Point, finalControlPoint: Point) {
 		super();
-		this.data = data;
+		this.data = { edgeId, initialControlPoint, finalControlPoint };
 	}
 
 	execute(fsa: FSAGraph): void {
-		const edge = fsa.getEdgeFromId(this.data.edgeId);
-		if (!edge) {
-			throw new Error(`[AdjustEdgeShapeCommand] edge with id ${this.data.edgeId} does not exist.`);
-		}
+		console.log('Executing AdjustEdgeShapeCommand with data:', this.data);
+		const edge = fsa.requireEdge(this.data.edgeId);
 		edge.updateControlPoint(this.data.finalControlPoint);
 	}
 
 	undo(fsa: FSAGraph): void {
-		const edge = fsa.getEdgeFromId(this.data.edgeId);
-		if (!edge) {
-			throw new Error(`[AdjustEdgeShapeCommand] edge with id ${this.data.edgeId} does not exist.`);
-		}
+		console.log('undoing AdjustEdgeShapeCommand with data:', this.data);
+		const edge = fsa.requireEdge(this.data.edgeId);
 		edge.updateControlPoint(this.data.initialControlPoint);
 	}
 
 	static fromJSON(commandJson: { data: AdjustEdgeShapeData }): AdjustEdgeShapeCommand {
-		return new AdjustEdgeShapeCommand(commandJson.data);
+		return new AdjustEdgeShapeCommand(
+			commandJson.data.edgeId,
+			commandJson.data.initialControlPoint,
+			commandJson.data.finalControlPoint
+		);
 	}
 }
 

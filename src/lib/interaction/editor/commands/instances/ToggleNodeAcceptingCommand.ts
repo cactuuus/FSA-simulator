@@ -18,22 +18,12 @@ export class ToggleNodeAcceptingCommand extends Command<ToggleNodeAcceptingData>
 	}
 
 	execute(fsa: FSAGraph): void {
-		const node = fsa.getNodeFromId(this.data.nodeId);
-		if (!node) {
-			throw new Error(
-				`[ToggleNodeAcceptingCommand] node with id ${this.data.nodeId} does not exist`
-			);
-		}
+		const node = fsa.requireNode(this.data.nodeId);
 		node.isAccepting = this.data.toValue;
 	}
 
 	undo(fsa: FSAGraph): void {
-		const node = fsa.getNodeFromId(this.data.nodeId);
-		if (!node) {
-			throw new Error(
-				`[ToggleNodeAcceptingCommand] node with id ${this.data.nodeId} does not exist`
-			);
-		}
+		const node = fsa.requireNode(this.data.nodeId);
 		node.isAccepting = !this.data.toValue;
 	}
 
