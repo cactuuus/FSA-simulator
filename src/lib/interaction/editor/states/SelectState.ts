@@ -3,6 +3,7 @@ import { EditorState } from '$lib/interaction/editor/EditorState';
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node, Edge } from '$lib/automata/models';
 import { getControlPointFromLabelPos } from '$lib/automata/visuals';
+import { ToggleNodeAcceptingCommand } from '$lib/interaction/editor/commands';
 
 /**
  * State for selecting and manipulating nodes and edges in the FSA graph.
@@ -124,7 +125,9 @@ export class SelectState extends EditorState {
 
 	handleDoubleClick(ctx: EventContext): void {
 		if (ctx.node) {
-			ctx.node.toggleAccepting();
+			this.editorCtx.commandHistory.pushAndExecute(
+				new ToggleNodeAcceptingCommand(ctx.node.id, !ctx.node.isAccepting)
+			);
 			if (ctx.event.ctrlKey) {
 				this.editorCtx.selection.appendToSelection(ctx.node.id);
 			} else {

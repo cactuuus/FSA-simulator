@@ -53,13 +53,6 @@ export class Node implements FSAItem, Serializable<SerializedNode> {
 		this._pos = newPos;
 	}
 
-	/**
-	 * Toggle the accepting status of the node.
-	 */
-	toggleAccepting(): void {
-		this.isAccepting = !this.isAccepting;
-	}
-
 	toJSON(): SerializedNode {
 		return {
 			id: this.id,
