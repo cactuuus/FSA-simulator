@@ -4,3 +4,4 @@ export {
 	type ToggleNodeAcceptingData,
 	ToggleNodeAcceptingCommand
 } from './ToggleNodeAcceptingCommand';
+export { type MoveNodesData, MoveNodesCommand } from './MoveNodesCommand';

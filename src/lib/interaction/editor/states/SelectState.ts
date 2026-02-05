@@ -4,7 +4,7 @@ import { EditorState, type EditorContext } from '$lib/interaction/editor/EditorS
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node, Edge } from '$lib/automata/models';
 import { getControlPointFromLabelPos } from '$lib/automata/visuals';
-import { ToggleNodeAcceptingCommand } from '$lib/interaction/editor/commands';
+import { ToggleNodeAcceptingCommand, MoveNodesCommand } from '$lib/interaction/editor/commands';
 
 /**
  * Base class for actions that involve dragging in the editor. Useful here since drag actions in this state can be quite complicated.
@@ -59,7 +59,13 @@ class MoveNodesAction extends DragAction {
 	}
 
 	handleEnd(_eventCtx: EventContext, _editorCtx: EditorContext): void {
-		// add command here
+		const nodeIds = this._nodes.map((node) => node.id);
+		const totalOffset = {
+			x: this._lastPos.x - this._initialPos.x,
+			y: this._lastPos.y - this._initialPos.y
+		};
+		const command = new MoveNodesCommand(totalOffset, ...nodeIds);
+		_editorCtx.commandHistory.push(command);
 	}
 }
 
