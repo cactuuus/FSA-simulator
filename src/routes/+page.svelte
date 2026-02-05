@@ -44,23 +44,25 @@
 	}
 
 	function undoCommand() {
+		const command = app.editor.commandHistory.peekUndo();
 		try {
 			if (!app.editor.commandHistory.canUndo) return;
-			const command = app.editor.commandHistory.undo();
+			app.editor.commandHistory.undo();
 			notifyInfo(`Undone '${command}' command.`);
 		} catch (error) {
-			notifyError(`Failed to undo command ${command}`);
+			notifyError(`Failed to undo command '${command}'`);
 			console.error('Error during undo:', error);
 		}
 	}
 
 	function redoCommand() {
+		const command = app.editor.commandHistory.peekRedo();
 		try {
 			if (!app.editor.commandHistory.canRedo) return;
-			const command = app.editor.commandHistory.redo();
+			app.editor.commandHistory.redo();
 			notifyInfo(`Redone '${command}' command.`);
 		} catch (error) {
-			notifyError(`Failed to redo command ${command}`);
+			notifyError(`Failed to redo command '${command}'`);
 			console.error('Error during redo:', error);
 		}
 	}

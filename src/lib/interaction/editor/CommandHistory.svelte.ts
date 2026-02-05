@@ -33,7 +33,7 @@ export class CommandHistory implements Serializable<SerializedCommandHistory> {
 	 * Retrieves the next command that would be undone if `undo()` is called.
 	 * Returns `null` if there is no command to undo.
 	 */
-	get nextUndoCommand(): Command | null {
+	peekUndo(): Command | null {
 		if (!this.canUndo) return null;
 		return this._commands[this._pointer];
 	}
@@ -42,7 +42,7 @@ export class CommandHistory implements Serializable<SerializedCommandHistory> {
 	 * Retrieves the next command that would be redone if `redo()` is called.
 	 * Returns `null` if there is no command to redo.
 	 */
-	get nextRedoCommand(): Command | null {
+	peekRedo(): Command | null {
 		if (!this.canRedo) return null;
 		return this._commands[this._pointer + 1];
 	}
