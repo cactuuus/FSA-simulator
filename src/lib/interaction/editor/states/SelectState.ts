@@ -3,7 +3,11 @@ import { EditorState, type EditorContext } from '$lib/interaction/editor/EditorS
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node, Edge } from '$lib/automata/models';
 import { getControlPointFromLabelPos } from '$lib/automata/visuals';
-import { ToggleNodeAcceptingCommand, MoveNodesCommand } from '$lib/interaction/editor/commands';
+import {
+	ToggleNodeAcceptingCommand,
+	MoveNodesCommand,
+	AdjustEdgeShapeCommand
+} from '$lib/interaction/editor/commands';
 
 /**
  * Base class for actions that involve dragging in the editor. Useful here since drag actions in this state can be quite complicated.
@@ -73,9 +77,9 @@ class MoveNodesAction extends DragAction {
  */
 class AdjustEdgeShapeAction extends DragAction {
 	private _edge: Edge;
-	private _initialControlPoint: Point | null;
+	private _initialControlPoint: Point;
 
-	constructor(edge: Edge, initialControlPoint: Point | null) {
+	constructor(edge: Edge, initialControlPoint: Point) {
 		super();
 		this._edge = edge;
 		this._initialControlPoint = initialControlPoint;
@@ -87,7 +91,12 @@ class AdjustEdgeShapeAction extends DragAction {
 	}
 
 	handleEnd(_eventCtx: EventContext, _editorCtx: EditorContext): void {
-		// add command here
+		const command = new AdjustEdgeShapeCommand({
+			edgeId: this._edge.id,
+			initialControlPoint: this._initialControlPoint,
+			finalControlPoint: this._edge.controlPoint
+		});
+		_editorCtx.commandHistory.push(command);
 	}
 }
 
@@ -152,10 +161,10 @@ export class SelectState extends EditorState {
 			return;
 		}
 
-		const item = ctx.node || ctx.edge;
 		// case 2: clicked on an item
 		// if the item is not selected, select it first (with Ctrl to multi-select)
 		// then start drag action based on type and number of selected items
+		const item = ctx.node || ctx.edge;
 		if (item && !this.editorCtx.selection.isSelected(item.id)) {
 			if (ctx.event.ctrlKey) {
 				this.editorCtx.selection.appendToSelection(item.id);

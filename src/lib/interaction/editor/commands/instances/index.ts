@@ -5,3 +5,4 @@ export {
 	ToggleNodeAcceptingCommand
 } from './ToggleNodeAcceptingCommand';
 export { type MoveNodesData, MoveNodesCommand } from './MoveNodesCommand';
+export { type AdjustEdgeShapeData, AdjustEdgeShapeCommand } from './AdjustEdgeShapeCommand';
