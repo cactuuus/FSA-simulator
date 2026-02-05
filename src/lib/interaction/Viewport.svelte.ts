@@ -104,7 +104,7 @@ export class Viewport implements Serializable<SerializedViewport> {
 	 */
 	toJSON(): SerializedViewport {
 		return {
-			panOffset: { x: this._panOffset.x, y: this._panOffset.y },
+			panOffset: this._panOffset,
 			zoomOffset: this._zoomLevel
 		};
 	}

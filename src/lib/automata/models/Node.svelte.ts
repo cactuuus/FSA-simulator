@@ -60,11 +60,10 @@ export class Node implements FSAItem, Serializable<SerializedNode> {
 		this.isAccepting = !this.isAccepting;
 	}
 
-	// about pos: I cannot figure out why but in this instance ( and other similar cases) pos is not serializing correctly unless manually unpacked. In Edge for example, the serializing the point controlOffset works fine. I think it might have something to do with controlOffset being nullable? So possibly some edge case in Svelte's reactivity system.
 	toJSON(): SerializedNode {
 		return {
 			id: this.id,
-			pos: { x: this.pos.x, y: this.pos.y },
+			pos: this.pos,
 			label: this.label,
 			isAccepting: this.isAccepting
 		};
