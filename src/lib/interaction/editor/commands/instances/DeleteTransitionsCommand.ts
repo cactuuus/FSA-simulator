@@ -61,7 +61,6 @@ export class DeleteTransitionsCommand extends Command<DeleteTransitionsData> {
 
 	execute(fsa: FSAGraph): void {
 		if (!this._initialized) this.initializeData(fsa);
-		console.log(this.data);
 		for (const [edgeId, transitionsJson] of Object.entries(this.data.groupedTransitions)) {
 			const edge = fsa.requireEdge(edgeId);
 			if (this.data.deletedEdges[edgeId]) {
@@ -74,13 +73,10 @@ export class DeleteTransitionsCommand extends Command<DeleteTransitionsData> {
 	}
 
 	undo(fsa: FSAGraph): void {
-		console.log(this.data);
 		for (const [edgeId, transitionsJson] of Object.entries(this.data.groupedTransitions)) {
 			if (this.data.deletedEdges[edgeId]) {
 				const restoredEdge = Edge.fromJSON(this.data.deletedEdges[edgeId]!, fsa.nodesMap);
 				fsa.addEdge(restoredEdge);
-				console.log('Restored edge', restoredEdge);
-				console.log(fsa.edgesMap);
 			}
 			const edge = fsa.requireEdge(edgeId);
 			const transitions = transitionsJson.map((t) => Transition.fromJSON(t));
