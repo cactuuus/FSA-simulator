@@ -57,6 +57,8 @@
 		try {
 			const text = await file.text();
 			const json = JSON.parse(text);
+			app.desiredAlphabet.reset();
+			app.commandHistory.reset();
 			app.fsaGraph.loadFromJSON(json);
 			notifySuccess('Graph imported & loaded successfully.');
 		} catch (error: unknown) {
