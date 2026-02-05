@@ -1,5 +1,5 @@
 import { SvelteMap } from 'svelte/reactivity';
-import { type Point, midPoint, vectorBetween } from '$lib/utils/geometry';
+import { type Point, midPoint } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
 import type { BaseEdge, FSAItem } from './types';
 import { Node } from './Node.svelte';
@@ -12,8 +12,7 @@ export interface SerializedEdge {
 	fromNodeId: string;
 	toNodeId: string;
 	transitions: SerializedTransition[];
-	controlOffset: Point | null;
-	loopbackAngle: number;
+	controlPointOffset: Point;
 	forceStraight: boolean;
 	forceAlignCenter: boolean;
 }
@@ -23,56 +22,19 @@ export interface SerializedEdge {
  * symbols associated with it, as well as curvature for visual representation.
  */
 export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
-	static readonly LOOPBACK_DEFAULT_ANGLE = Math.PI / 2; // default angle of loopback edges
-
 	readonly id: string;
 	readonly from: Node;
 	readonly to: Node;
 	readonly isLoopback: boolean;
-	private _controlOffset = $state<Point | null>(null);
-	private _loopbackAngle = $state<number>(Edge.LOOPBACK_DEFAULT_ANGLE);
+	private _referencePoint = $derived<Point>(midPoint(this.sourcePoint, this.targetPoint));
 	private _transitionsMap = new SvelteMap<string, Transition>();
-	transitions = $derived<Transition[]>(Array.from(this._transitionsMap.values()));
+	private _controlPointOffset = $state<Point>({ x: 0, y: 0 });
 	forceStraight = $state<boolean>(false);
 	forceAlignCenter = $state<boolean>(false);
-
-	isStraight = $derived.by<boolean>(() => {
-		return this.forceStraight || this._controlOffset === null;
-	});
-
-	controlPoint = $derived.by<Point>(() => {
-		const referencePoint = midPoint(this.sourcePoint, this.targetPoint);
-		if (this.isStraight) {
-			return referencePoint;
-		}
-		const offset = this.forceAlignCenter ? this.offsetSnappedToCenter : this._controlOffset;
-		// if the isStraight check is passed, it is guaranteed that controlOffset is not null
-		return {
-			x: referencePoint.x + offset!.x,
-			y: referencePoint.y + offset!.y
-		};
-	});
-
-	/**
-	 * Calculates the control offset snapped to the center line between source and target, forcing the control point to align with the center line, and therefore resulting in a symmetric curve.
-	 * @returns The centered control offset point.
-	 */
-	offsetSnappedToCenter = $derived.by<Point>(() => {
-		if (this._controlOffset === null || this.isLoopback) {
-			return { x: 0, y: 0 };
-		}
-		// get unit vector perpendicular to the edge (considering the edge as a stright line)
-		const edgeVector = vectorBetween(this.sourcePoint, this.targetPoint);
-		const perpVector = {
-			x: -edgeVector.y / edgeVector.magnitude,
-			y: edgeVector.x / edgeVector.magnitude
-		};
-		// distance along the perpendicular direction
-		const distance = this._controlOffset.x * perpVector.x + this._controlOffset.y * perpVector.y;
-		return {
-			x: distance * perpVector.x,
-			y: distance * perpVector.y
-		};
+	transitions = $derived<Transition[]>(Array.from(this._transitionsMap.values()));
+	controlPoint = $derived<Point>({
+		x: this._referencePoint.x + this._controlPointOffset.x,
+		y: this._referencePoint.y + this._controlPointOffset.y
 	});
 
 	constructor(from: Node, to: Node) {
@@ -103,8 +65,8 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return this.to.pos;
 	}
 
-	get loopbackAngle(): number {
-		return this._loopbackAngle;
+	hasDefaultControlPoint(): boolean {
+		return this._controlPointOffset.x === 0 && this._controlPointOffset.y === 0;
 	}
 
 	/**
@@ -134,22 +96,13 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	}
 
 	/**
-	 * Adjusts the angle of the loopback edge.
-	 * @param newAngle The new angle in radians.
-	 */
-	adjustLoopbackAngle(newAngle: number): void {
-		this._loopbackAngle = newAngle;
-	}
-
-	/**
 	 * Updates the control point (used to adjust the curvature of the edge) position.
 	 * @param newPosition The new position of the control point.
 	 */
 	updateControlPoint(newPosition: Point): void {
-		const referencePoint = midPoint(this.sourcePoint, this.targetPoint);
-		this._controlOffset = {
-			x: newPosition.x - referencePoint.x,
-			y: newPosition.y - referencePoint.y
+		this._controlPointOffset = {
+			x: newPosition.x - this._referencePoint.x,
+			y: newPosition.y - this._referencePoint.y
 		};
 	}
 
@@ -158,8 +111,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 			fromNodeId: this.from.id,
 			toNodeId: this.to.id,
 			transitions: this.transitions.map((ts) => ts.toJSON()),
-			controlOffset: this._controlOffset,
-			loopbackAngle: this._loopbackAngle,
+			controlPointOffset: this._controlPointOffset,
 			forceStraight: this.forceStraight,
 			forceAlignCenter: this.forceAlignCenter
 		};
@@ -180,8 +132,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 			const transition = Transition.fromJSON(transitionJson);
 			edge._transitionsMap.set(transition.id, transition);
 		});
-		edge._controlOffset = json.controlOffset ?? null;
-		edge._loopbackAngle = json.loopbackAngle ?? Edge.LOOPBACK_DEFAULT_ANGLE;
+		edge._controlPointOffset = json.controlPointOffset ?? { x: 0, y: 0 };
 		edge.forceStraight = json.forceStraight ?? false;
 		edge.forceAlignCenter = json.forceAlignCenter ?? false;
 		return edge;

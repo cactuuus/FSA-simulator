@@ -1,5 +1,4 @@
 import type { Point } from '$lib/utils/geometry';
-import { angleTo } from '$lib/utils/geometry';
 import { EditorState, type EditorContext } from '$lib/interaction/editor/EditorState';
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node, Edge } from '$lib/automata/models';
@@ -70,36 +69,13 @@ class MoveNodesAction extends DragAction {
 }
 
 /**
- * Action for adjusting the loopback angle of a single selected loopback edge during dragging.
- */
-class AdjustLoopbackEdgeAction extends DragAction {
-	private _edge: Edge;
-	private _initialAngle: number;
-
-	constructor(edge: Edge, initialAngle: number) {
-		super();
-		this._edge = edge;
-		this._initialAngle = initialAngle;
-	}
-
-	handleMove(eventCtx: EventContext, _editorCtx: EditorContext): void {
-		const newAngle = angleTo(this._edge.sourcePoint, eventCtx.pointerPos);
-		this._edge.adjustLoopbackAngle(newAngle);
-	}
-
-	handleEnd(_eventCtx: EventContext, _editorCtx: EditorContext): void {
-		// add command here
-	}
-}
-
-/**
  * Action for adjusting the control point of a single selected (non-loopback) edge during dragging.
  */
 class AdjustEdgeShapeAction extends DragAction {
 	private _edge: Edge;
-	private _initialControlPoint: Point;
+	private _initialControlPoint: Point | null;
 
-	constructor(edge: Edge, initialControlPoint: Point) {
+	constructor(edge: Edge, initialControlPoint: Point | null) {
 		super();
 		this._edge = edge;
 		this._initialControlPoint = initialControlPoint;
@@ -190,11 +166,7 @@ export class SelectState extends EditorState {
 		const selection = this.editorCtx.selection.items;
 		if (selection.length === 1 && selection[0] instanceof Edge) {
 			const edge = selection[0] as Edge;
-			if (edge.isLoopback) {
-				this._dragAction = new AdjustLoopbackEdgeAction(edge, edge.loopbackAngle);
-			} else {
-				this._dragAction = new AdjustEdgeShapeAction(edge, edge.controlPoint);
-			}
+			this._dragAction = new AdjustEdgeShapeAction(edge, edge.controlPoint);
 		} else {
 			const nodesSelected = selection.filter((item) => item instanceof Node) as Node[];
 			if (nodesSelected.length > 0) {

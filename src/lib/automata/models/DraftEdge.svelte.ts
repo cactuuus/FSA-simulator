@@ -1,7 +1,6 @@
 import type { Point } from '$lib/utils/geometry';
 import type { BaseEdge } from './types';
 import { Node } from './Node.svelte';
-import { Edge } from './Edge.svelte';
 
 /**
  * Represents a temporary edge being drawn on the canvas. Used purely for visual feedback during
@@ -52,10 +51,6 @@ export class DraftEdge implements BaseEdge {
 			return this._to.pos;
 		}
 		return this._to;
-	}
-
-	get loopbackAngle(): number {
-		return Edge.LOOPBACK_DEFAULT_ANGLE;
 	}
 
 	get pointingAtNode(): boolean {

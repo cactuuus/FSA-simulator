@@ -18,5 +18,4 @@ export interface BaseEdge {
 	get isLoopback(): boolean;
 	get sourcePoint(): Point;
 	get targetPoint(): Point;
-	get loopbackAngle(): number;
 }

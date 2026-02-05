@@ -5,10 +5,11 @@
 export const GRAPH_GEOMETRY = {
 	nodeRadius: 30,
 	acceptingNodeRadius: 25,
-	loopbackArcSize: 40,
+	loopbackArcSize: 30,
 	labelLineHeight: 20,
 	bezierLabelDistanceBias: 0.3, // value between 0 and 1
-	loopbackLabelOffset: 110, // accounting for loopback arc size & node radius
+	loopbackDefaultAngle: Math.PI / 2, // default angle of loopback edges
+	loopbackLabelOffset: 30, // distance from the arc apex to the label for loopback edges
 	edgeStartOffset: 34, // accounting for node radius
 	edgeEndOffset: 36, // accounting for node radius + arrow offset
 	arrowSize: 4
