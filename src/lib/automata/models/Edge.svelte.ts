@@ -37,10 +37,10 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		y: this._referencePoint.y + this._controlPointOffset.y
 	});
 
-	constructor(from: Node, to: Node) {
+	constructor(from: Node, to: Node, id?: string) {
 		this.from = from;
 		this.to = to;
-		this.id = Edge.createId(from.id, to.id);
+		this.id = id ?? Edge.createId(from.id, to.id);
 		this.isLoopback = from.id === to.id;
 	}
 
@@ -72,10 +72,24 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	/**
 	 * Adds a new transition symbol to the edge, with or without stack operations.
 	 * @param withStackOps True to create the transition symbol with stack operations, false otherwise.
+	 * @param id Optional ID for the new transition symbol.
 	 */
-	addTransition(withStackOps: boolean = false): void {
-		const newTransition = Transition.createEmpty(withStackOps);
+	addEmptyTransition(withStackOps: boolean = false, id: string): void {
+		const newTransition = Transition.createEmpty(withStackOps, id);
 		this._transitionsMap.set(newTransition.id, newTransition);
+	}
+
+	/**
+	 * Adds existing transition(s) to the edge.
+	 * @param transitions One or more Transition objects to add to the edge.
+	 */
+	addTransitions(...transitions: Transition[]): void {
+		transitions.forEach((transition) => {
+			if (this._transitionsMap.has(transition.id)) {
+				throw new Error(`Transition with ID ${transition.id} already exists on edge ${this.id}`);
+			}
+			this._transitionsMap.set(transition.id, transition);
+		});
 	}
 
 	/**
@@ -88,11 +102,16 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	}
 
 	/**
-	 * Removes a transition.
-	 * @param id The ID of the transition to remove.
+	 * Removes transition(s).
+	 * @param ids The IDs of the transitions to remove.
 	 */
-	removeTransition(id: string) {
-		this._transitionsMap.delete(id);
+	deleteTransitions(...ids: string[]): void {
+		ids.forEach((id) => {
+			if (!this._transitionsMap.has(id)) {
+				throw new Error(`Transition with ID ${id} does not exist on edge ${this.id}`);
+			}
+			this._transitionsMap.delete(id);
+		});
 	}
 
 	/**
@@ -128,10 +147,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		}
 		const edge = new Edge(fromNode, toNode);
 		edge._transitionsMap = new SvelteMap();
-		json.transitions.forEach((transitionJson) => {
-			const transition = Transition.fromJSON(transitionJson);
-			edge._transitionsMap.set(transition.id, transition);
-		});
+		edge.addTransitions(...json.transitions.map((t) => Transition.fromJSON(t)));
 		edge._controlPointOffset = json.controlPointOffset ?? { x: 0, y: 0 };
 		edge.forceStraight = json.forceStraight ?? false;
 		edge.forceAlignCenter = json.forceAlignCenter ?? false;

@@ -15,6 +15,6 @@
 		<span>Selection Panel</span>
 	{/snippet}
 	{#snippet content()}
-		<SelectedItemPanel selection={app.editor.selection} fsaGraph={app.editor.fsaGraph} />
+		<SelectedItemPanel editor={app.editor} />
 	{/snippet}
 </FloatingWindow>

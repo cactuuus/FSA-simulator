@@ -1,9 +1,23 @@
 <script lang="ts">
 	import { X, Plus, CircleQuestionMark } from '@lucide/svelte';
 	import { Transition, type Edge, FSAGraph } from '$lib/automata/models';
+	import { AddTransitionCommand, DeleteTransitionsCommand } from '$lib/interaction/editor/commands';
+	import { CommandHistory } from '$lib/interaction/editor/CommandHistory.svelte';
 
-	const { edge, fsaGraph }: { edge: Edge; fsaGraph: FSAGraph } = $props();
+	const {
+		edge,
+		fsaGraph,
+		commandHistory
+	}: { edge: Edge; fsaGraph: FSAGraph; commandHistory: CommandHistory } = $props();
 	const canDeleteTransition = $derived(edge.transitions.length > 1);
+
+	function addTransition() {
+		commandHistory.pushAndExecute(new AddTransitionCommand(edge.id, fsaGraph.hasStackOps));
+	}
+
+	function removeTransition(transitionId: string) {
+		commandHistory.pushAndExecute(new DeleteTransitionsCommand(transitionId));
+	}
 </script>
 
 <div class="flex w-full flex-col gap-4">
@@ -28,7 +42,7 @@
 						</span>
 						<button
 							class="btn float-right btn-xs btn-error"
-							onclick={() => edge.removeTransition(transition)}
+							onclick={() => removeTransition(transition.id)}
 							title="Remove this transition"
 							disabled={!canDeleteTransition}
 						>
@@ -71,7 +85,7 @@
 			{/each}
 		</div>
 	</div>
-	<button class="btn btn-sm btn-success" onclick={() => edge.addTransition(fsaGraph.hasStackOps)}>
+	<button class="btn btn-sm btn-success" onclick={addTransition}>
 		<Plus class="h-4 w-4" /> Add transition
 	</button>
 	{#if !edge.isLoopback}

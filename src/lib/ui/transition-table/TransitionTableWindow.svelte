@@ -17,7 +17,7 @@
 	{/snippet}
 	{#snippet content()}
 		<div class="flex flex-col gap-2">
-			<TransitionTable fsaGraph={app.fsaGraph} />
+			<TransitionTable fsaGraph={app.fsaGraph} commandHistory={app.commandHistory} />
 			<div>
 				<DesiredAlphabet
 					desired={app.desiredAlphabet.input}

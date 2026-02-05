@@ -2,8 +2,11 @@
 	import { Trash2 } from '@lucide/svelte';
 	import { InputSymbol, getTransitionTable } from '$lib/automata/analisys';
 	import { FSAGraph, Node, Transition } from '$lib/automata/models';
+	import { DeleteTransitionsCommand } from '$lib/interaction/editor/commands';
+	import { CommandHistory } from '$lib/interaction/editor';
 
-	const { fsaGraph }: { fsaGraph: FSAGraph } = $props();
+	const { fsaGraph, commandHistory }: { fsaGraph: FSAGraph; commandHistory: CommandHistory } =
+		$props();
 	let graphElement = $state<HTMLElement | null>(null);
 	let editModal: HTMLDialogElement;
 	let modalContext = $state<{
@@ -129,9 +132,8 @@
 	 */
 	function deleteFromModal(): void {
 		if (!modalContext) return;
-		modalContext.transitions.forEach((transition) => {
-			fsaGraph.deleteTransition(transition.id);
-		});
+		const command = new DeleteTransitionsCommand(...modalContext.transitions.map((t) => t.id));
+		commandHistory.pushAndExecute(command);
 		closeModal();
 	}
 </script>

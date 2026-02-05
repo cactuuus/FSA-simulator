@@ -20,13 +20,11 @@ export class AdjustEdgeShapeCommand extends Command<AdjustEdgeShapeData> {
 	}
 
 	execute(fsa: FSAGraph): void {
-		console.log('Executing AdjustEdgeShapeCommand with data:', this.data);
 		const edge = fsa.requireEdge(this.data.edgeId);
 		edge.updateControlPoint(this.data.finalControlPoint);
 	}
 
 	undo(fsa: FSAGraph): void {
-		console.log('undoing AdjustEdgeShapeCommand with data:', this.data);
 		const edge = fsa.requireEdge(this.data.edgeId);
 		edge.updateControlPoint(this.data.initialControlPoint);
 	}

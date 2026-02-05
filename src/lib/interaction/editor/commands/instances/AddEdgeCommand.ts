@@ -21,7 +21,7 @@ export class AddEdgeCommand extends Command<AddEdgeData> {
 	execute(fsa: FSAGraph): void {
 		const sourceNode = fsa.requireNode(this.data.sourceId);
 		const targetNode = fsa.requireNode(this.data.targetId);
-		fsa.addEdge(sourceNode, targetNode);
+		fsa.createNewEdge(sourceNode, targetNode, this.data.edgeId);
 	}
 
 	undo(fsa: FSAGraph): void {

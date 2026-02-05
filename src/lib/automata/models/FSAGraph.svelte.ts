@@ -85,7 +85,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * @param to The target node.
 	 * @returns The newly created edge.
 	 */
-	addEdge(from: Node, to: Node): Edge {
+	createNewEdge(from: Node, to: Node, id?: string): Edge {
 		if (!this.nodesMap.has(from.id)) {
 			throw new Error(`Source node with id ${from.id} does not exist in FSA graph.`);
 		}
@@ -95,10 +95,27 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		if (this.edgeAlreadyExists(from, to)) {
 			throw new Error(`Edge from ${from.id} to ${to.id} already exists in FSA graph.`);
 		}
-		const newEdge = new Edge(from, to);
-		newEdge.addTransition(this.hasStackOps);
+		const newEdge = new Edge(from, to, id);
+		newEdge.addTransitions(Transition.createEmpty(this.hasStackOps));
 		this.edgesMap.set(newEdge.id, newEdge);
 		return newEdge;
+	}
+
+	/**
+	 * Adds an existing edge to the FSA graph. The edge's source and target nodes must already exist in the graph, and the edge itself must not already exist.
+	 * @param edge
+	 */
+	addEdge(edge: Edge): void {
+		if (!this.nodesMap.has(edge.from.id)) {
+			throw new Error(`Source node with id ${edge.from.id} does not exist in FSA graph.`);
+		}
+		if (!this.nodesMap.has(edge.to.id)) {
+			throw new Error(`Target node with id ${edge.to.id} does not exist in FSA graph.`);
+		}
+		if (this.edgeAlreadyExists(edge.from, edge.to)) {
+			throw new Error(`Edge from ${edge.from.id} to ${edge.to.id} already exists in FSA graph.`);
+		}
+		this.edgesMap.set(edge.id, edge);
 	}
 
 	/**
@@ -162,8 +179,6 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * @returns The edge matching the ID.
 	 */
 	requireEdge(id: string): Edge {
-		console.log('current edge list:' + JSON.stringify(this.edgesMap));
-
 		const edge = this.getEdge(id);
 		if (!edge) {
 			throw new Error(`Edge with id ${id} does not exist in FSA graph.`);
@@ -218,23 +233,6 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 			throw new Error(`Edge with id ${edgeId} does not exist in FSA graph.`);
 		}
 		this.edgesMap.delete(edgeId);
-	}
-
-	/**
-	 * Deletes a transition from the FSA graph. If the edge containing the transition ends up with no transitions, the edge itself is also deleted.
-	 * @param id The ID of the transition to delete.
-	 */
-	deleteTransition(id: string): void {
-		for (const edge of this.edges) {
-			if (edge.hasTransition(id)) {
-				edge.removeTransition(id);
-				if (edge.transitions.length === 0) {
-					this.deleteEdge(edge.id);
-				}
-				return;
-			}
-		}
-		throw new Error(`Transition with id ${id} does not exist in FSA graph.`);
 	}
 
 	/**

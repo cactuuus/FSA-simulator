@@ -31,7 +31,7 @@ export class Transition implements Serializable<SerializedTransition> {
 		push: string | null = null,
 		id?: string
 	) {
-		this.id = id ?? `t-${crypto.randomUUID()}`;
+		this.id = id ?? Transition.createId();
 		this._consume = consume;
 		this._pop = pop;
 		this._push = push;
@@ -40,14 +40,19 @@ export class Transition implements Serializable<SerializedTransition> {
 	/**
 	 * Shortand method to create an empty transition symbol, with or without stack operations.
 	 * @param withStackOps Whether to include stack operations (pop and push) in the transition symbol.
+	 * @param id Optional ID for the transition symbol. If not provided, a unique ID will be generated.
 	 * @returns A new TransitionSymbol instance.
 	 */
-	static createEmpty(withStackOps: boolean): Transition {
+	static createEmpty(withStackOps: boolean, id?: string): Transition {
 		if (withStackOps) {
-			return new Transition(Transition.EMPTY, Transition.EMPTY, Transition.EMPTY);
+			return new Transition(Transition.EMPTY, Transition.EMPTY, Transition.EMPTY, id);
 		} else {
-			return new Transition(Transition.EMPTY, Transition.DISABLED, Transition.DISABLED);
+			return new Transition(Transition.EMPTY, Transition.DISABLED, Transition.DISABLED, id);
 		}
+	}
+
+	static createId(): string {
+		return `t-${crypto.randomUUID()}`;
 	}
 
 	get consume(): string {

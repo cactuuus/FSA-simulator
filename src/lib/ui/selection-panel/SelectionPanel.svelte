@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Trash2 } from '@lucide/svelte';
-	import { type FSAItem, type FSAGraph, Node, Edge } from '$lib/automata/models';
-	import { SelectionHandler } from '$lib/interaction/editor';
+	import { type FSAItem, Node, Edge } from '$lib/automata/models';
+	import { EditorManager } from '$lib/interaction/editor';
 	import NodeDetails from './NodeDetails.svelte';
 	import EdgeDetails from './EdgeDetails.svelte';
 
-	const { selection, fsaGraph }: { selection: SelectionHandler; fsaGraph: FSAGraph } = $props();
-	const items: FSAItem[] = $derived(selection.items);
+	const { editor }: { editor: EditorManager } = $props();
+	const items: FSAItem[] = $derived(editor.selection.items);
 </script>
 
 <div class="mx-auto w-55 max-w-full">
@@ -15,16 +15,16 @@
 	{:else if items.length === 1}
 		{@const item = items[0]}
 		{#if item instanceof Node}
-			<NodeDetails node={item} {fsaGraph} />
+			<NodeDetails node={item} fsaGraph={editor.fsaGraph} />
 		{:else if item instanceof Edge}
-			<EdgeDetails edge={item} {fsaGraph} />
+			<EdgeDetails edge={item} fsaGraph={editor.fsaGraph} commandHistory={editor.commandHistory} />
 		{/if}
 		<hr class="my-4 border-base-content/70" />
-		<button class="btn w-full btn-sm btn-error" onclick={() => selection.deleteAll()}>
+		<button class="btn w-full btn-sm btn-error" onclick={() => editor.selection.deleteAll()}>
 			<Trash2 class="h-4 w-4" /> Delete Item
 		</button>
 	{:else}
-		<button class="btn w-full btn-sm btn-error" onclick={() => selection.deleteAll()}>
+		<button class="btn w-full btn-sm btn-error" onclick={() => editor.selection.deleteAll()}>
 			<Trash2 class="h-4 w-4" /> Delete {items.length} Items
 		</button>
 	{/if}

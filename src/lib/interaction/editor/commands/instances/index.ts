@@ -14,3 +14,5 @@ export {
 	type ToggleEdgeAlignCenterData,
 	ToggleEdgeAlignCenterCommand
 } from './ToggleEdgeAlignCenterCommand';
+export { type AddTransitionData, AddTransitionCommand } from './AddTransitionCommand';
+export { type DeleteTransitionsData, DeleteTransitionsCommand } from './DeleteTransitionsCommand';
