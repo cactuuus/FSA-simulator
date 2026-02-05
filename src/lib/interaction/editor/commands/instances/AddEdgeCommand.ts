@@ -38,13 +38,6 @@ export class AddEdgeCommand extends Command<AddEdgeData> {
 		fsa.deleteEdge(this.data.edgeId);
 	}
 
-	toJSON(): { id: string; data: AddEdgeData } {
-		return {
-			id: this.id,
-			data: this.data
-		};
-	}
-
 	static fromJSON(commandJson: { data: AddEdgeData }): AddEdgeCommand {
 		return new AddEdgeCommand(commandJson.data.sourceId, commandJson.data.targetId);
 	}

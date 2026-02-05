@@ -29,13 +29,6 @@ export class AddNodeCommand extends Command<AddNodeData> {
 		fsa.deleteNode(this.data.nodeId);
 	}
 
-	toJSON(): { id: string; data: AddNodeData } {
-		return {
-			id: this.id,
-			data: this.data
-		};
-	}
-
 	static fromJSON(commandJson: { data: AddNodeData }): AddNodeCommand {
 		return new AddNodeCommand(commandJson.data.nodePos, commandJson.data.nodeId);
 	}
