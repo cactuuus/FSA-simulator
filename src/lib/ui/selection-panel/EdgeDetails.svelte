@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { X, Plus, CircleQuestionMark } from '@lucide/svelte';
 	import { Transition, type Edge, FSAGraph } from '$lib/automata/models';
-	import { AddTransitionCommand, DeleteTransitionsCommand } from '$lib/interaction/editor/commands';
+	import {
+		AddTransitionCommand,
+		DeleteTransitionsCommand,
+		ToggleEdgeAlignCenterCommand,
+		ToggleEdgeStraightCommand
+	} from '$lib/interaction/editor/commands';
 	import { CommandHistory } from '$lib/interaction/editor/CommandHistory.svelte';
 
 	const {
@@ -12,11 +17,23 @@
 	const canDeleteTransition = $derived(edge.transitions.length > 1);
 
 	function addTransition() {
-		commandHistory.pushAndExecute(new AddTransitionCommand(edge.id, fsaGraph.hasStackOps));
+		const command = new AddTransitionCommand(edge.id, fsaGraph.hasStackOps);
+		commandHistory.pushAndExecute(command);
 	}
 
 	function removeTransition(transitionId: string) {
-		commandHistory.pushAndExecute(new DeleteTransitionsCommand(transitionId));
+		const command = new DeleteTransitionsCommand(transitionId);
+		commandHistory.pushAndExecute(command);
+	}
+
+	function toggleForceStraight() {
+		const command = new ToggleEdgeStraightCommand(edge.id, !edge.forceStraight);
+		commandHistory.pushAndExecute(command);
+	}
+
+	function toggleForceAlignCenter() {
+		const command = new ToggleEdgeAlignCenterCommand(edge.id, !edge.forceAlignCenter);
+		commandHistory.pushAndExecute(command);
 	}
 </script>
 
@@ -96,7 +113,8 @@
 				id="forceStraight"
 				type="checkbox"
 				class="checkbox checkbox-sm checkbox-success"
-				bind:checked={edge.forceStraight}
+				onchange={toggleForceStraight}
+				checked={edge.forceStraight}
 			/>
 		</label>
 		<label for="forceAlignCenter" class="flex items-center justify-between gap-2">
@@ -105,7 +123,8 @@
 				id="forceAlignCenter"
 				type="checkbox"
 				class="checkbox checkbox-sm checkbox-success"
-				bind:checked={edge.forceAlignCenter}
+				onchange={toggleForceAlignCenter}
+				checked={edge.forceAlignCenter}
 			/>
 		</label>
 	{/if}
