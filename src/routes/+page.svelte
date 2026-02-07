@@ -9,7 +9,8 @@
 		Minus,
 		Redo,
 		Undo,
-		type Icon as IconType
+		type Icon as IconType,
+		Delete
 	} from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { DrawingBoard, SelectionWindow, TransitionTableWindow } from '$lib/ui';
@@ -21,7 +22,7 @@
 	} from '$lib/interaction/editor/states';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import { notifyInfo, notifyError } from '$lib/utils/notifications';
-	import { command } from '$app/server';
+	import { DeleteFSAItemsCommand } from '$lib/interaction/editor/commands/instances';
 
 	interface Tool {
 		state: string;
@@ -88,7 +89,10 @@
 			app.editor.selection.clear();
 		} else if (e.key === 'Delete') {
 			e.preventDefault();
-			app.editor.selection.deleteAll();
+			const toDelete = app.editor.selection.items.map((item) => item.id);
+			if (toDelete.length === 0) return;
+			const command = new DeleteFSAItemsCommand(...toDelete);
+			app.editor.commandHistory.pushAndExecute(command);
 		} else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
 			e.preventDefault();
 			undoCommand();

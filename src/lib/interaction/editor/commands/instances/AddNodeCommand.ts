@@ -19,7 +19,7 @@ export class AddNodeCommand extends Command<AddNodeData> {
 	}
 
 	execute(fsa: FSAGraph): void {
-		fsa.addNode(this.data.nodePos, this.data.nodeId);
+		fsa.createNewNode(this.data.nodePos, this.data.nodeId);
 	}
 
 	undo(fsa: FSAGraph): void {

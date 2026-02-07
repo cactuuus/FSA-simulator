@@ -4,9 +4,17 @@
 	import { EditorManager } from '$lib/interaction/editor';
 	import NodeDetails from './NodeDetails.svelte';
 	import EdgeDetails from './EdgeDetails.svelte';
+	import { DeleteFSAItemsCommand } from '$lib/interaction/editor/commands/instances';
 
 	const { editor }: { editor: EditorManager } = $props();
 	const items: FSAItem[] = $derived(editor.selection.items);
+
+	function deleteSelected() {
+		const toDelete = items.map((item) => item.id);
+		if (toDelete.length === 0) return;
+		const command = new DeleteFSAItemsCommand(...toDelete);
+		editor.commandHistory.pushAndExecute(command);
+	}
 </script>
 
 <div class="mx-auto w-55 max-w-full">
@@ -20,11 +28,11 @@
 			<EdgeDetails edge={item} fsaGraph={editor.fsaGraph} commandHistory={editor.commandHistory} />
 		{/if}
 		<hr class="my-4 border-base-content/70" />
-		<button class="btn w-full btn-sm btn-error" onclick={() => editor.selection.deleteAll()}>
+		<button class="btn w-full btn-sm btn-error" onclick={deleteSelected}>
 			<Trash2 class="h-4 w-4" /> Delete Item
 		</button>
 	{:else}
-		<button class="btn w-full btn-sm btn-error" onclick={() => editor.selection.deleteAll()}>
+		<button class="btn w-full btn-sm btn-error" onclick={deleteSelected}>
 			<Trash2 class="h-4 w-4" /> Delete {items.length} Items
 		</button>
 	{/if}

@@ -81,14 +81,6 @@ export class SelectionHandler {
 	}
 
 	/**
-	 * Deletes all selected items.
-	 */
-	deleteAll(): void {
-		this._fsaGraph.deleteItems(...this.items.map((item) => item.id));
-		this.clear();
-	}
-
-	/**
 	 * Simple getter for selection area.
 	 */
 	get area(): { start: Point; end: Point } | null {

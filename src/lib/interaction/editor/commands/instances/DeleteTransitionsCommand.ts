@@ -18,15 +18,12 @@ export class DeleteTransitionsCommand extends Command<DeleteTransitionsData> {
 	id = DeleteTransitionsCommand.ID;
 	data: DeleteTransitionsData;
 	private _toDelete: Set<string>;
-	private _initialized = false;
+	private _isInitialized = false;
 
 	constructor(...transitionIds: string[]) {
 		super();
 		this._toDelete = new Set(transitionIds);
-		this.data = {
-			groupedTransitions: {},
-			deletedEdges: {}
-		};
+		this.data = { groupedTransitions: {}, deletedEdges: {} };
 	}
 
 	/**
@@ -35,7 +32,7 @@ export class DeleteTransitionsCommand extends Command<DeleteTransitionsData> {
 	 */
 	private loadData(data: DeleteTransitionsData): void {
 		this.data = data;
-		this._initialized = true;
+		this._isInitialized = true;
 	}
 
 	/**
@@ -56,11 +53,11 @@ export class DeleteTransitionsCommand extends Command<DeleteTransitionsData> {
 			}
 			toDeleteInEdge.forEach((t) => this._toDelete.delete(t.id));
 		}
-		this._initialized = true;
+		this._isInitialized = true;
 	}
 
 	execute(fsa: FSAGraph): void {
-		if (!this._initialized) this.initializeData(fsa);
+		if (!this._isInitialized) this.initializeData(fsa);
 		for (const [edgeId, transitionsJson] of Object.entries(this.data.groupedTransitions)) {
 			const edge = fsa.requireEdge(edgeId);
 			if (this.data.deletedEdges[edgeId]) {

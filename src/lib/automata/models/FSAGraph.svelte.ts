@@ -66,7 +66,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * @param id The unique ID for the new node.
 	 * @returns The newly created node.
 	 */
-	addNode(pos: Point, id: string): Node {
+	createNewNode(pos: Point, id: string): Node {
 		if (this.nodesMap.has(id)) {
 			throw new Error(`Node with id ${id} already exists in FSA graph.`);
 		}
@@ -77,6 +77,17 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		}
 		this.nodesMap.set(newNode.id, newNode);
 		return newNode;
+	}
+
+	/**
+	 * Adds an existing node to the FSA graph. The node's ID must be unique within the graph.
+	 * @param node
+	 */
+	addNode(node: Node): void {
+		if (this.nodesMap.has(node.id)) {
+			throw new Error(`Node with id ${node.id} already exists in FSA graph.`);
+		}
+		this.nodesMap.set(node.id, node);
 	}
 
 	/**
@@ -158,6 +169,19 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 */
 	getEdge(id: string): Edge | null {
 		return this.edgesMap.get(id) ?? null;
+	}
+
+	/**
+	 * Retrieves an item (node or edge) from the FSA graph by its ID, throwing an error if it does not exist.
+	 * @param id The ID of the item to retrieve.
+	 * @returns The item matching the ID.
+	 */
+	requireItem(id: string): FSAItem {
+		const item = this.getItem(id);
+		if (!item) {
+			throw new Error(`Item with id ${id} does not exist in FSA graph.`);
+		}
+		return item;
 	}
 
 	/**

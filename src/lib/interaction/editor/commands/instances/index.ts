@@ -12,3 +12,4 @@ export {
 } from './ToggleEdgeSymmetricCommand';
 export { type AddTransitionData, AddTransitionCommand } from './AddTransitionCommand';
 export { type DeleteTransitionsData, DeleteTransitionsCommand } from './DeleteTransitionsCommand';
+export { type DeleteFSAItemsData, DeleteFSAItemsCommand } from './DeleteFSAItemsCommand';

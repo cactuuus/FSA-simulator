@@ -22,7 +22,7 @@ export class AddNodeState extends EditorState {
 
 	handleDragStart(ctx: EventContext): void {
 		if (ctx.isCanvas) {
-			this._tempNode = this.editorCtx.fsaGraph.addNode(ctx.pointerPos, 'temp-node');
+			this._tempNode = this.editorCtx.fsaGraph.createNewNode(ctx.pointerPos, 'temp-node');
 		}
 	}
 
