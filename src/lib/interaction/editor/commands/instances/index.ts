@@ -13,3 +13,6 @@ export {
 export { type AddTransitionData, AddTransitionCommand } from './AddTransitionCommand';
 export { type DeleteTransitionsData, DeleteTransitionsCommand } from './DeleteTransitionsCommand';
 export { type DeleteFSAItemsData, DeleteFSAItemsCommand } from './DeleteFSAItemsCommand';
+export { type UpdateNodeLabelData, UpdateNodeLabelCommand } from './UpdateNodeLabelCommand';
+export { type UpdateTransitionData, UpdateTransitionCommand } from './UpdateTransitionCommand';
+export { type SetStartNodeData, SetStartNodeCommand } from './SetStartNodeCommand';

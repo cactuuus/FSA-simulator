@@ -1,7 +1,39 @@
 <script lang="ts">
-	import { Node, type FSAGraph } from '$lib/automata/models';
+	import { FSAGraph, Node } from '$lib/automata/models';
+	import type { CommandHistory } from '$lib/interaction/editor';
+	import {
+		UpdateNodeLabelCommand,
+		ToggleNodeAcceptingCommand,
+		SetStartNodeCommand
+	} from '$lib/interaction/editor/commands/instances';
 
-	const { node, fsaGraph }: { node: Node; fsaGraph: FSAGraph } = $props();
+	const {
+		node,
+		fsaGraph,
+		commandHistory
+	}: { node: Node; fsaGraph: FSAGraph; commandHistory: CommandHistory } = $props();
+	// svelte-ignore state_referenced_locally
+	// we only care about the initial value
+	let labelBeforeEdit = node.label;
+
+	function updateLabel(e: Event) {
+		const newLabel = node.label;
+		if (labelBeforeEdit === newLabel) return;
+		const command = new UpdateNodeLabelCommand(node.id, labelBeforeEdit, newLabel);
+		commandHistory.push(command);
+		labelBeforeEdit = newLabel;
+	}
+
+	function toggleAccepting() {
+		const command = new ToggleNodeAcceptingCommand(node.id, !node.isAccepting);
+		commandHistory.push(command);
+	}
+
+	function toggleStarting() {
+		const newStartNode = fsaGraph.startNode?.id === node.id ? null : node.id;
+		const command = new SetStartNodeCommand(newStartNode);
+		commandHistory.pushAndExecute(command);
+	}
 </script>
 
 <div class="flex w-full flex-col gap-4">
@@ -12,6 +44,7 @@
 			type="text"
 			class="input-bordered input max-w-1/2 text-right"
 			bind:value={node.label}
+			onblur={updateLabel}
 		/>
 	</label>
 	<label for="isAccepting" class="flex items-center justify-between gap-2">
@@ -20,7 +53,8 @@
 			id="isAccepting"
 			type="checkbox"
 			class="checkbox checkbox-sm checkbox-success"
-			bind:checked={node.isAccepting}
+			checked={node.isAccepting}
+			onchange={toggleAccepting}
 		/>
 	</label>
 	<label for="isStarting" class="flex items-center justify-between gap-2">
@@ -30,10 +64,7 @@
 			type="checkbox"
 			class="checkbox checkbox-sm checkbox-success"
 			checked={fsaGraph.startNode?.id === node.id}
-			onchange={(event) => {
-				const checked = event.currentTarget.checked;
-				fsaGraph.startNode = checked ? node : null;
-			}}
+			onchange={toggleStarting}
 		/>
 	</label>
 </div>

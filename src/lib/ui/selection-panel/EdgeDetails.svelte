@@ -5,7 +5,8 @@
 		AddTransitionCommand,
 		DeleteTransitionsCommand,
 		AdjustEdgeShapeCommand,
-		ToggleEdgeSymmetricCommand
+		ToggleEdgeSymmetricCommand,
+		UpdateTransitionCommand
 	} from '$lib/interaction/editor/commands';
 	import { CommandHistory } from '$lib/interaction/editor/CommandHistory.svelte';
 
@@ -15,6 +16,11 @@
 		commandHistory
 	}: { edge: Edge; fsaGraph: FSAGraph; commandHistory: CommandHistory } = $props();
 	const canDeleteTransition = $derived(edge.transitions.length > 1);
+	let beforeEditTransitionValues: {
+		rawConsume: string;
+		rawPop: string | null;
+		rawPush: string | null;
+	};
 
 	function addTransition() {
 		const command = new AddTransitionCommand(edge.id, fsaGraph.hasStackOps);
@@ -36,6 +42,28 @@
 
 	function toggleSymmetry() {
 		const command = new ToggleEdgeSymmetricCommand(edge.id, !edge.isSymmetric);
+		commandHistory.pushAndExecute(command);
+	}
+
+	function setTransitionInitialValues(transition: Transition) {
+		beforeEditTransitionValues = {
+			rawConsume: transition.consumeRawValue,
+			rawPop: transition.popRawValue,
+			rawPush: transition.pushRawValue
+		};
+	}
+
+	function updateTransition(transition: Transition) {
+		const toRawValues = {
+			rawConsume: transition.consume,
+			rawPop: transition.pop,
+			rawPush: transition.push
+		};
+		const command = new UpdateTransitionCommand(
+			transition.id,
+			beforeEditTransitionValues,
+			toRawValues
+		);
 		commandHistory.pushAndExecute(command);
 	}
 </script>
@@ -77,6 +105,8 @@
 							class="input-bordered input mt-1 w-full"
 							bind:value={transition.consumeRawValue}
 							placeholder={Transition.EPSILON}
+							onblur={() => updateTransition(transition)}
+							onfocus={() => setTransitionInitialValues(transition)}
 						/>
 					</label>
 					{#if fsaGraph.hasStackOps}
@@ -88,6 +118,8 @@
 								class="input-bordered input mt-1 w-full"
 								bind:value={transition.popRawValue}
 								placeholder={Transition.EPSILON}
+								onblur={() => updateTransition(transition)}
+								onfocus={() => setTransitionInitialValues(transition)}
 							/>
 						</label>
 						<label for="push-{transition.id}" class="flex-1">
@@ -98,6 +130,8 @@
 								class="input-bordered input mt-1 w-full"
 								bind:value={transition.pushRawValue}
 								placeholder={Transition.EPSILON}
+								onblur={() => updateTransition(transition)}
+								onfocus={() => setTransitionInitialValues(transition)}
 							/>
 						</label>
 					{/if}

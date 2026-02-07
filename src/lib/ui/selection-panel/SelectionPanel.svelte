@@ -23,7 +23,7 @@
 	{:else if items.length === 1}
 		{@const item = items[0]}
 		{#if item instanceof Node}
-			<NodeDetails node={item} fsaGraph={editor.fsaGraph} />
+			<NodeDetails node={item} fsaGraph={editor.fsaGraph} commandHistory={editor.commandHistory} />
 		{:else if item instanceof Edge}
 			<EdgeDetails edge={item} fsaGraph={editor.fsaGraph} commandHistory={editor.commandHistory} />
 		{/if}

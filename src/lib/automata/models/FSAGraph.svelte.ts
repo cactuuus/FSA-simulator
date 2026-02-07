@@ -211,6 +211,19 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	}
 
 	/**
+	 * Retrieves a transition from the FSA graph by its ID, throwing an error if it does not exist.
+	 * @param id The ID of the transition to retrieve.
+	 * @returns The transition matching the ID.
+	 */
+	requireTransition(id: string): Transition {
+		const transition = this.transitions.find((t) => t.id === id);
+		if (!transition) {
+			throw new Error(`Transition with id ${id} does not exist in FSA graph.`);
+		}
+		return transition;
+	}
+
+	/**
 	 * Deletes an item (node or edge) from the FSA graph, if it exists.
 	 * @param id The IDs of the items to delete.
 	 */
@@ -328,10 +341,8 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * @param value True to enable stack operations, false to disable.
 	 */
 	set hasStackOps(value: boolean) {
-		this.edges.forEach((edge: Edge) => {
-			edge.transitions.forEach((transition: Transition) => {
-				transition.toggleStackOps(value);
-			});
+		this.transitions.forEach((transition) => {
+			transition.toggleStackOps(value);
 		});
 		this._hasStackOps = value;
 	}
