@@ -19,6 +19,8 @@ export interface SerializedCommandHistory {
  * It maintains an array of commands and a pointer to the current position in the history. This seems simpler and more effective than maintaining separate undo and redo stacks.
  */
 export class CommandHistory implements Serializable<SerializedCommandHistory> {
+	static readonly MAX_HISTORY_LENGTH = 50;
+
 	private _fsa: FSAGraph;
 	private _commands: Command[] = $state([]);
 	private _pointer: number = $state(-1);
@@ -55,7 +57,11 @@ export class CommandHistory implements Serializable<SerializedCommandHistory> {
 	push(command: Command): void {
 		this._commands = this._commands.slice(0, this._pointer + 1);
 		this._commands.push(command);
-		this._pointer++;
+		if (this._commands.length > CommandHistory.MAX_HISTORY_LENGTH) {
+			this._commands.shift();
+		}
+		// newly pushed commands will always be at the end of the array
+		this._pointer = this._commands.length - 1;
 	}
 
 	/**
