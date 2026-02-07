@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { X, Plus, CircleQuestionMark } from '@lucide/svelte';
-	import { Transition, type Edge, FSAGraph } from '$lib/automata/models';
+	import { X, Plus, CircleQuestionMark, Redo2 } from '@lucide/svelte';
+	import { Edge, Transition, FSAGraph } from '$lib/automata/models';
 	import {
 		AddTransitionCommand,
 		DeleteTransitionsCommand,
-		ToggleEdgeAlignCenterCommand,
-		ToggleEdgeStraightCommand
+		AdjustEdgeShapeCommand,
+		ToggleEdgeSymmetricCommand
 	} from '$lib/interaction/editor/commands';
 	import { CommandHistory } from '$lib/interaction/editor/CommandHistory.svelte';
 
@@ -26,13 +26,16 @@
 		commandHistory.pushAndExecute(command);
 	}
 
-	function toggleForceStraight() {
-		const command = new ToggleEdgeStraightCommand(edge.id, !edge.forceStraight);
-		commandHistory.pushAndExecute(command);
+	function resetShape() {
+		if (edge.hasDefaultControlPoint) return; // No need to reset if it's already in default shape
+		const previousControlPoint = edge.controlPoint;
+		edge.resetControlPoint();
+		const command = new AdjustEdgeShapeCommand(edge.id, previousControlPoint, edge.controlPoint);
+		commandHistory.push(command);
 	}
 
-	function toggleForceAlignCenter() {
-		const command = new ToggleEdgeAlignCenterCommand(edge.id, !edge.forceAlignCenter);
+	function toggleSymmetry() {
+		const command = new ToggleEdgeSymmetricCommand(edge.id, !edge.isSymmetric);
 		commandHistory.pushAndExecute(command);
 	}
 </script>
@@ -105,27 +108,26 @@
 	<button class="btn btn-sm btn-success" onclick={addTransition}>
 		<Plus class="h-4 w-4" /> Add transition
 	</button>
+
+	<hr class="border-base-content/70" />
 	{#if !edge.isLoopback}
-		<hr class="border-base-content/70" />
-		<label for="forceStraight" class="flex items-center justify-between gap-2">
-			Force Straight
+		<label for="toggle-symmetric-edge" class="flex items-center justify-between gap-2">
+			Is Symmetric
 			<input
-				id="forceStraight"
+				id="toggle-symmetric-edge"
 				type="checkbox"
 				class="checkbox checkbox-sm checkbox-success"
-				onchange={toggleForceStraight}
-				checked={edge.forceStraight}
-			/>
-		</label>
-		<label for="forceAlignCenter" class="flex items-center justify-between gap-2">
-			Force Align To Center
-			<input
-				id="forceAlignCenter"
-				type="checkbox"
-				class="checkbox checkbox-sm checkbox-success"
-				onchange={toggleForceAlignCenter}
-				checked={edge.forceAlignCenter}
+				onchange={toggleSymmetry}
+				checked={edge.isSymmetric}
 			/>
 		</label>
 	{/if}
+	<button
+		class="btn btn-sm btn-neutral"
+		onclick={resetShape}
+		disabled={edge.hasDefaultControlPoint}
+	>
+		<Redo2 class="h-4 w-4" />
+		{edge.isLoopback ? 'Reset Rotation' : 'Reset Shape'}
+	</button>
 </div>

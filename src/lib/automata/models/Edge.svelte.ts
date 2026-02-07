@@ -1,5 +1,5 @@
 import { SvelteMap } from 'svelte/reactivity';
-import { type Point, midPoint } from '$lib/utils/geometry';
+import { type Point, midPoint, vectorBetween } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
 import type { BaseEdge, FSAItem } from './types';
 import { Node } from './Node.svelte';
@@ -13,8 +13,7 @@ export interface SerializedEdge {
 	toNodeId: string;
 	transitions: SerializedTransition[];
 	controlPointOffset: Point;
-	forceStraight: boolean;
-	forceAlignCenter: boolean;
+	isSymmetric: boolean;
 }
 
 /**
@@ -22,19 +21,34 @@ export interface SerializedEdge {
  * symbols associated with it, as well as curvature for visual representation.
  */
 export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
+	static readonly DEFAULT_CONTROL_OFFSET: Point = { x: 0, y: 0 };
+
 	readonly id: string;
 	readonly from: Node;
 	readonly to: Node;
 	readonly isLoopback: boolean;
 	private _referencePoint = $derived<Point>(midPoint(this.sourcePoint, this.targetPoint));
 	private _transitionsMap = new SvelteMap<string, Transition>();
-	private _controlPointOffset = $state<Point>({ x: 0, y: 0 });
-	forceStraight = $state<boolean>(false);
-	forceAlignCenter = $state<boolean>(false);
+	private _controlPointOffset = $state<Point>(Edge.DEFAULT_CONTROL_OFFSET);
+	isSymmetric = $state<boolean>(false);
 	transitions = $derived<Transition[]>(Array.from(this._transitionsMap.values()));
-	controlPoint = $derived<Point>({
-		x: this._referencePoint.x + this._controlPointOffset.x,
-		y: this._referencePoint.y + this._controlPointOffset.y
+	hasDefaultControlPoint = $derived<boolean>(
+		this._controlPointOffset.x === Edge.DEFAULT_CONTROL_OFFSET.x &&
+			this._controlPointOffset.y === Edge.DEFAULT_CONTROL_OFFSET.y
+	);
+
+	/**
+	 * The control point is used to determine the curvature of the edge when rendered.
+	 * It stays relative to the edge's reference point, which is the midpoint between source and target nodes, so that it moves accordingly when nodes are moved.
+	 */
+	controlPoint = $derived.by<Point>(() => {
+		const offset = this.isSymmetric
+			? this.projectToPerpendicular(this._controlPointOffset)
+			: this._controlPointOffset;
+		return {
+			x: this._referencePoint.x + offset.x,
+			y: this._referencePoint.y + offset.y
+		};
 	});
 
 	constructor(from: Node, to: Node, id?: string) {
@@ -65,8 +79,30 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return this.to.pos;
 	}
 
-	hasDefaultControlPoint(): boolean {
-		return this._controlPointOffset.x === 0 && this._controlPointOffset.y === 0;
+	/**
+	 * Resets the control point to its default position by setting the control point offset to the default value.
+	 */
+	resetControlPoint(): void {
+		this._controlPointOffset = Edge.DEFAULT_CONTROL_OFFSET;
+	}
+
+	/**
+	 * Helper function for aligning the control point to be perpendicular to the edge direction.
+	 * @param offset The original control point offset to project to the perpendicular direction.
+	 * @returns The adjusted control point offset, perpendicular to the edge direction.
+	 */
+	private projectToPerpendicular(offset: Point): Point {
+		const edgeVector = vectorBetween(this.sourcePoint, this.targetPoint);
+		if (edgeVector.magnitude === 0) {
+			// return default offset to avoid division by zero
+			return Edge.DEFAULT_CONTROL_OFFSET;
+		}
+		const perpVector = {
+			x: -edgeVector.y / edgeVector.magnitude,
+			y: edgeVector.x / edgeVector.magnitude
+		};
+		const distance = offset.x * perpVector.x + offset.y * perpVector.y;
+		return { x: distance * perpVector.x, y: distance * perpVector.y };
 	}
 
 	/**
@@ -131,8 +167,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 			toNodeId: this.to.id,
 			transitions: this.transitions.map((ts) => ts.toJSON()),
 			controlPointOffset: this._controlPointOffset,
-			forceStraight: this.forceStraight,
-			forceAlignCenter: this.forceAlignCenter
+			isSymmetric: this.isSymmetric
 		};
 	}
 
@@ -149,8 +184,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		edge._transitionsMap = new SvelteMap();
 		edge.addTransitions(...json.transitions.map((t) => Transition.fromJSON(t)));
 		edge._controlPointOffset = json.controlPointOffset ?? { x: 0, y: 0 };
-		edge.forceStraight = json.forceStraight ?? false;
-		edge.forceAlignCenter = json.forceAlignCenter ?? false;
+		edge.isSymmetric = json.isSymmetric ?? false;
 		return edge;
 	}
 }

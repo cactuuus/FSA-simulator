@@ -5,6 +5,7 @@
 export const GRAPH_GEOMETRY = {
 	nodeRadius: 30,
 	acceptingNodeRadius: 25,
+	startEdgeLength: 90,
 	loopbackArcSize: 30,
 	labelLineHeight: 20,
 	bezierLabelDistanceBias: 0.3, // value between 0 and 1

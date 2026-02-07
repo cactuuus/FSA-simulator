@@ -4,8 +4,7 @@ import {
 	vectorBetween,
 	pointOnLine,
 	midPointOnBezier,
-	angleTo,
-	midPoint
+	angleTo
 } from '$lib/utils/geometry';
 import { Edge, DraftEdge } from '$lib/automata/models';
 import { GRAPH_GEOMETRY } from './graphConfig';
@@ -37,44 +36,6 @@ function getQuadraticBezierPath(
 }
 
 /**
- * Gets the effective control point for an edge, taking into account all possible adjustments (default control point for loopbacks, straight edges, and center-aligned edges).
- * This is the single source of truth for the control point to use for visualization purposes.
- * @param edge The edge for which to calculate the effective control point.
- * @returns The effective control point.
- */
-function getEffectiveControlPoint(edge: Edge): Point {
-	// loopback edges: use control point, else default
-	if (edge.isLoopback) {
-		if (edge.hasDefaultControlPoint()) {
-			const angle = GRAPH_GEOMETRY.loopbackDefaultAngle;
-			return pointOnCircle(edge.sourcePoint, loopbackDistance, angle);
-		}
-		return edge.controlPoint;
-	}
-	// straight edges: use midpoint
-	if (edge.hasDefaultControlPoint() || edge.forceStraight) {
-		return midPoint(edge.sourcePoint, edge.targetPoint);
-	}
-	// Center aligned edges: 'snap' control point to the line perpendicular to the midpoint of the edge
-	if (edge.forceAlignCenter) {
-		const edgeVector = vectorBetween(edge.sourcePoint, edge.targetPoint);
-		const perpVector = {
-			x: -edgeVector.y / edgeVector.magnitude,
-			y: edgeVector.x / edgeVector.magnitude
-		};
-		const midpoint = midPoint(edge.sourcePoint, edge.targetPoint);
-		const toControl = vectorBetween(midpoint, edge.controlPoint);
-		const distance = toControl.x * perpVector.x + toControl.y * perpVector.y;
-		return {
-			x: midpoint.x + distance * perpVector.x,
-			y: midpoint.y + distance * perpVector.y
-		};
-	}
-	// default case: use control point as is
-	return edge.controlPoint;
-}
-
-/**
  * Calculate position for edge label.
  * @param edge The edge for which to calculate its label's position.
  * @returns The position of the edge label, centered vertically for multi-line labels.
@@ -82,13 +43,15 @@ function getEffectiveControlPoint(edge: Edge): Point {
 export function getEdgeLabelPosition(edge: Edge): Point {
 	let position: Point;
 	if (edge.isLoopback) {
-		position = getEffectiveControlPoint(edge);
+		const angle = edge.hasDefaultControlPoint
+			? GRAPH_GEOMETRY.loopbackDefaultAngle
+			: angleTo(edge.sourcePoint, edge.controlPoint);
+		position = pointOnCircle(edge.sourcePoint, loopbackDistance, angle);
 	} else {
-		const controlPoint = getEffectiveControlPoint(edge);
-		const midpoint = midPointOnBezier(edge.sourcePoint, controlPoint, edge.targetPoint);
+		const midpoint = midPointOnBezier(edge.sourcePoint, edge.controlPoint, edge.targetPoint);
 		position = {
-			x: midpoint.x + (controlPoint.x - midpoint.x) * GRAPH_GEOMETRY.bezierLabelDistanceBias,
-			y: midpoint.y + (controlPoint.y - midpoint.y) * GRAPH_GEOMETRY.bezierLabelDistanceBias
+			x: midpoint.x + (edge.controlPoint.x - midpoint.x) * GRAPH_GEOMETRY.bezierLabelDistanceBias,
+			y: midpoint.y + (edge.controlPoint.y - midpoint.y) * GRAPH_GEOMETRY.bezierLabelDistanceBias
 		};
 	}
 	const verticalOffset = ((edge.transitions.length - 1) * GRAPH_GEOMETRY.labelLineHeight) / 2;
@@ -176,15 +139,16 @@ export function getStraightPath(
  */
 export function getRegularEdgePath(edge: Edge): string {
 	if (edge.isLoopback) {
-		const controlPoint = getEffectiveControlPoint(edge);
-		const angle = angleTo(edge.sourcePoint, controlPoint);
+		const angle = edge.hasDefaultControlPoint
+			? GRAPH_GEOMETRY.loopbackDefaultAngle
+			: angleTo(edge.sourcePoint, edge.controlPoint);
 		return getLoopbackPath(
 			edge.sourcePoint,
 			GRAPH_GEOMETRY.edgeStartOffset,
 			GRAPH_GEOMETRY.edgeEndOffset,
 			angle
 		);
-	} else if (edge.controlPoint === null || edge.forceStraight) {
+	} else if (edge.hasDefaultControlPoint) {
 		return getStraightPath(
 			edge.sourcePoint,
 			edge.targetPoint,
@@ -195,7 +159,7 @@ export function getRegularEdgePath(edge: Edge): string {
 		return getQuadraticBezierPath(
 			edge.sourcePoint,
 			edge.targetPoint,
-			getEffectiveControlPoint(edge),
+			edge.controlPoint,
 			GRAPH_GEOMETRY.edgeStartOffset,
 			GRAPH_GEOMETRY.edgeEndOffset
 		);
@@ -209,8 +173,7 @@ export function getRegularEdgePath(edge: Edge): string {
  * @returns The SVG path string representing the start edge.
  */
 export function getStartEdgePath(toPoint: Point): string {
-	const length = 100;
-	const start: Point = { x: toPoint.x - length, y: toPoint.y };
+	const start: Point = { x: toPoint.x - GRAPH_GEOMETRY.startEdgeLength, y: toPoint.y };
 	return getStraightPath(start, toPoint, 0, GRAPH_GEOMETRY.edgeEndOffset);
 }
 
