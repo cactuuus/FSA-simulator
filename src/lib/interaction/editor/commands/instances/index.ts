@@ -16,3 +16,5 @@ export { type DeleteFSAItemsData, DeleteFSAItemsCommand } from './DeleteFSAItems
 export { type UpdateNodeLabelData, UpdateNodeLabelCommand } from './UpdateNodeLabelCommand';
 export { type UpdateTransitionData, UpdateTransitionCommand } from './UpdateTransitionCommand';
 export { type SetStartNodeData, SetStartNodeCommand } from './SetStartNodeCommand';
+export { type EnableStackOpsData, EnableStackOpsCommand } from './EnableStackOpsCommand';
+export { type DisableStackOpsData, DisableStackOpsCommand } from './DisableStackOpsCommand';

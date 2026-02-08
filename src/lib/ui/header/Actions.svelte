@@ -18,6 +18,10 @@
 	import { cleanAndSerializeSvgGraph } from '$lib/automata/visuals';
 	import { validateFSA } from '$lib/automata/analisys';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
+	import {
+		EnableStackOpsCommand,
+		DisableStackOpsCommand
+	} from '$lib/interaction/editor/commands/instances';
 
 	let clearFsaModal: HTMLDialogElement;
 	let togglePdaModal: HTMLDialogElement;
@@ -154,7 +158,15 @@
 	 */
 	function togglePda(e: SubmitEvent) {
 		e.preventDefault();
-		app.fsaGraph.hasStackOps = pendingPdaState;
+		if (pendingPdaState) {
+			app.commandHistory.pushAndExecute(new EnableStackOpsCommand());
+			notifySuccess('PDA mode enabled. Stack operations are now available for all transitions.');
+		} else {
+			app.commandHistory.pushAndExecute(new DisableStackOpsCommand());
+			notifySuccess(
+				'PDA mode disabled. All stack operations have been removed from all transitions.'
+			);
+		}
 		togglePdaModal.close();
 	}
 
@@ -282,9 +294,12 @@
 			</h3>
 			<p class="pt-4">
 				This will remove all stack operations (pop & push) from all transitions.
-				<br />
+				<br /><br />
 				<strong>
-					Note that even re-enabling PDA later will not restore their current symbols!
+					Note that even re-enabling PDA later will not restore their current symbols. The only way
+					to restore them is to undo this exact action via the UNDO button.
+					<br />
+					Use with caution!
 				</strong>
 			</p>
 		{/if}
