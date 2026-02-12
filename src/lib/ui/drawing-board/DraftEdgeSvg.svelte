@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { DraftEdge } from '$lib/automata/models';
-	import { getDraftEdgePath } from '$lib/utils/edgeUtils';
+	import { getDraftEdgePath, GRAPH_GEOMETRY } from '$lib/automata/visuals';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
 	const { draftEdge }: { draftEdge: DraftEdge } = $props();
@@ -12,7 +12,7 @@
 	pointer-events="none"
 >
 	<defs>
-		<ArrowMarkerSvg id="draft-arrow" />
+		<ArrowMarkerSvg id="draft-arrow" size={GRAPH_GEOMETRY.arrowSize} />
 	</defs>
 
 	<path d={getDraftEdgePath(draftEdge)} class="line" marker-end="url(#draft-arrow)" />

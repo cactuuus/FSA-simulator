@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Point } from '$lib/geometry';
+	import type { Point } from '$lib/utils/geometry';
 	const { start, end }: { start: Point; end: Point } = $props();
 
 	// NOTE: the SVG rect element cannot have negative width or height, therefore we need to

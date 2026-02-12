@@ -1,6 +1,6 @@
-import type { Point } from '$lib/geometry';
-import type { FSAItem } from '$lib/automata/models/types';
+import type { Point } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
+import type { FSAItem } from './types';
 
 /**
  * Serialized representation of a Node.
@@ -17,18 +17,20 @@ export interface SerializedNode {
  * and acceptance status. Whether a node is starting or not is managed by the FSAGraph class.
  */
 export class Node implements FSAItem, Serializable<SerializedNode> {
-	static readonly RADIUS = 30;
-
 	readonly id: string;
 	private _pos = $state<Point>({ x: 0, y: 0 });
 	label = $state<string>('');
 	isAccepting = $state<boolean>(false);
 
 	constructor(pos: Point, label: string = '', isAccepting: boolean = false, id?: string) {
-		this.id = id ?? crypto.randomUUID();
+		this.id = id ?? Node.createId();
 		this._pos = pos;
 		this.label = label;
 		this.isAccepting = isAccepting;
+	}
+
+	static createId(): string {
+		return crypto.randomUUID();
 	}
 
 	get pos(): Point {
@@ -51,18 +53,10 @@ export class Node implements FSAItem, Serializable<SerializedNode> {
 		this._pos = newPos;
 	}
 
-	/**
-	 * Toggle the accepting status of the node.
-	 */
-	toggleAccepting(): void {
-		this.isAccepting = !this.isAccepting;
-	}
-
-	// about pos: I cannot figure out why but in this instance ( and other similar cases) pos is not serializing correctly unless manually unpacked. In Edge for example, the serializing the point controlOffset works fine. I think it might have something to do with controlOffset being nullable? So possibly some edge case in Svelte's reactivity system.
 	toJSON(): SerializedNode {
 		return {
 			id: this.id,
-			pos: { x: this.pos.x, y: this.pos.y },
+			pos: this.pos,
 			label: this.label,
 			isAccepting: this.isAccepting
 		};

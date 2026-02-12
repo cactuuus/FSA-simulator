@@ -1,4 +1,4 @@
-import type { EventContext } from './SvgInputHandler';
+import type { EventContext } from '$lib/interaction/SvgInputHandler';
 
 /**
  * Base class for different interaction states within the application.

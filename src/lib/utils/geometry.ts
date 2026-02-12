@@ -1,4 +1,27 @@
-import type { Point, Vector } from '$lib/geometry/types';
+/**
+ * Represents a point in 2D space with x and y coordinates.
+ */
+export interface Point {
+	x: number;
+	y: number;
+}
+
+/**
+ * Vector with magnitude.
+ */
+export interface Vector {
+	x: number;
+	y: number;
+	magnitude: number;
+}
+
+/**
+ * Simple interface representing size dimensions. Similar to Point, but for width and height.
+ */
+export interface Size {
+	width: number;
+	height: number;
+}
 
 /**
  * Calculates the vector from one point to another.
@@ -83,4 +106,16 @@ export function pointOnBezierCurve(t: number, start: Point, control: Point, end:
 		x: mt2 * start.x + 2 * mt * t * control.x + t2 * end.x,
 		y: mt2 * start.y + 2 * mt * t * control.y + t2 * end.y
 	};
+}
+
+/**
+ * Calculate the midpoint on a quadratic Bezier curve.
+ * This is simply a wrapper around pointOnBezierCurve with t=0.5, made for convenience.
+ * @param start The starting point of the curve.
+ * @param control The control point of the curve.
+ * @param end The ending point of the curve.
+ * @returns The midpoint on the Bezier curve.
+ */
+export function midPointOnBezier(start: Point, control: Point, end: Point): Point {
+	return pointOnBezierCurve(0.5, start, control, end);
 }

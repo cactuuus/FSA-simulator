@@ -14,50 +14,21 @@
 * {
 	font-family: 'Ubuntu Mono', monospace;
 	box-sizing: border-box;
+	border-collapse: collapse;
 }
 
 :root {
-	/* drawing board styling */
-	--board-bg-color: oklch(98% 0 0);
-	--draw-color: black;
+	/* come colors are controlled by daisy UI theme */
+	--board-bg-color: var(--color-base-200);
+	--draw-color: var(--color-base-content);
 	--selected-color: limegreen;
-	--hover-shadow: rgba(0, 0, 0, 0.7);
-	--drop-shadow: drop-shadow(0 0 5px var(--hover-shadow));
-
-	--text-size: 16px;
-	--text-style: 'Ubuntu Mono', monospace;
-	--text-stroke-width: 8px;
-	--text-weight: bold;
-
-	/* node specific styling */
-	--node-radius: 30px;
-	--node-stroke-width: 2px;
-
-	/* edge specific styling */
 	--draft-edge-color: darkorange;
 	--draft-edge-invalid-color: red;
-	--edge-arrow-size: 7px;
-	--edge-stroke-width: 2px;
-	--edge-selectable-area-width: 30px;
-
-	/* selection box styling */
-	--sel-area-color: var(--color-secondary);
-	--sel-area-stroke-width: 2px;
-	--sel-area-stroke-opacity: 0.5;
-	--sel-area-fill-opacity: 0.2;
-	--sel-area-corners-radius: 0.5rem;
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		/* drawing board styling */
-		--board-bg-color: oklch(23.26% 0.014 253.1);
-		--draw-color: white;
-		--selected-color: limegreen;
-		--hover-shadow: white;
-
-		--draft-edge-color: darkorange;
-	}
+	--highlight-color: var(--color-secondary);
+	--selection-area-color: var(--color-secondary);
+	--hover-shadow: oklch(from var(--draw-color) l c h / 0.8);
+	--drop-shadow: drop-shadow(0 0 5px var(--hover-shadow));
+	--draw-stroke-width: 2px;
 }
 
 input[type='text'] {
@@ -65,78 +36,34 @@ input[type='text'] {
 	padding: 0.15rem 0.5rem;
 }
 
-.node {
-	stroke: var(--draw-color);
-	fill: transparent;
-	stroke-width: var(--node-stroke-width);
-
-	text {
-		pointer-events: none;
-		paint-order: stroke fill;
-		stroke-linejoin: round;
-		stroke: var(--board-bg-color);
-		fill: var(--draw-color);
-		font-weight: var(--text-weight);
-		font-family: var(--text-style);
-		font-size: var(--text-size);
-		text-anchor: middle;
-	}
-
-	&.selectable:hover,
-	&.in-selection-area {
-		cursor: pointer;
-		circle {
-			filter: var(--drop-shadow);
-		}
-	}
-
-	&.selected {
-		stroke: var(--selected-color);
-		&:active {
-			filter: brightness(150%);
-		}
-	}
+.node.selectable:hover,
+.node.in-selection-area,
+.edge.selectable:hover,
+.edge.in-selection-area {
+	cursor: pointer;
 }
 
-.edge {
-	fill: none;
-	color: var(--draw-color);
-	stroke: var(--draw-color);
-	stroke-width: var(--edge-stroke-width);
+.node.selectable:hover .node-path,
+.edge.selectable:hover .edge-path,
+.node.in-selection-area .node-path,
+.edge.in-selection-area .edge-path {
+	filter: var(--drop-shadow);
+}
 
-	.edge-label {
-		paint-order: stroke fill;
-		stroke-linejoin: round;
-		stroke: var(--board-bg-color);
-		fill: var(--draw-color);
-		stroke-width: var(--text-stroke-width);
-		font-weight: var(--text-weight);
-		font-family: var(--text-style);
-		font-size: var(--text-size);
-		text-anchor: middle;
-	}
+.node.selected,
+.edge.selected {
+	stroke: var(--selected-color);
+	color: var(--selected-color);
+}
 
-	.select-area {
-		stroke-width: var(--edge-selectable-area-width);
-		opacity: 0; /* invisible, used purely for easier selection */
-	}
+.node:active .node-path,
+.edge:active .edge-path {
+	filter: brightness(120%);
+}
 
-	&.selectable:hover,
-	&.in-selection-area {
-		cursor: pointer;
-		.edge-path {
-			filter: var(--drop-shadow);
-		}
-	}
-
-	&.selected {
-		color: var(--selected-color);
-		stroke: var(--selected-color);
-
-		&:active.edge-path {
-			filter: var(--drop-shadow);
-		}
-	}
+.edge .select-area {
+	stroke-width: 30px;
+	opacity: 0; /* invisible, used purely for easier selection */
 }
 
 /* prevent text selection on SVG text elements, to avoid interfering with drag operations */
@@ -151,22 +78,40 @@ svg text {
 	fill: none;
 	color: var(--draft-edge-color);
 	stroke: var(--draft-edge-color);
-	stroke-width: var(--edge-stroke-width);
+	stroke-width: 2px;
 	stroke-dasharray: 5, 5;
+}
 
-	&.invalid {
-		stroke: var(--draft-edge-invalid-color);
-		color: var(--draft-edge-invalid-color);
-	}
+.draft-edge.invalid {
+	stroke: var(--draft-edge-invalid-color);
+	color: var(--draft-edge-invalid-color);
 }
 
 .selection-area {
-	stroke: var(--sel-area-color);
-	fill: var(--sel-area-color);
-	stroke-width: var(--sel-area-stroke-width);
-	stroke-opacity: var(--sel-area-stroke-opacity);
-	fill-opacity: var(--sel-area-fill-opacity);
-	rx: var(--sel-area-corners-radius);
+	fill: var(--selection-area-color);
+	fill-opacity: 0.2;
+	rx: 5px;
+}
+
+.node.highlighted,
+.node.highlighted .node-path {
+	stroke: var(--highlight-color);
+	color: var(--highlight-color);
+}
+
+.node.highlighted .node-label {
+	fill: var(--highlight-color);
+}
+
+.transition.highlighted {
+	fill: var(--highlight-color);
+}
+
+.edge:has(.transition.highlighted) .edge-path {
+	stroke: var(--highlight-color);
+}
+.edge:has(.transition.highlighted) .arrowhead {
+	color: var(--highlight-color);
 }
 
 /* Animation for toast progress bar */
@@ -177,4 +122,85 @@ svg text {
 	to {
 		width: 100%;
 	}
+}
+
+#transition-table {
+	text-align: center;
+	cursor: default;
+	--header-color: var(--color-base-300);
+	--border-color: oklch(from var(--color-base-content) l c h / 0.2);
+}
+
+#transition-table * {
+	color: var(--color-base-content);
+	z-index: 0 !important;
+}
+
+#transition-table .invisible {
+	visibility: hidden;
+	border: none;
+}
+
+#transition-table td,
+#transition-table th {
+	padding: 0.5rem 1rem;
+}
+
+#transition-table .spacer {
+	padding: 0.1rem; /* used to dictate height/width */
+	width: 0px;
+	min-width: 0px;
+	max-width: 0px;
+}
+
+#transition-table .v-borders {
+	border-top: 1px solid var(--border-color);
+	border-bottom: 1px solid var(--border-color);
+}
+
+#transition-table .h-borders {
+	border-left: 1px solid var(--border-color);
+	border-right: 1px solid var(--border-color);
+}
+
+#transition-table #table-header {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+#transition-table .col-header-label,
+#transition-table .col-header-symbol,
+#transition-table .col-header-states,
+#transition-table .col-header {
+	background-color: var(--header-color);
+}
+
+#transition-table .col-header-label,
+#transition-table .row-header-state {
+	width: 1rem;
+}
+
+#transition-table .row-header-label {
+	background-color: var(--header-color);
+	writing-mode: sideways-lr;
+	text-align: end;
+	width: 1rem; /* just forces natural width */
+	padding: 1rem 0.5rem;
+}
+
+#transition-table .row-header-label .states-label {
+	position: sticky;
+	top: 5rem;
+	padding: 1rem 0.5rem;
+}
+
+#transition-table .transition-output-entry:hover,
+#transition-table .col-header-symbol:hover,
+#transition-table .row-header-state:hover {
+	color: var(--highlight-color);
+}
+
+#transition-table .transition-output-entry {
+	white-space: nowrap;
 }

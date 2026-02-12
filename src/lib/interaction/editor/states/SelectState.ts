@@ -1,8 +1,104 @@
-import { EditorState } from './EditorState';
+import type { Point } from '$lib/utils/geometry';
+import { EditorState, type EditorContext } from '$lib/interaction/editor/EditorState';
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
 import { Node, Edge } from '$lib/automata/models';
-import { angleTo } from '$lib/geometry';
-import { getControlPointFromLabelPos } from '$lib/utils/edgeUtils';
+import { getControlPointFromLabelPos } from '$lib/automata/visuals';
+import {
+	ToggleNodeAcceptingCommand,
+	MoveNodesCommand,
+	AdjustEdgeShapeCommand
+} from '$lib/interaction/editor/commands';
+
+/**
+ * Base class for actions that involve dragging in the editor. Useful here since drag actions in this state can be quite complicated.
+ */
+abstract class DragAction {
+	abstract handleMove(_eventCtx: EventContext, _editorCtx: EditorContext): void;
+	abstract handleEnd(_eventCtx: EventContext, _editorCtx: EditorContext): void;
+}
+
+/**
+ * Action for managing the selection box during dragging.
+ */
+class SelectBoxAction extends DragAction {
+	private _initialPos: Point;
+
+	constructor(initialPos: Point) {
+		super();
+		this._initialPos = initialPos;
+	}
+
+	handleMove(eventCtx: EventContext, editorCtx: EditorContext): void {
+		editorCtx.selection.updateArea(this._initialPos, eventCtx.pointerPos);
+	}
+
+	handleEnd(eventCtx: EventContext, editorCtx: EditorContext): void {
+		editorCtx.selection.commitArea(eventCtx.event.ctrlKey);
+	}
+}
+
+/**
+ * Action for moving one or more selected nodes during dragging. Edges connected to the moved nodes are automatically updated since they reference the nodes' positions directly, so there is no need for them to be included here.
+ */
+class MoveNodesAction extends DragAction {
+	private _nodes: Node[];
+	private _initialPos: Point;
+	private _lastPos: Point;
+
+	constructor(nodesSelected: Node[], initialPos: Point) {
+		super();
+		this._nodes = nodesSelected;
+		this._initialPos = initialPos;
+		this._lastPos = initialPos;
+	}
+
+	handleMove(eventCtx: EventContext, _editorCtx: EditorContext): void {
+		const delta = {
+			x: eventCtx.pointerPos.x - this._lastPos.x,
+			y: eventCtx.pointerPos.y - this._lastPos.y
+		};
+		this._nodes.forEach((node) => node.moveBy(delta));
+		this._lastPos = eventCtx.pointerPos;
+	}
+
+	handleEnd(_eventCtx: EventContext, _editorCtx: EditorContext): void {
+		const nodeIds = this._nodes.map((node) => node.id);
+		const totalOffset = {
+			x: this._lastPos.x - this._initialPos.x,
+			y: this._lastPos.y - this._initialPos.y
+		};
+		const command = new MoveNodesCommand(totalOffset, ...nodeIds);
+		_editorCtx.commandHistory.push(command);
+	}
+}
+
+/**
+ * Action for adjusting the control point of a single selected (non-loopback) edge during dragging.
+ */
+class AdjustEdgeShapeAction extends DragAction {
+	private _edge: Edge;
+	private _initialControlPoint: Point;
+
+	constructor(edge: Edge, initialControlPoint: Point) {
+		super();
+		this._edge = edge;
+		this._initialControlPoint = initialControlPoint;
+	}
+
+	handleMove(eventCtx: EventContext, _editorCtx: EditorContext): void {
+		const controlPoint = getControlPointFromLabelPos(this._edge, eventCtx.pointerPos);
+		this._edge.updateControlPoint(controlPoint);
+	}
+
+	handleEnd(_eventCtx: EventContext, _editorCtx: EditorContext): void {
+		const command = new AdjustEdgeShapeCommand(
+			this._edge.id,
+			this._initialControlPoint,
+			this._edge.controlPoint
+		);
+		_editorCtx.commandHistory.push(command);
+	}
+}
 
 /**
  * State for selecting and manipulating nodes and edges in the FSA graph.
@@ -18,14 +114,14 @@ import { getControlPointFromLabelPos } from '$lib/utils/edgeUtils';
  */
 export class SelectState extends EditorState {
 	static readonly NAME = 'select';
-	private _startPointerPos: { x: number; y: number } | null = null;
+	private _dragAction: DragAction | null = null;
 
 	/**
 	 * Resets internal state and destroys the selection box, if present.
 	 */
 	private resetState() {
 		this.editorCtx.selection.destroyArea();
-		this._startPointerPos = null;
+		this._dragAction = null;
 	}
 
 	onExit(): void {
@@ -41,83 +137,76 @@ export class SelectState extends EditorState {
 		}
 		const item = ctx.node || ctx.edge;
 		if (item) {
-			if (this.editorCtx.selection.isSelected(item)) {
-				this.editorCtx.selection.deselect(item);
+			if (ctx.event.ctrlKey) {
+				if (this.editorCtx.selection.isSelected(item.id)) {
+					this.editorCtx.selection.deselect(item.id);
+				} else {
+					this.editorCtx.selection.appendToSelection(item.id);
+				}
 			} else {
-				this.editorCtx.selection.select(item, ctx.event.ctrlKey);
+				this.editorCtx.selection.select(item.id);
 			}
 		}
 	}
 
 	handleDragStart(ctx: EventContext): void {
 		this.resetState();
-		this._startPointerPos = ctx.pointerPos;
 
 		// case 1: clicked on empty canvas
 		if (ctx.isCanvas) {
 			if (!ctx.event.ctrlKey) {
 				this.editorCtx.selection.clear();
 			}
-			this.editorCtx.selection.updateArea(this._startPointerPos, this._startPointerPos);
+			this._dragAction = new SelectBoxAction(ctx.pointerPos);
 			return;
 		}
 
+		// case 2: clicked on an item
+		// if the item is not selected, select it first (with Ctrl to multi-select)
+		// then start drag action based on type and number of selected items
 		const item = ctx.node || ctx.edge;
-		// case 2: clicked on a non selected item
-		if (item && !this.editorCtx.selection.isSelected(item)) {
-			this.editorCtx.selection.select(item, ctx.event.ctrlKey);
+		if (item && !this.editorCtx.selection.isSelected(item.id)) {
+			if (ctx.event.ctrlKey) {
+				this.editorCtx.selection.appendToSelection(item.id);
+			} else {
+				this.editorCtx.selection.select(item.id);
+			}
+		}
+		const selection = this.editorCtx.selection.items;
+		if (selection.length === 1 && selection[0] instanceof Edge) {
+			const edge = selection[0] as Edge;
+			this._dragAction = new AdjustEdgeShapeAction(edge, edge.controlPoint);
+		} else {
+			const nodesSelected = selection.filter((item) => item instanceof Node) as Node[];
+			if (nodesSelected.length > 0) {
+				this._dragAction = new MoveNodesAction(nodesSelected, ctx.pointerPos);
+			}
 		}
 	}
 
 	handleDragMove(ctx: EventContext): void {
 		// safety check
-		if (!this._startPointerPos) return;
-
-		// case 1: we're making a selection box
-		if (this.editorCtx.selection.area) {
-			this.editorCtx.selection.updateArea(this._startPointerPos, ctx.pointerPos);
-			return;
-		}
-
-		// case 2: we have a single edge selected
-		const selection = this.editorCtx.selection.items;
-		if (selection.length === 1 && selection[0] instanceof Edge) {
-			const edge = selection[0] as Edge;
-			if (edge.isLoopback()) {
-				const newAngle = angleTo(edge.sourcePoint, ctx.pointerPos);
-				edge.adjustLoopbackAngle(newAngle);
-			} else {
-				// uses label position to determine new control point, for better UX
-				const controlPoint = getControlPointFromLabelPos(edge, ctx.pointerPos);
-				edge.updateControlPoint(controlPoint);
-			}
-			return;
-		}
-
-		// case 3: one or more nodes are selected
-		const delta = {
-			x: ctx.pointerPos.x - this._startPointerPos.x,
-			y: ctx.pointerPos.y - this._startPointerPos.y
-		};
-		selection.forEach((item) => {
-			if (item instanceof Node) {
-				item.moveBy(delta);
-			}
-		});
-		this._startPointerPos = ctx.pointerPos;
+		if (!this._dragAction) return;
+		this._dragAction.handleMove(ctx, this.editorCtx);
 	}
 
 	handleDragEnd(ctx: EventContext): void {
-		if (this.editorCtx.selection.area) {
-			this.editorCtx.selection.commitArea(ctx.event.ctrlKey);
-		}
+		// safety check
+		if (!this._dragAction) return;
+		this._dragAction.handleEnd(ctx, this.editorCtx);
 		this.resetState();
 	}
 
 	handleDoubleClick(ctx: EventContext): void {
 		if (ctx.node) {
-			ctx.node.toggleAccepting();
-			this.editorCtx.selection.select(ctx.node);
+			this.editorCtx.commandHistory.pushAndExecute(
+				new ToggleNodeAcceptingCommand(ctx.node.id, !ctx.node.isAccepting)
+			);
+			if (ctx.event.ctrlKey) {
+				this.editorCtx.selection.appendToSelection(ctx.node.id);
+			} else {
+				this.editorCtx.selection.select(ctx.node.id);
+			}
 		}
 	}
 }

@@ -1,6 +1,6 @@
 import { Node, Edge, type FSAGraph } from '$lib/automata/models';
-import type { Point } from '$lib/geometry/types';
-import type { State } from './State';
+import type { Point } from '$lib/utils/geometry';
+import type { State } from '$lib/interaction/State';
 
 /**
  * Context for pointer events, providing information about the event and its target.
@@ -24,9 +24,10 @@ export class SvgInputHandler {
 
 	private _pointerDownPos: Point | null = null;
 	private _pointerDownCtx: EventContext | null = null;
+	private _lastProcessedPos: Point | null = null;
 	private _isDragging = false;
 
-	private static readonly DRAG_DISTANCE_THRESHOLD = 20; // pixels
+	private static readonly DRAG_DISTANCE_THRESHOLD = 5; // pixels
 
 	constructor(svgElement: SVGSVGElement, fsaGraph: FSAGraph, getCurrentState: () => State | null) {
 		this._svgElement = svgElement;
@@ -51,6 +52,16 @@ export class SvgInputHandler {
 		if (!currentState || !this._pointerDownPos || !this._pointerDownCtx) return;
 
 		const ctx = this.createEventContext(e);
+		// Stop processing event if the pointer hasn't moved since the last processed event.
+		if (
+			this._lastProcessedPos &&
+			ctx.pointerPos.x === this._lastProcessedPos.x &&
+			ctx.pointerPos.y === this._lastProcessedPos.y
+		) {
+			return;
+		}
+		this._lastProcessedPos = ctx.pointerPos;
+
 		const distance = Math.hypot(
 			ctx.pointerPos.x - this._pointerDownPos.x,
 			ctx.pointerPos.y - this._pointerDownPos.y
@@ -80,6 +91,7 @@ export class SvgInputHandler {
 		this._svgElement.releasePointerCapture(e.pointerId);
 		this._pointerDownPos = null;
 		this._pointerDownCtx = null;
+		this._lastProcessedPos = null;
 		this._isDragging = false;
 	}
 
@@ -93,12 +105,17 @@ export class SvgInputHandler {
 
 	/**
 	 * Gets the pointer position relative to the SVG element.
+	 * It returns the coordinates in SVG space, rounded to the nearest integer (this doesn't seem to cause any issues and makes the coordinates easier to work with).
 	 */
 	getPointerPosFromEvent(e: MouseEvent | PointerEvent): Point {
 		const pivot = this._svgElement.createSVGPoint();
 		pivot.x = e.clientX;
 		pivot.y = e.clientY;
-		return pivot.matrixTransform(this._svgElement.getScreenCTM()?.inverse());
+		const transformed = pivot.matrixTransform(this._svgElement.getScreenCTM()?.inverse());
+		return {
+			x: Math.round(transformed.x),
+			y: Math.round(transformed.y)
+		};
 	}
 
 	/**
@@ -107,9 +124,9 @@ export class SvgInputHandler {
 	 * (relative to the viewport) can be accessed via the event object ({ e.clientX, e.clientY }).
 	 */
 	private createEventContext(e: PointerEvent | MouseEvent): EventContext {
-		const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-id]');
+		const element = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-fsa-item]');
 		const elementId = element?.getAttribute('data-id') ?? null;
-		const fsaItem = elementId ? this._fsaGraph.getItemFromId(elementId) : null;
+		const fsaItem = elementId ? this._fsaGraph.getItem(elementId) : null;
 
 		return {
 			event: e,

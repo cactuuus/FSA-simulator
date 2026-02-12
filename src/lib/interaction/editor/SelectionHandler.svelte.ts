@@ -1,5 +1,5 @@
 import { SvelteSet } from 'svelte/reactivity';
-import type { Point } from '$lib/geometry';
+import type { Point } from '$lib/utils/geometry';
 import type { FSAItem, Edge, Node, FSAGraph } from '$lib/automata/models';
 
 /**
@@ -24,7 +24,7 @@ export class SelectionHandler {
 	 */
 	items: FSAItem[] = $derived(
 		Array.from(this._selectedIds)
-			.map((id) => this._fsaGraph.getItemFromId(id))
+			.map((id) => this._fsaGraph.getItem(id))
 			.filter((item): item is FSAItem => item !== null)
 	);
 
@@ -35,42 +35,42 @@ export class SelectionHandler {
 	 */
 	itemsInArea: FSAItem[] = $derived(
 		Array.from(this._idsWithinArea)
-			.map((id) => this._fsaGraph.getItemFromId(id))
+			.map((id) => this._fsaGraph.getItem(id))
 			.filter((item): item is FSAItem => item !== null)
 	);
 
 	/**
-	 * Add the given item(s) to the selection set.
-	 * @param items Item or items to be selected.
-	 * @param append Flag indicating wether to append to current selection or not
-	 * (true = add to current selection, false = clear selection first, then select only this one item)
+	 * Clears current selection and selects only the given items.
+	 * @param ids IDs of the items to be selected.
 	 */
-	select(items: FSAItem | FSAItem[], append: boolean = false): void {
-		if (!append) {
-			this.clear();
-		}
-		if (Array.isArray(items)) {
-			items.forEach((item) => this._selectedIds.add(item.id));
-		} else {
-			this._selectedIds.add(items.id);
-		}
+	select(...ids: string[]): void {
+		this.clear();
+		this.appendToSelection(...ids);
+	}
+
+	/**
+	 * Adds the given items to the current selection set.
+	 * @param ids IDs of the items to be selected.
+	 */
+	appendToSelection(...ids: string[]): void {
+		ids.forEach((id) => this._selectedIds.add(id));
 	}
 
 	/**
 	 * Removes the given item from the selection set. Doesn't check if it was actually selected or not.
-	 * @param item The item to be deselected.
+	 * @param id The ID of the item to be deselected.
 	 */
-	deselect(item: FSAItem): void {
-		this._selectedIds.delete(item.id);
+	deselect(id: string): void {
+		this._selectedIds.delete(id);
 	}
 
 	/**
 	 * Checks wether the given item is currently selected.
-	 * @param item The item to check.
+	 * @param id The ID of the item to check.
 	 * @returns True if selected, false otherwise.
 	 */
-	isSelected(item: FSAItem): boolean {
-		return this._selectedIds.has(item.id);
+	isSelected(id: string): boolean {
+		return this._selectedIds.has(id);
 	}
 
 	/**
@@ -78,16 +78,6 @@ export class SelectionHandler {
 	 */
 	clear(): void {
 		this._selectedIds.clear();
-	}
-
-	/**
-	 * Deletes all selected items.
-	 */
-	deleteAll(): void {
-		this.items.forEach((item: FSAItem) => {
-			this._fsaGraph.deleteItem(item);
-		});
-		this.clear();
 	}
 
 	/**

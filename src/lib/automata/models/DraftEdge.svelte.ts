@@ -1,7 +1,6 @@
-import type { Point } from '$lib/geometry';
-import { Node } from '$lib/automata/models/Node.svelte';
-import { Edge } from '$lib/automata/models/Edge.svelte';
-import type { BaseEdge } from '$lib/automata/models/types';
+import type { Point } from '$lib/utils/geometry';
+import type { BaseEdge } from './types';
+import { Node } from './Node.svelte';
 
 /**
  * Represents a temporary edge being drawn on the canvas. Used purely for visual feedback during
@@ -36,7 +35,7 @@ export class DraftEdge implements BaseEdge {
 		this._isDuplicate = isDuplicate;
 	}
 
-	isLoopback(): boolean {
+	get isLoopback(): boolean {
 		if (this._to instanceof Node) {
 			return this.from.id === this._to.id;
 		}
@@ -52,10 +51,6 @@ export class DraftEdge implements BaseEdge {
 			return this._to.pos;
 		}
 		return this._to;
-	}
-
-	get loopbackAngle(): number {
-		return Edge.LOOPBACK_DEFAULT_ANGLE;
 	}
 
 	get pointingAtNode(): boolean {

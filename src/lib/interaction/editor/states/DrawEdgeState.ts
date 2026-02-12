@@ -1,5 +1,6 @@
-import { EditorState } from './EditorState';
+import { EditorState } from '$lib/interaction/editor/EditorState';
 import type { EventContext } from '$lib/interaction/SvgInputHandler';
+import { AddEdgeCommand } from '$lib/interaction/editor/commands';
 
 /**
  * State for drawing edges between nodes in the FSA graph.
@@ -9,6 +10,12 @@ import type { EventContext } from '$lib/interaction/SvgInputHandler';
 export class DrawEdgeState extends EditorState {
 	static readonly NAME = 'draw-edge';
 
+	addAndSelectEdge(sourceId: string, targetId: string) {
+		const command = new AddEdgeCommand(sourceId, targetId);
+		this.editorCtx.commandHistory.pushAndExecute(command);
+		this.editorCtx.selection.select(command.data.edgeId);
+	}
+
 	onExit() {
 		this.editorCtx.draftEdge.clear();
 	}
@@ -16,9 +23,8 @@ export class DrawEdgeState extends EditorState {
 	handleClick(ctx: EventContext): void {
 		if (ctx.node) {
 			this.editorCtx.draftEdge.new(ctx.node);
-			const newEdge = this.editorCtx.draftEdge.commit(ctx.node);
-			if (newEdge) {
-				this.editorCtx.selection.select(newEdge);
+			if (!this.editorCtx.draftEdge.isDuplicate) {
+				this.addAndSelectEdge(ctx.node.id, ctx.node.id);
 			}
 		}
 		this.editorCtx.draftEdge.clear();
@@ -42,9 +48,8 @@ export class DrawEdgeState extends EditorState {
 
 	handleDragEnd(ctx: EventContext): void {
 		if (ctx.node && this.editorCtx.draftEdge.get) {
-			const newEdge = this.editorCtx.draftEdge.commit(ctx.node);
-			if (newEdge) {
-				this.editorCtx.selection.select(newEdge);
+			if (!this.editorCtx.draftEdge.isDuplicate) {
+				this.addAndSelectEdge(this.editorCtx.draftEdge.get.from.id, ctx.node.id);
 			}
 		}
 		this.editorCtx.draftEdge.clear();

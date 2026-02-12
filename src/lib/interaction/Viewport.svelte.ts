@@ -1,4 +1,4 @@
-import type { Point } from '$lib/geometry/types';
+import type { Point } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
 
 /**
@@ -53,9 +53,9 @@ export class Viewport implements Serializable<SerializedViewport> {
 	 * Pans the canvas by a given amount, adjusted for the current zoom level.
 	 * @param delta The amount to pan the canvas by, in term of x and y.
 	 */
-	panCanvas(delta: { x: number; y: number }): void {
-		this._panOffset.x -= delta.x / this._zoomLevel;
-		this._panOffset.y -= delta.y / this._zoomLevel;
+	panBy(deltaX: number, deltaY: number): void {
+		this._panOffset.x -= deltaX / this._zoomLevel;
+		this._panOffset.y -= deltaY / this._zoomLevel;
 	}
 
 	/**
@@ -104,7 +104,7 @@ export class Viewport implements Serializable<SerializedViewport> {
 	 */
 	toJSON(): SerializedViewport {
 		return {
-			panOffset: { x: this._panOffset.x, y: this._panOffset.y },
+			panOffset: this._panOffset,
 			zoomOffset: this._zoomLevel
 		};
 	}

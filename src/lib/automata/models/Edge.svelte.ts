@@ -1,11 +1,9 @@
-import { type Point, midPoint, vectorBetween } from '$lib/geometry';
-import { Node } from '$lib/automata/models/Node.svelte';
-import {
-	TransitionSymbol,
-	type SerializedTransitionSymbol
-} from '$lib/automata/models/TransitionSymbol.svelte';
-import type { BaseEdge, FSAItem } from '$lib/automata/models/types';
+import { SvelteMap } from 'svelte/reactivity';
+import { type Point, midPoint, vectorBetween } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
+import type { BaseEdge, FSAItem } from './types';
+import { Node } from './Node.svelte';
+import { Transition, type SerializedTransition } from './Transition.svelte';
 
 /**
  * Serialized representation of an Edge.
@@ -13,11 +11,9 @@ import type { Serializable } from '$lib/utils/serialization';
 export interface SerializedEdge {
 	fromNodeId: string;
 	toNodeId: string;
-	transitionSymbols: SerializedTransitionSymbol[];
-	controlOffset: Point | null;
-	loopbackAngle: number;
-	forceStraight: boolean;
-	forceAlignCenter: boolean;
+	transitions: SerializedTransition[];
+	controlPointOffset: Point;
+	isSymmetric: boolean;
 }
 
 /**
@@ -25,24 +21,41 @@ export interface SerializedEdge {
  * symbols associated with it, as well as curvature for visual representation.
  */
 export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
-	static readonly LOOPBACK_DEFAULT_ANGLE = Math.PI / 2; // default angle of loopback edges
+	static readonly DEFAULT_CONTROL_OFFSET: Point = { x: 0, y: 0 };
 
 	readonly id: string;
 	readonly from: Node;
 	readonly to: Node;
-	private _transitionSymbols: TransitionSymbol[] = $state<TransitionSymbol[]>([]);
-	readonly label = $derived<string[]>(this._transitionSymbols.map((ts) => ts.toString()));
-	private _controlOffset = $state<Point | null>(null);
-	private _loopbackAngle = $state<number>(Edge.LOOPBACK_DEFAULT_ANGLE);
-	private _midpoint = $derived<Point>(midPoint(this.sourcePoint, this.targetPoint));
-	forceStraight = $state<boolean>(false);
-	forceAlignCenter = $state<boolean>(false);
+	readonly isLoopback: boolean;
+	private _referencePoint = $derived<Point>(midPoint(this.sourcePoint, this.targetPoint));
+	private _transitionsMap = new SvelteMap<string, Transition>();
+	private _controlPointOffset = $state<Point>(Edge.DEFAULT_CONTROL_OFFSET);
+	isSymmetric = $state<boolean>(false);
+	transitions = $derived<Transition[]>(Array.from(this._transitionsMap.values()));
+	hasDefaultControlPoint = $derived<boolean>(
+		this._controlPointOffset.x === Edge.DEFAULT_CONTROL_OFFSET.x &&
+			this._controlPointOffset.y === Edge.DEFAULT_CONTROL_OFFSET.y
+	);
 
-	constructor(from: Node, to: Node) {
+	/**
+	 * The control point is used to determine the curvature of the edge when rendered.
+	 * It stays relative to the edge's reference point, which is the midpoint between source and target nodes, so that it moves accordingly when nodes are moved.
+	 */
+	controlPoint = $derived.by<Point>(() => {
+		const offset = this.isSymmetric
+			? this.projectToPerpendicular(this._controlPointOffset)
+			: this._controlPointOffset;
+		return {
+			x: this._referencePoint.x + offset.x,
+			y: this._referencePoint.y + offset.y
+		};
+	});
+
+	constructor(from: Node, to: Node, id?: string) {
 		this.from = from;
 		this.to = to;
-		this.id = Edge.createId(from, to);
-		this.addTransition();
+		this.id = id ?? Edge.createId(from.id, to.id);
+		this.isLoopback = from.id === to.id;
 	}
 
 	/**
@@ -50,12 +63,12 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	 * Since this is not a random ID, calling this with the same nodes will always return
 	 * the same ID. Also, since no duplicate edges are allowed, this ID is guaranteed to be unique
 	 * within an FSA.
-	 * @param from The source node.
-	 * @param to The target node.
+	 * @param fromId The ID of the source node.
+	 * @param toId The ID of the target node.
 	 * @returns A string representing the unique ID of the edge.
 	 */
-	static createId(from: Node, to: Node): string {
-		return `${from.id}-->${to.id}`;
+	static createId(fromId: string, toId: string): string {
+		return `${fromId}-->${toId}`;
 	}
 
 	get sourcePoint(): Point {
@@ -66,61 +79,75 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return this.to.pos;
 	}
 
-	get controlPoint(): Point {
-		if (this.isStraight()) {
-			return this._midpoint;
+	/**
+	 * Resets the control point to its default position by setting the control point offset to the default value.
+	 */
+	resetControlPoint(): void {
+		this._controlPointOffset = Edge.DEFAULT_CONTROL_OFFSET;
+	}
+
+	/**
+	 * Helper function for aligning the control point to be perpendicular to the edge direction.
+	 * @param offset The original control point offset to project to the perpendicular direction.
+	 * @returns The adjusted control point offset, perpendicular to the edge direction.
+	 */
+	private projectToPerpendicular(offset: Point): Point {
+		const edgeVector = vectorBetween(this.sourcePoint, this.targetPoint);
+		if (edgeVector.magnitude === 0) {
+			// return default offset to avoid division by zero
+			return Edge.DEFAULT_CONTROL_OFFSET;
 		}
-		const offset = this.forceAlignCenter ? this.getOffsetSnappedToCenter() : this._controlOffset;
-		// if the isStraight check is passed, it is guaranteed that controlOffset is not null
-		return {
-			x: this._midpoint.x + offset!.x,
-			y: this._midpoint.y + offset!.y
+		const perpVector = {
+			x: -edgeVector.y / edgeVector.magnitude,
+			y: edgeVector.x / edgeVector.magnitude
 		};
-	}
-
-	get loopbackAngle(): number {
-		return this._loopbackAngle;
-	}
-
-	get transitionSymbols(): TransitionSymbol[] {
-		return this._transitionSymbols;
-	}
-
-	isLoopback(): boolean {
-		return this.from.id === this.to.id;
+		const distance = offset.x * perpVector.x + offset.y * perpVector.y;
+		return { x: distance * perpVector.x, y: distance * perpVector.y };
 	}
 
 	/**
-	 * Indicates whether the edge is straight (no curvature).
-	 * @returns True if the edge is straight, false otherwise.
+	 * Adds a new transition symbol to the edge, with or without stack operations.
+	 * @param withStackOps True to create the transition symbol with stack operations, false otherwise.
+	 * @param id Optional ID for the new transition symbol.
 	 */
-	isStraight(): boolean {
-		return this.forceStraight || this._controlOffset === null;
+	addEmptyTransition(withStackOps: boolean = false, id: string): void {
+		const newTransition = Transition.createEmpty(withStackOps, id);
+		this._transitionsMap.set(newTransition.id, newTransition);
 	}
 
 	/**
-	 * Adds a new transition symbol to the edge (EPSILON by default).
+	 * Adds existing transition(s) to the edge.
+	 * @param transitions One or more Transition objects to add to the edge.
 	 */
-	addTransition(): void {
-		this._transitionSymbols.push(new TransitionSymbol(TransitionSymbol.EPSILON));
+	addTransitions(...transitions: Transition[]): void {
+		transitions.forEach((transition) => {
+			if (this._transitionsMap.has(transition.id)) {
+				throw new Error(`Transition with ID ${transition.id} already exists on edge ${this.id}`);
+			}
+			this._transitionsMap.set(transition.id, transition);
+		});
 	}
 
 	/**
-	 * Removes a transition symbol at the specified index.
-	 * @param index The index of the transition symbol to remove.
+	 * Checks if the edge has a specific transition.
+	 * @param id The ID of the transition to check.
+	 * @returns True if the transition exists on the edge, false otherwise.
 	 */
-	removeTransition(index: number): void {
-		if (index >= 0 && index < this._transitionSymbols.length) {
-			this._transitionSymbols.splice(index, 1);
-		}
+	hasTransition(id: string): boolean {
+		return this._transitionsMap.has(id);
 	}
 
 	/**
-	 * Adjusts the angle of the loopback edge.
-	 * @param newAngle The new angle in radians.
+	 * Removes transition(s).
+	 * @param ids The IDs of the transitions to remove.
 	 */
-	adjustLoopbackAngle(newAngle: number): void {
-		this._loopbackAngle = newAngle;
+	deleteTransitions(...ids: string[]): void {
+		ids.forEach((id) => {
+			if (!this._transitionsMap.has(id)) {
+				throw new Error(`Transition with ID ${id} does not exist on edge ${this.id}`);
+			}
+			this._transitionsMap.delete(id);
+		});
 	}
 
 	/**
@@ -128,31 +155,9 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	 * @param newPosition The new position of the control point.
 	 */
 	updateControlPoint(newPosition: Point): void {
-		this._controlOffset = {
-			x: newPosition.x - this._midpoint.x,
-			y: newPosition.y - this._midpoint.y
-		};
-	}
-
-	/**
-	 * Calculates the control offset snapped to the center line between source and target, forcing the control point to align with the center line, and therefore resulting in a symmetric curve.
-	 * @returns The centered control offset point.
-	 */
-	private getOffsetSnappedToCenter(): Point {
-		if (this._controlOffset === null || this.isLoopback()) {
-			return { x: 0, y: 0 };
-		}
-		// get unit vector perpendicular to the edge (considering the edge as a stright line)
-		const edgeVector = vectorBetween(this.sourcePoint, this.targetPoint);
-		const perpVector = {
-			x: -edgeVector.y / edgeVector.magnitude,
-			y: edgeVector.x / edgeVector.magnitude
-		};
-		// distance along the perpendicular direction
-		const distance = this._controlOffset.x * perpVector.x + this._controlOffset.y * perpVector.y;
-		return {
-			x: distance * perpVector.x,
-			y: distance * perpVector.y
+		this._controlPointOffset = {
+			x: newPosition.x - this._referencePoint.x,
+			y: newPosition.y - this._referencePoint.y
 		};
 	}
 
@@ -160,11 +165,9 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		return {
 			fromNodeId: this.from.id,
 			toNodeId: this.to.id,
-			transitionSymbols: this._transitionSymbols.map((ts) => ts.toJSON()),
-			controlOffset: this._controlOffset,
-			loopbackAngle: this._loopbackAngle,
-			forceStraight: this.forceStraight,
-			forceAlignCenter: this.forceAlignCenter
+			transitions: this.transitions.map((ts) => ts.toJSON()),
+			controlPointOffset: this._controlPointOffset,
+			isSymmetric: this.isSymmetric
 		};
 	}
 
@@ -178,13 +181,10 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 			throw new Error(`Edge references missing target node: ${json.toNodeId}`);
 		}
 		const edge = new Edge(fromNode, toNode);
-		edge._transitionSymbols = json.transitionSymbols.map((tsJson) =>
-			TransitionSymbol.fromJSON(tsJson)
-		);
-		edge._controlOffset = json.controlOffset ?? null;
-		edge._loopbackAngle = json.loopbackAngle ?? Edge.LOOPBACK_DEFAULT_ANGLE;
-		edge.forceStraight = json.forceStraight ?? false;
-		edge.forceAlignCenter = json.forceAlignCenter ?? false;
+		edge._transitionsMap = new SvelteMap();
+		edge.addTransitions(...json.transitions.map((t) => Transition.fromJSON(t)));
+		edge._controlPointOffset = json.controlPointOffset ?? { x: 0, y: 0 };
+		edge.isSymmetric = json.isSymmetric ?? false;
 		return edge;
 	}
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { FSAGraph } from '$lib/automata/models';
 	import { SquarePen } from '@lucide/svelte';
+	import type { FSAGraph } from '$lib/automata/models';
 
 	const { fsaGraph }: { fsaGraph: FSAGraph } = $props();
 	let modal: HTMLDialogElement;
@@ -35,11 +35,17 @@
 </button>
 
 <dialog id="rename-fsa-modal" bind:this={modal} class="modal">
-	<div class="modal-box w-11/12 max-w-xs">
+	<div class="modal-box w-11/12 max-w-sm">
 		<h3 class="text-lg font-bold">Rename FSA graph</h3>
 		<div class="modal-action mt-4">
 			<form class="w-full" onsubmit={saveAndClose}>
-				<input class="input" bind:value={newTitle} required autocomplete="off" />
+				<input
+					id="rename-fsa"
+					class="input w-full"
+					bind:value={newTitle}
+					required
+					autocomplete="off"
+				/>
 				<div class="mt-4 flex justify-end gap-4">
 					<button type="button" class="btn" onclick={closeModal}>Cancel</button>
 					<button type="submit" class="btn btn-success">Confirm</button>
