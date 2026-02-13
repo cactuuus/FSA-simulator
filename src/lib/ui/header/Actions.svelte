@@ -16,7 +16,7 @@
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
 	import { cleanAndSerializeSvgGraph } from '$lib/automata/visuals';
-	import { validateFSA } from '$lib/automata/analisys';
+	import { validateFSA, ComputationTree } from '$lib/automata/analisys';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import {
 		EnableStackOpsCommand,
@@ -183,6 +183,23 @@
 		}
 	}
 
+	function testComputeInput() {
+		const input = prompt('Enter an input string to test:');
+		if (input === null) return;
+		const computationTree = new ComputationTree(
+			app.fsaGraph,
+			input.split('').map((s) => s.trim())
+		);
+		if (computationTree.acceptingPaths.length > 0) {
+			notifySuccess(
+				`Input accepted! Found ${computationTree.acceptingPaths.length} accepting path(s) in the computation tree.`
+			);
+		} else {
+			notifyError('Input rejected! No accepting paths found in the computation tree.');
+		}
+		console.log(computationTree.toString());
+	}
+
 	async function openTransitionTable() {
 		app.windows.open(WINDOWS_ID.TransitionTable);
 		await tick();
@@ -244,6 +261,11 @@
 		<li class="text-warning">
 			<button onclick={() => testValidate()}>
 				<OctagonAlert class="h-4 w-4" /> Validate FSA (TEST)
+			</button>
+		</li>
+		<li class="text-warning">
+			<button onclick={() => testComputeInput()}>
+				<OctagonAlert class="h-4 w-4" /> Compute input (TEST)
 			</button>
 		</li>
 	</ul>
