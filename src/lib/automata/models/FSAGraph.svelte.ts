@@ -47,7 +47,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		if (this.hasStackOps) return this.isDeterministic() ? FSAType.DPDA : FSAType.PDA;
 		return this.isDeterministic() ? FSAType.DFA : FSAType.NFA;
 	});
-	adjecencyMap: Map<Node, [Transition, Node][]> = $derived.by(() => {
+	adjacencyMap: Map<Node, [Transition, Node][]> = $derived.by(() => {
 		const adjMap: Map<Node, [Transition, Node][]> = new SvelteMap(
 			this.nodes.map((node) => [node, []])
 		);

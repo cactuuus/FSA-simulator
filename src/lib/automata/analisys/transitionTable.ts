@@ -69,7 +69,7 @@ export function getTransitionTable(fsa: FSAGraph): TransitionTable {
 	inputs.forEach((symbol, index) => symbolIndex.set(symbol.toString(), index));
 
 	states.forEach((sourceState, row) => {
-		fsa.adjecencyMap.get(sourceState)?.forEach(([transition, targetState]) => {
+		fsa.adjacencyMap.get(sourceState)?.forEach(([transition, targetState]) => {
 			const inputSymbol = new InputSymbol(transition);
 			const col = symbolIndex.get(inputSymbol.toString())!;
 			content[row][col].push({ transition, targetState });
