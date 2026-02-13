@@ -6,3 +6,4 @@ export {
 	getTransitionTable
 } from './transitionTable';
 export { type ValidationResult, validateFSA } from './validation';
+export { ComputationTree, ComputationNode } from './computationTree';
