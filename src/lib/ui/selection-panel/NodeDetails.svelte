@@ -26,7 +26,7 @@
 
 	function toggleAccepting() {
 		const command = new ToggleNodeAcceptingCommand(node.id, !node.isAccepting);
-		commandHistory.push(command);
+		commandHistory.pushAndExecute(command);
 	}
 
 	function toggleStarting() {
