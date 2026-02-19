@@ -4,3 +4,5 @@ export { default as TitleEditor } from './header/TitleEditor.svelte';
 export { default as Toasts } from './toast/Toasts.svelte';
 export { default as SelectionWindow } from './selection-panel/SelectionWindow.svelte';
 export { default as TransitionTableWindow } from './transition-table/TransitionTableWindow.svelte';
+export { default as DraftEdgeSvg } from './drawing-board/editorOverlays/DraftEdgeSvg.svelte';
+export { default as SelectionArea } from './drawing-board/editorOverlays/SelectionArea.svelte';

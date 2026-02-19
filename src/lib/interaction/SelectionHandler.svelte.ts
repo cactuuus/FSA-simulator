@@ -126,12 +126,12 @@ export class SelectionHandler {
 	}
 
 	/**
-	 * Checks wether the given item is in the selection area.
-	 * @param item The item to check.
+	 * Checks wether the given item is in the selection area, based on its ID.
+	 * @param id The ID of the item to check.
 	 * @returns True if in selection area, false otherwise.
 	 */
-	isInArea(item: FSAItem): boolean {
-		return this._idsWithinArea.has(item.id);
+	isInArea(id: string): boolean {
+		return this._idsWithinArea.has(id);
 	}
 
 	/**

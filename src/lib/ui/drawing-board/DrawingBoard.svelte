@@ -1,13 +1,25 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { app } from '$lib/stores/app.svelte';
+	import { onMount, type Snippet } from 'svelte';
+	import { FSAGraph, type FSAItem } from '$lib/automata/models';
 	import { getGraphCSS } from '$lib/automata/visuals';
-	import { SvgInputHandler } from '$lib/interaction';
+	import { SvgInputHandler, Viewport, type State } from '$lib/interaction';
 	import NodeSvg from './NodeSvg.svelte';
 	import EdgeSvg from './EdgeSvg.svelte';
 	import StartEdgeSvg from './StartEdgeSvg.svelte';
-	import DraftEdgeSvg from './DraftEdgeSvg.svelte';
-	import SelectionArea from './SelectionArea.svelte';
+
+	const {
+		fsa,
+		viewport,
+		currentState,
+		getItemClass = () => '',
+		overlay
+	}: {
+		fsa: FSAGraph;
+		viewport: Viewport;
+		currentState: State;
+		getItemClass?: (item: FSAItem) => string;
+		overlay?: Snippet;
+	} = $props();
 
 	let drawingBoard: SVGSVGElement;
 	// svelte-ignore non_reactive_update - svgInputManager does not need to be reactive
@@ -22,7 +34,7 @@
 		if (drawingBoard) {
 			const resizeObserver = new ResizeObserver((entries) => {
 				const { width, height } = entries[0].contentRect;
-				app.viewport.canvasSize = { width, height };
+				viewport.canvasSize = { width, height };
 			});
 
 			resizeObserver.observe(drawingBoard);
@@ -34,7 +46,7 @@
 	 * Initialize the SVG input handler on mount.
 	 */
 	onMount(() => {
-		inputHandler = new SvgInputHandler(drawingBoard, app.fsaGraph, () => app.editor.currentState);
+		inputHandler = new SvgInputHandler(drawingBoard, fsa, () => currentState);
 	});
 
 	/**
@@ -50,9 +62,9 @@
 			const towardsPoint = inputHandler.getPointerPosFromEvent(e);
 			const direction = e.deltaY < 0 ? 1 : -1;
 			if (direction > 0) {
-				app.viewport.zoomIn(towardsPoint);
+				viewport.zoomIn(towardsPoint);
 			} else {
-				app.viewport.zoomOut(towardsPoint);
+				viewport.zoomOut(towardsPoint);
 			}
 		} else {
 			let deltaX = -e.deltaX;
@@ -62,7 +74,7 @@
 				deltaX = deltaY;
 				deltaY = 0;
 			}
-			app.viewport.panBy(deltaX, deltaY);
+			viewport.panBy(deltaX, deltaY);
 		}
 	}
 </script>
@@ -75,7 +87,7 @@
 	<!-- Ignore the above warnings. For now, the drawing board won't be keyboard accessible.-->
 	<svg
 		bind:this={drawingBoard}
-		viewBox={app.viewport.viewBox}
+		viewBox={viewport.viewBox}
 		id="drawing-board"
 		class="h-full w-full touch-none"
 		onpointerdown={inputHandler.handlePointerDown.bind(inputHandler)}
@@ -88,36 +100,21 @@
 		Note: SVG renders elements in the order they appear in the code.
 		-->
 		<g id="fsa-graph">
-			{#if app.fsaGraph.startNode}
-				<StartEdgeSvg startingNode={app.fsaGraph.startNode} />
+			{#if fsa.startNode}
+				<StartEdgeSvg startingNode={fsa.startNode} />
 			{/if}
 
-			{#each app.fsaGraph.edges as edge (edge.id)}
-				<EdgeSvg
-					{edge}
-					isSelected={app.editor.selection.isSelected(edge.id)}
-					isInSelectionArea={app.editor.selection.isInArea(edge)}
-				/>
+			{#each fsa.edges as edge (edge.id)}
+				<EdgeSvg {edge} extraClass={getItemClass(edge)} />
 			{/each}
 
-			{#each app.fsaGraph.nodes as node (node.id)}
-				<NodeSvg
-					{node}
-					isSelected={app.editor.selection.isSelected(node.id)}
-					isInSelectionArea={app.editor.selection.isInArea(node)}
-				/>
+			{#each fsa.nodes as node (node.id)}
+				<NodeSvg {node} extraClass={getItemClass(node)} />
 			{/each}
 		</g>
 
 		<g id="overlay-group">
-			{#if app.editor.draftEdge.get}
-				<DraftEdgeSvg draftEdge={app.editor.draftEdge.get} />
-			{/if}
-
-			{#if app.editor.selection.area}
-				{@const { start, end } = app.editor.selection.area}
-				<SelectionArea {start} {end} />
-			{/if}
+			{@render overlay?.()}
 		</g>
 	</svg>
 </section>

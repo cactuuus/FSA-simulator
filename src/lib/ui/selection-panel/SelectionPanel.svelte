@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Trash2 } from '@lucide/svelte';
 	import { type FSAItem, Node, Edge } from '$lib/automata/models';
-	import { EditorManager } from '$lib/interaction/editor';
 	import NodeDetails from './NodeDetails.svelte';
 	import EdgeDetails from './EdgeDetails.svelte';
+	import { type EditorContext } from '$lib/interaction/editor';
 	import { DeleteFSAItemsCommand } from '$lib/interaction/editor/commands/instances';
 
-	const { editor }: { editor: EditorManager } = $props();
+	const { editor }: { editor: EditorContext } = $props();
 	const items: FSAItem[] = $derived(editor.selection.items);
 
 	function deleteSelected() {

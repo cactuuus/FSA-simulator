@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DraftEdge } from '$lib/automata/models';
 	import { getDraftEdgePath, GRAPH_GEOMETRY } from '$lib/automata/visuals';
-	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
+	import ArrowMarkerSvg from '../ArrowMarkerSvg.svelte';
 
 	const { draftEdge }: { draftEdge: DraftEdge } = $props();
 </script>

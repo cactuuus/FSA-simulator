@@ -9,11 +9,16 @@
 		Minus,
 		Redo,
 		Undo,
-		type Icon as IconType,
-		Delete
+		type Icon as IconType
 	} from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import { DrawingBoard, SelectionWindow, TransitionTableWindow } from '$lib/ui';
+	import {
+		DrawingBoard,
+		SelectionWindow,
+		TransitionTableWindow,
+		DraftEdgeSvg,
+		SelectionArea
+	} from '$lib/ui';
 	import {
 		AddNodeState,
 		SelectState,
@@ -23,9 +28,29 @@
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import { notifyInfo, notifyError } from '$lib/utils/notifications';
 	import { DeleteFSAItemsCommand } from '$lib/interaction/editor/commands/instances';
+	import { DraftEdgeHandler, SelectionHandler, type EditorContext } from '$lib/interaction/editor';
+	import { StateMachine } from '$lib/interaction';
+
+	const editor: EditorContext = {
+		fsaGraph: app.fsaGraph,
+		viewport: app.viewport,
+		commandHistory: app.commandHistory,
+		selection: new SelectionHandler(app.fsaGraph),
+		draftEdge: new DraftEdgeHandler(app.fsaGraph)
+	};
+
+	const stateMachine = new StateMachine(
+		[
+			new PanningState(editor),
+			new SelectState(editor),
+			new DrawEdgeState(editor),
+			new AddNodeState(editor)
+		],
+		SelectState.NAME
+	);
 
 	interface Tool {
-		state: string;
+		stateName: string;
 		kbShortcut: string;
 		icon: typeof IconType;
 	}
@@ -34,21 +59,21 @@
 	 * Toolbar tools configuration.
 	 */
 	const tools: Tool[] = [
-		{ state: PanningState.NAME, kbShortcut: '1', icon: Hand },
-		{ state: SelectState.NAME, kbShortcut: '2', icon: MousePointer },
-		{ state: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline },
-		{ state: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus }
+		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand },
+		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer },
+		{ stateName: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline },
+		{ stateName: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus }
 	];
 
-	function setActive(state: string) {
-		app.editor.transitionTo(state);
+	function toState(stateName: string) {
+		stateMachine.transitionTo(stateName);
 	}
 
 	function undoCommand() {
-		const command = app.editor.commandHistory.peekUndo();
+		const command = editor.commandHistory.peekUndo();
 		try {
-			if (!app.editor.commandHistory.canUndo) return;
-			app.editor.commandHistory.undo();
+			if (!editor.commandHistory.canUndo) return;
+			editor.commandHistory.undo();
 			notifyInfo(`Undone '${command}' command.`);
 		} catch (error) {
 			notifyError(`Failed to undo command '${command}'`);
@@ -57,10 +82,10 @@
 	}
 
 	function redoCommand() {
-		const command = app.editor.commandHistory.peekRedo();
+		const command = editor.commandHistory.peekRedo();
 		try {
-			if (!app.editor.commandHistory.canRedo) return;
-			app.editor.commandHistory.redo();
+			if (!editor.commandHistory.canRedo) return;
+			editor.commandHistory.redo();
 			notifyInfo(`Redone '${command}' command.`);
 		} catch (error) {
 			notifyError(`Failed to redo command '${command}'`);
@@ -83,16 +108,16 @@
 		const tool = tools.find((a) => a.kbShortcut === e.key);
 		if (tool) {
 			e.preventDefault();
-			setActive(tool.state);
+			toState(tool.stateName);
 		} else if (e.key === 'Escape') {
 			e.preventDefault();
-			app.editor.selection.clear();
+			editor.selection.clear();
 		} else if (e.key === 'Delete') {
 			e.preventDefault();
-			const toDelete = app.editor.selection.items.map((item) => item.id);
+			const toDelete = editor.selection.items.map((item) => item.id);
 			if (toDelete.length === 0) return;
 			const command = new DeleteFSAItemsCommand(...toDelete);
-			app.editor.commandHistory.pushAndExecute(command);
+			editor.commandHistory.pushAndExecute(command);
 		} else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
 			e.preventDefault();
 			undoCommand();
@@ -102,29 +127,50 @@
 		}
 	}
 
+	function getItemClass(itemId: string) {
+		let itemClass = '';
+		if (editor.selection.isSelected(itemId)) itemClass += 'selected ';
+		if (editor.selection.isInArea(itemId)) itemClass += 'in-selection-area';
+		return itemClass;
+	}
+
 	onMount(() => {
 		window.addEventListener('keydown', handleKeyDown);
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown);
-		};
+		return () => window.removeEventListener('keydown', handleKeyDown);
 	});
 </script>
 
 <section class="relative h-full w-full overflow-hidden">
-	<DrawingBoard />
+	<DrawingBoard
+		fsa={editor.fsaGraph}
+		viewport={editor.viewport}
+		currentState={stateMachine.currentState}
+		getItemClass={(item) => getItemClass(item.id)}
+	>
+		{#snippet overlay()}
+			{#if editor.draftEdge.get}
+				<DraftEdgeSvg draftEdge={editor.draftEdge.get} />
+			{/if}
+
+			{#if editor.selection.area}
+				{@const { start, end } = editor.selection.area}
+				<SelectionArea {start} {end} />
+			{/if}
+		{/snippet}
+	</DrawingBoard>
 
 	<!-- Toolbar -->
 	<ul
 		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow"
 	>
-		{#each tools as tool (tool.state)}
+		{#each tools as tool (tool.stateName)}
 			{@const Icon = tool.icon}
 			<li>
 				<button
-					onclick={() => setActive(tool.state)}
+					onclick={() => toState(tool.stateName)}
 					aria-label={tool.kbShortcut}
 					class="btn relative btn-square text-base-content btn-ghost btn-sm btn-secondary
-							{tool.state === app.editor.currentState?.name ? 'btn-active' : ''}"
+							{tool.stateName === stateMachine.currentState.name ? 'btn-active' : ''}"
 				>
 					<Icon class="h-4 w-4" />
 					<small class="absolute right-0 -bottom-0.5 align-sub">{tool.kbShortcut}</small>
@@ -142,7 +188,7 @@
 			onclick={undoCommand}
 			aria-label="Undo"
 			title="Undo"
-			disabled={!app.editor.commandHistory.canUndo}
+			disabled={!editor.commandHistory.canUndo}
 		>
 			<Undo class="h-4 w-4" />
 		</button>
@@ -151,7 +197,7 @@
 			onclick={redoCommand}
 			aria-label="Redo"
 			title="Redo"
-			disabled={!app.editor.commandHistory.canRedo}
+			disabled={!editor.commandHistory.canRedo}
 		>
 			<Redo class="h-4 w-4" />
 		</button>
@@ -162,9 +208,9 @@
 		class="absolute bottom-2 left-2 flex h-10 items-center rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
 		<span>
-			{app.editor.fsaGraph.type}
-			| Nodes: {app.editor.fsaGraph.nodes.length}
-			| Edges: {app.editor.fsaGraph.edges.length}
+			{editor.fsaGraph.type}
+			| Nodes: {editor.fsaGraph.nodes.length}
+			| Edges: {editor.fsaGraph.edges.length}
 		</span>
 	</div>
 
@@ -172,18 +218,18 @@
 	<div
 		class="absolute right-2 bottom-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
-		<span class="mr-2">{app.viewport.prettyZoomLevel}</span>
+		<span class="mr-2">{editor.viewport.prettyZoomLevel}</span>
 
 		<button
 			class="btn btn-square btn-ghost btn-sm"
-			onclick={() => app.viewport.zoomIn()}
+			onclick={() => editor.viewport.zoomIn()}
 			aria-label="Zoom In"
 		>
 			<Plus class="h-4 w-4" />
 		</button>
 		<button
 			class="btn btn-square btn-ghost btn-sm"
-			onclick={() => app.viewport.zoomOut()}
+			onclick={() => editor.viewport.zoomOut()}
 			aria-label="Zoom Out"
 		>
 			<Minus class="h-4 w-4" />
@@ -195,5 +241,5 @@
 	{/if}
 
 	<!-- Instance of selection panel always present -->
-	<SelectionWindow />
+	<SelectionWindow {editor} window={app.windows.open(WINDOWS_ID.Selection)!} />
 </section>

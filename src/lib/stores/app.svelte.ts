@@ -2,12 +2,8 @@ import { storage } from '$lib/utils/storage';
 import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
 import { DesiredAlphabet, type SerializedDesiredAlphabet } from '$lib/automata/analisys';
 import { Viewport, type SerializedViewport } from '$lib/interaction';
-import {
-	CommandHistory,
-	EditorManager,
-	type SerializedCommandHistory
-} from '$lib/interaction/editor';
-import { WindowManager, type SerializedWindowsState } from '$lib/interaction/Windows.svelte';
+import { CommandHistory, type SerializedCommandHistory } from '$lib/interaction/editor';
+import { WindowManager, type SerializedWindowsState } from '$lib/interaction';
 
 type AppMode = 'editing' | 'simulating';
 
@@ -29,17 +25,12 @@ export class AppManager {
 	readonly viewport: Viewport;
 	readonly windows: WindowManager;
 
-	readonly editor: EditorManager;
-	// readonly simulationManager: SimulationManager;
-
 	constructor() {
 		this.fsaGraph = new FSAGraph();
 		this.viewport = new Viewport();
 		this.desiredAlphabet = new DesiredAlphabet();
 		this.commandHistory = new CommandHistory(this.fsaGraph);
-		this.editor = new EditorManager(this.fsaGraph, this.viewport, this.commandHistory);
 		this.windows = new WindowManager();
-		// this.simulationManager = new SimulationManager();
 	}
 
 	/**

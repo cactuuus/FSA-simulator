@@ -1,7 +1,7 @@
 import { State } from '$lib/interaction';
 import type { FSAGraph } from '$lib/automata/models/FSAGraph.svelte';
 import type { Viewport } from '$lib/interaction/Viewport.svelte';
-import type { SelectionHandler } from './SelectionHandler.svelte';
+import type { SelectionHandler } from '$lib/interaction/SelectionHandler.svelte';
 import type { DraftEdgeHandler } from './DraftEdgeHandler.svelte';
 import type { CommandHistory } from './CommandHistory.svelte';
 
