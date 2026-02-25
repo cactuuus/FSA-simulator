@@ -6,4 +6,6 @@ export { default as SelectionWindow } from './selection-panel/SelectionWindow.sv
 export { default as TransitionTableWindow } from './transition-table/TransitionTableWindow.svelte';
 export { default as DraftEdgeSvg } from './drawing-board/editorOverlays/DraftEdgeSvg.svelte';
 export { default as SelectionArea } from './drawing-board/editorOverlays/SelectionArea.svelte';
+export { default as ZoomControls } from './components/ZoomControls.svelte';
+export { default as UndoRedoControls } from './components/UndoRedoControls.svelte';
 export { default as ComputeInputWindow } from './compute-input/ComputeInputWindow.svelte';

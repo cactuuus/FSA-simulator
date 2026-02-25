@@ -1,23 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		CirclePlus,
-		Spline,
-		Hand,
-		MousePointer,
-		Plus,
-		Minus,
-		Redo,
-		Undo,
-		type Icon as IconType
-	} from '@lucide/svelte';
+	import { CirclePlus, Spline, Hand, MousePointer, type Icon as IconType } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import {
 		DrawingBoard,
 		SelectionWindow,
 		TransitionTableWindow,
 		DraftEdgeSvg,
-		SelectionArea
+		SelectionArea,
+		ZoomControls,
+		UndoRedoControls,
+		ComputeInputWindow
 	} from '$lib/ui';
 	import {
 		AddNodeState,
@@ -28,14 +21,14 @@
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import { notifyInfo, notifyError } from '$lib/utils/notifications';
 	import { DeleteFSAItemsCommand } from '$lib/interaction/editor/commands/instances';
-	import { DraftEdgeHandler, SelectionHandler, type EditorContext } from '$lib/interaction/editor';
+	import { DraftEdgeHandler, type EditorContext } from '$lib/interaction/editor';
 	import { StateMachine } from '$lib/interaction';
 
 	const editor: EditorContext = {
 		fsaGraph: app.fsaGraph,
 		viewport: app.viewport,
 		commandHistory: app.commandHistory,
-		selection: new SelectionHandler(app.fsaGraph),
+		selection: app.selectionHandler,
 		draftEdge: new DraftEdgeHandler(app.fsaGraph)
 	};
 
@@ -183,24 +176,12 @@
 	<div
 		class="absolute top-2 right-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
-		<button
-			class="btn btn-square btn-ghost btn-sm"
-			onclick={undoCommand}
-			aria-label="Undo"
-			title="Undo"
-			disabled={!editor.commandHistory.canUndo}
-		>
-			<Undo class="h-4 w-4" />
-		</button>
-		<button
-			class="btn btn-square btn-ghost btn-sm"
-			onclick={redoCommand}
-			aria-label="Redo"
-			title="Redo"
-			disabled={!editor.commandHistory.canRedo}
-		>
-			<Redo class="h-4 w-4" />
-		</button>
+		<UndoRedoControls
+			onUndo={undoCommand}
+			onRedo={redoCommand}
+			canUndo={editor.commandHistory.canUndo}
+			canRedo={editor.commandHistory.canRedo}
+		/>
 	</div>
 
 	<!-- Graph info panel -->
@@ -218,22 +199,7 @@
 	<div
 		class="absolute right-2 bottom-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
 	>
-		<span class="mr-2">{editor.viewport.prettyZoomLevel}</span>
-
-		<button
-			class="btn btn-square btn-ghost btn-sm"
-			onclick={() => editor.viewport.zoomIn()}
-			aria-label="Zoom In"
-		>
-			<Plus class="h-4 w-4" />
-		</button>
-		<button
-			class="btn btn-square btn-ghost btn-sm"
-			onclick={() => editor.viewport.zoomOut()}
-			aria-label="Zoom Out"
-		>
-			<Minus class="h-4 w-4" />
-		</button>
+		<ZoomControls viewport={editor.viewport} />
 	</div>
 
 	{#if app.windows.isOpen(WINDOWS_ID.TransitionTable)}
