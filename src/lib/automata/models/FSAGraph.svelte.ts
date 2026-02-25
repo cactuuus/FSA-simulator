@@ -288,21 +288,23 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * @returns True if the FSA is deterministic, false otherwise.
 	 */
 	private isDeterministic(): boolean {
-		for (let i = 0; i < this.transitions.length; i++) {
-			const t1 = this.transitions[i];
-			// for non-PDA only, also check for simple epsilon transitions
-			if (!this.hasStackOps && this.transitions[i].consume === Transition.EPSILON) return false;
-			for (let j = i + 1; j < this.transitions.length; j++) {
-				const t2 = this.transitions[j];
-				const consumeConflict =
-					t1.consume === t2.consume ||
-					t1.consume === Transition.EPSILON ||
-					t2.consume === Transition.EPSILON;
-				if (!this.hasStackOps && consumeConflict) return false;
+		for (const [, transitions] of this.adjacencyMap) {
+			for (let i = 0; i < transitions.length; i++) {
+				const t1 = transitions[i][0];
+				// for non-PDA only, also check for simple epsilon transitions
+				if (!this.hasStackOps && t1.consume === Transition.EPSILON) return false;
+				for (let j = i + 1; j < transitions.length; j++) {
+					const t2 = transitions[j][0];
+					const consumeConflict =
+						t1.consume === t2.consume ||
+						t1.consume === Transition.EPSILON ||
+						t2.consume === Transition.EPSILON;
+					if (!this.hasStackOps && consumeConflict) return false;
 
-				const popConflict =
-					t1.pop === t2.pop || t1.pop === Transition.EPSILON || t2.pop === Transition.EPSILON;
-				if (consumeConflict && popConflict) return false;
+					const popConflict =
+						t1.pop === t2.pop || t1.pop === Transition.EPSILON || t2.pop === Transition.EPSILON;
+					if (consumeConflict && popConflict) return false;
+				}
 			}
 		}
 		return true;
