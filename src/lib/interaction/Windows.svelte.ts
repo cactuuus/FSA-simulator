@@ -7,7 +7,8 @@ import { SvelteMap } from 'svelte/reactivity';
  */
 export const WINDOWS_ID = {
 	TransitionTable: 'transition-table-window',
-	Selection: 'selection-window'
+	Selection: 'selection-window',
+	ComputeInput: 'compute-input-window'
 } as const;
 
 /**

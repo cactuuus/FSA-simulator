@@ -10,7 +10,8 @@
 		X,
 		ImageDown,
 		OctagonAlert,
-		Table2
+		Table2,
+		MonitorCog
 	} from '@lucide/svelte';
 	import { tick } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
@@ -183,27 +184,10 @@
 		}
 	}
 
-	function testComputeInput() {
-		const input = prompt('Enter an input string to test:');
-		if (input === null) return;
-		const computationTree = new ComputationTree(
-			app.fsaGraph,
-			input.split('').map((s) => s.trim())
-		);
-		if (computationTree.acceptingPaths.length > 0) {
-			notifySuccess(
-				`Input accepted! Found ${computationTree.acceptingPaths.length} accepting path(s) in the computation tree.`
-			);
-		} else {
-			notifyError('Input rejected! No accepting paths found in the computation tree.');
-		}
-		console.log(computationTree.toString());
-	}
-
-	async function openTransitionTable() {
-		app.windows.open(WINDOWS_ID.TransitionTable);
+	async function openWindow(windowName: (typeof WINDOWS_ID)[keyof typeof WINDOWS_ID]) {
+		app.windows.open(windowName);
 		await tick();
-		const window = document.getElementById(WINDOWS_ID.TransitionTable);
+		const window = document.getElementById(windowName);
 		window?.focus();
 	}
 </script>
@@ -253,19 +237,19 @@
 			</button>
 		</li>
 		<li>
-			<button onclick={() => openTransitionTable()}>
+			<button onclick={() => openWindow(WINDOWS_ID.TransitionTable)}>
 				<Table2 class="h-4 w-4" /> Transition table
+			</button>
+		</li>
+		<li>
+			<button onclick={() => openWindow(WINDOWS_ID.ComputeInput)}>
+				<MonitorCog class="h-4 w-4" /> Compute input
 			</button>
 		</li>
 		<div class="divider m-0"></div>
 		<li class="text-warning">
 			<button onclick={() => testValidate()}>
 				<OctagonAlert class="h-4 w-4" /> Validate FSA (TEST)
-			</button>
-		</li>
-		<li class="text-warning">
-			<button onclick={() => testComputeInput()}>
-				<OctagonAlert class="h-4 w-4" /> Compute input (TEST)
 			</button>
 		</li>
 	</ul>

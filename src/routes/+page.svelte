@@ -240,6 +240,10 @@
 		<TransitionTableWindow />
 	{/if}
 
+	{#if app.windows.isOpen(WINDOWS_ID.ComputeInput)}
+		<ComputeInputWindow />
+	{/if}
+
 	<!-- Instance of selection panel always present -->
 	<SelectionWindow {editor} window={app.windows.open(WINDOWS_ID.Selection)!} />
 </section>

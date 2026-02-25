@@ -107,6 +107,14 @@ svg text {
 	fill: var(--highlight-color);
 }
 
+#start-edge.highlighted .edge-path {
+	stroke: var(--highlight-color);
+}
+
+#start-edge.highlighted .arrowhead {
+	color: var(--highlight-color);
+}
+
 .edge:has(.transition.highlighted) .edge-path {
 	stroke: var(--highlight-color);
 }

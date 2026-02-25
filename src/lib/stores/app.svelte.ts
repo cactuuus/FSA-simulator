@@ -1,9 +1,13 @@
 import { storage } from '$lib/utils/storage';
 import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
-import { DesiredAlphabet, type SerializedDesiredAlphabet } from '$lib/automata/analisys';
+import {
+	DesiredAlphabet,
+	type SerializedDesiredAlphabet,
+	ComputationTree
+} from '$lib/automata/analisys';
 import { Viewport, type SerializedViewport } from '$lib/interaction';
 import { CommandHistory, type SerializedCommandHistory } from '$lib/interaction/editor';
-import { WindowManager, type SerializedWindowsState } from '$lib/interaction';
+import { WindowManager, type SerializedWindowsState, SelectionHandler } from '$lib/interaction';
 
 type AppMode = 'editing' | 'simulating';
 
@@ -19,11 +23,13 @@ export class AppManager {
 	static readonly STORAGE_KEY_COMMAND_HISTORY = 'command-history';
 
 	private _mode = $state<AppMode>('editing');
+	private _computationTree = $state<ComputationTree | null>(null);
 	readonly desiredAlphabet: DesiredAlphabet;
 	readonly commandHistory: CommandHistory;
 	readonly fsaGraph: FSAGraph;
 	readonly viewport: Viewport;
 	readonly windows: WindowManager;
+	readonly selectionHandler: SelectionHandler;
 
 	constructor() {
 		this.fsaGraph = new FSAGraph();
@@ -31,6 +37,7 @@ export class AppManager {
 		this.desiredAlphabet = new DesiredAlphabet();
 		this.commandHistory = new CommandHistory(this.fsaGraph);
 		this.windows = new WindowManager();
+		this.selectionHandler = new SelectionHandler(this.fsaGraph);
 	}
 
 	/**
@@ -47,6 +54,14 @@ export class AppManager {
 	 */
 	isSimulating(): boolean {
 		return this._mode === 'simulating';
+	}
+
+	computeInput(input: string[], maxVisits?: number): void {
+		this._computationTree = new ComputationTree(this.fsaGraph, input, maxVisits);
+	}
+
+	get computationTree(): ComputationTree | null {
+		return this._computationTree;
 	}
 
 	/**
