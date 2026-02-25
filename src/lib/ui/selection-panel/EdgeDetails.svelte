@@ -55,9 +55,9 @@
 
 	function updateTransition(transition: Transition) {
 		const toRawValues = {
-			rawConsume: transition.consume,
-			rawPop: transition.pop,
-			rawPush: transition.push
+			rawConsume: transition.consumeRawValue,
+			rawPop: transition.popRawValue,
+			rawPush: transition.pushRawValue
 		};
 		const command = new UpdateTransitionCommand(
 			transition.id,
