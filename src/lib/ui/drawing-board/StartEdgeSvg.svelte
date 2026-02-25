@@ -7,10 +7,10 @@
 </script>
 
 <!-- Arrow indicating starting node -->
-<g data-id="start-edge" class="edge">
+<g data-id="start-edge" class="edge" id="start-edge">
 	<defs>
-		<ArrowMarkerSvg id="arrow-start" size={GRAPH_GEOMETRY.arrowSize} />
+		<ArrowMarkerSvg id="arrow-start" size={GRAPH_GEOMETRY.arrowSize} classes="arrowhead" />
 	</defs>
 
-	<path d={getStartEdgePath(startingNode.pos)} class="line" marker-end="url(#arrow-start)" />
+	<path d={getStartEdgePath(startingNode.pos)} class="edge-path" marker-end="url(#arrow-start)" />
 </g>
