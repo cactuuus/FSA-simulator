@@ -76,7 +76,7 @@ export class ComputationTree {
 	private input: string[];
 	warnings: string[] = [];
 
-	constructor(fsa: FSAGraph, input: string[], maxVisits: number = 50) {
+	constructor(fsa: FSAGraph, input: string[], maxVisits: number = 0) {
 		this.fsa = fsa;
 		this.input = input;
 		this.groups = Array.from({ length: input.length + 1 }, () => []);
@@ -94,8 +94,10 @@ export class ComputationTree {
 		});
 		this.root = root;
 		this.currentGroup.push(root);
-		this.computeEpsilonClosure(root);
-
+		this.computeEpsilonClosure(
+			root,
+			new Map([[root.config.state.id, new Set([this.encodeStack(root.config.stack)])]])
+		);
 		// Process the input in a similar fashion: for each symbol, first 'move' to the next group (using transitions matching the symbol, if any), then compute the epsilon closure for the new group before moving on to the next symbol.
 		this.input.forEach((symbol) => {
 			const previousGroup = this.currentGroup;
@@ -105,7 +107,10 @@ export class ComputationTree {
 			});
 			const currentGroupCopy = [...this.currentGroup];
 			currentGroupCopy.forEach((node) => {
-				this.computeEpsilonClosure(node);
+				this.computeEpsilonClosure(
+					node,
+					new Map([[node.config.state.id, new Set([this.encodeStack(node.config.stack)])]])
+				);
 			});
 		});
 	}
@@ -119,16 +124,13 @@ export class ComputationTree {
 
 	/**
 	 * Gets all accepting paths in the computation tree. The criteria is:
-	 * - the last node in the path must be a leaf in the very last group (aka after processing the entire input)
+	 * - the last node in the path must be in the very last group (aka after processing the entire input)
 	 * - the state in said node must be accepting
 	 * - the stack in said node must be empty
 	 */
 	get acceptingPaths(): ComputationNode[][] {
 		const acceptingPathLeaves = this.currentGroup.filter(
-			(node) =>
-				node.children.length === 0 &&
-				node.config.state.isAccepting &&
-				node.config.stack.length === 0
+			(node) => node.config.state.isAccepting && node.config.stack.length === 0
 		);
 		return acceptingPathLeaves.map((leaf) => this.getPathFromRoot(leaf));
 	}
@@ -186,30 +188,20 @@ export class ComputationTree {
 	 * Computes the epsilon closure for the given node, by adding reachable configurations as children of the given node, and adding them to the current group. The epsilon closure is computed recursively until no new configuration is found, or until a possible infinite loop is detected.
 	 * NOTE: an infinite loop should only be possible (the way this tree is implemented) in PDAs where there is an epsilon loop that keeps incrementing the stack infinitely. In any other scenario, the loop will eventually stop when we either encounter a previously seen configuration, or when we exhaust all possible transitions.
 	 * @param node The node for which the epsilon closure should be computed.
-	 * @param seenConfigs Set of configurations already seen in the current path of the recursion, used to detect loops. Should be left empty when calling the function.
+	 * @param seenConfigs Set of configurations already seen in the current path of the recursion, used to detect loops.
 	 * @param visitCounter Map that counts the number of visits to each state, used to detect possible infinite loops. Should be left empty when calling the function.
 	 */
 	private computeEpsilonClosure(
 		node: ComputationNode,
-		seenConfigs: Set<string> = new Set(),
-		visitCounter: Map<string, number> = new Map()
+		seenConfigs: Map<string, Set<string>> = new Map()
 	) {
-		// safety check for infinite loops
-		const visitCount = visitCounter.get(node.config.state.id) ?? 0;
-		if (visitCount > this.maxVisits) {
-			this.warnings.push(
-				`Possible infinite epsilon loop involving state ${node.config.state.label}, inside of group ${this.currentGroupIndex}. Halted after ${this.maxVisits} visits to it.`
-			);
-			return;
-		}
-		visitCounter.set(node.config.state.id, visitCount + 1);
-
 		const validTransitions = this.getValidTransitions(
 			node.config.state,
 			Transition.EPSILON,
 			node.config.stack.at(-1)
 		);
-		validTransitions.forEach(([transition, targetState]) => {
+
+		for (const [transition, targetState] of validTransitions) {
 			const adjustedStack = [...node.config.stack];
 			if (this.fsa.hasStackOps) {
 				if (transition.pop != Transition.EPSILON) adjustedStack.pop();
@@ -220,24 +212,41 @@ export class ComputationTree {
 				stack: adjustedStack,
 				group: this.currentGroupIndex
 			};
-			const configKey = this.configToKey(config);
-			if (!seenConfigs.has(configKey)) {
-				seenConfigs.add(configKey);
-				const newNode = node.addChild(config, transition);
-				this.currentGroup.push(newNode);
-				this.computeEpsilonClosure(newNode, seenConfigs, visitCounter);
+
+			const previouslySeenStacks = seenConfigs.get(config.state.id) ?? new Set<string>();
+			const currentStack = this.encodeStack(config.stack);
+			if (previouslySeenStacks.has(currentStack)) {
+				continue; // configuration already seen in the current path, no need to revisit
 			}
+
+			// here we use prefixes to check if we're in a loop were the stack is simply growing indefinitely. The logic is: if we already arrived at this state, and we have a number X of previously seen stacks that are prefixes of the current stack, then it means we're in iteration X of an infinite loop. If X is bigger than the maxVisits threshold, we stop exploring this branch and add a warning to the tree.
+			const prefixCount = [...previouslySeenStacks].reduce((count, seenStack) => {
+				return count + (currentStack.startsWith(seenStack) ? 1 : 0);
+			}, 0);
+			if (prefixCount > this.maxVisits) {
+				this.warnings.push(
+					`Possible infinite epsilon loop involving state '${node.config.state.label}' and transition '${node.transitionTaken?.toString()}'. Halted exploration of this branch after ${this.maxVisits} loops through it.`
+				);
+				continue;
+			}
+
+			seenConfigs.set(config.state.id, previouslySeenStacks.add(currentStack));
+			const newNode = node.addChild(config, transition);
+			this.currentGroup.push(newNode);
+			this.computeEpsilonClosure(newNode, seenConfigs);
 			// backtrack (resets) the visit counter and seen configs for the current node, in order to ONLY detect loops in the current path of the recursion, not in other branches.
-			visitCounter.set(node.config.state.id, visitCount);
-			seenConfigs.delete(configKey);
-		});
+			seenConfigs.get(config.state.id)?.delete(currentStack);
+		}
 	}
 
 	/**
-	 * Simple helper to convert a configuration into a string key. Used for ease of serialization in sets and maps.
+	 * Simple helper to convert a stack into a string representation, used for quick comparison of configurations and to detect loops.
+	 * The traling comma is used as end-of-stack marker, to avoid issues where ['A', 'B'] could be interpreted as a prefix to ['A','BB'], as they would be converted to 'A,B' and 'A,BB'. With the trailing comma, they become 'A,B,' and 'A,BB,' which remove that ambiguity when comparing stack configurations as strings.
+	 * @param config The configuration for which the stack should be converted into a string.
+	 * @returns The string representation of the stack in the given configuration.
 	 */
-	private configToKey(config: Configuration): string {
-		return `${config.state.id}||${config.stack.join(',')}`;
+	private encodeStack(stack: string[]): string {
+		return stack.length > 0 ? `${stack.join(',')},` : '';
 	}
 
 	/**
