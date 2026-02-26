@@ -10,3 +10,4 @@ export { default as ZoomControls } from './components/ZoomControls.svelte';
 export { default as UndoRedoControls } from './components/UndoRedoControls.svelte';
 export { default as ComputeInputWindow } from './compute-input/ComputeInputWindow.svelte';
 export { default as SimulationControls } from './components/SimulationControls.svelte';
+export { default as StateToolbar, type Tool } from './components/StateToolbar.svelte';
