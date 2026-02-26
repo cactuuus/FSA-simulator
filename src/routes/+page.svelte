@@ -11,7 +11,9 @@
 		ZoomControls,
 		UndoRedoControls,
 		ComputeInputWindow,
-		SimulationControls
+		SimulationControls,
+		StateToolbar,
+		type Tool
 	} from '$lib/ui';
 	import {
 		AddNodeState,
@@ -21,10 +23,10 @@
 		SingleSelectState
 	} from '$lib/interaction/editor/states';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
-	import { notifyInfo, notifyError } from '$lib/utils/notifications';
 	import { DeleteFSAItemsCommand } from '$lib/interaction/editor/commands/instances';
 	import { DraftEdgeHandler, type EditorContext } from '$lib/interaction/editor';
 	import { State, StateMachine } from '$lib/interaction';
+	import { isTyping } from '$lib/utils/keyboard';
 
 	const editorCtx: EditorContext = {
 		fsaGraph: app.fsaGraph,
@@ -33,12 +35,6 @@
 		selection: app.selectionHandler,
 		draftEdge: new DraftEdgeHandler(app.fsaGraph)
 	};
-
-	interface Tool {
-		stateName: string;
-		kbShortcut: string;
-		icon: typeof IconType;
-	}
 
 	interface ModeConfig {
 		stateMachine: StateMachine<State>;
@@ -57,33 +53,19 @@
 	);
 
 	const editorTools: Tool[] = [
-		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand },
-		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer },
-		{ stateName: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline },
-		{ stateName: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus }
+		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand, title: 'Pan (1)' },
+		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' },
+		{ stateName: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline, title: 'Draw Edge (3)' },
+		{ stateName: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus, title: 'Add Node (4)' }
 	];
 
 	function handleEditorKeyDown(e: KeyboardEvent) {
-		if (isTyping(e)) return;
-		const tool = editorTools.find((a) => a.kbShortcut === e.key);
-		if (tool) {
-			e.preventDefault();
-			editorStateMachine.transitionTo(tool.stateName);
-		} else if (e.key === 'Escape') {
-			e.preventDefault();
-			editorCtx.selection.clear();
-		} else if (e.key === 'Delete') {
+		if (e.key === 'Delete') {
 			e.preventDefault();
 			const toDelete = editorCtx.selection.items.map((item) => item.id);
 			if (toDelete.length === 0) return;
 			const command = new DeleteFSAItemsCommand(...toDelete);
 			editorCtx.commandHistory.pushAndExecute(command);
-		} else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-			e.preventDefault();
-			undoCommand();
-		} else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-			e.preventDefault();
-			redoCommand();
 		}
 	}
 
@@ -93,20 +75,12 @@
 	);
 
 	const simulationTools: Tool[] = [
-		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand },
-		{ stateName: SingleSelectState.NAME, kbShortcut: '2', icon: MousePointer }
+		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand, title: 'Pan (1)' },
+		{ stateName: SingleSelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' }
 	];
 
 	function handleSimulationKeyDown(e: KeyboardEvent) {
-		if (isTyping(e)) return;
-		const tool = simulationTools.find((a) => a.kbShortcut === e.key);
-		if (tool) {
-			e.preventDefault();
-			simulationStateMachine.transitionTo(tool.stateName);
-		} else if (e.key === 'Escape') {
-			e.preventDefault();
-			editorCtx.selection.clear();
-		}
+		// nothing here yet
 	}
 
 	const editorConfig: ModeConfig = {
@@ -123,41 +97,6 @@
 
 	const activeMode = $derived(app.isEditing() ? editorConfig : simulationConfig);
 
-	// prevent interfering with input fields
-	function isTyping(e: KeyboardEvent) {
-		const target = e.target as HTMLElement;
-		return (
-			target.tagName === 'INPUT' ||
-			target.tagName === 'TEXTAREA' ||
-			target.tagName === 'SELECT' ||
-			target.isContentEditable
-		);
-	}
-
-	function undoCommand() {
-		const command = editorCtx.commandHistory.peekUndo();
-		try {
-			if (!editorCtx.commandHistory.canUndo) return;
-			editorCtx.commandHistory.undo();
-			notifyInfo(`Undone '${command}' command.`);
-		} catch (error) {
-			notifyError(`Failed to undo command '${command}'`);
-			console.error('Error during undo:', error);
-		}
-	}
-
-	function redoCommand() {
-		const command = editorCtx.commandHistory.peekRedo();
-		try {
-			if (!editorCtx.commandHistory.canRedo) return;
-			editorCtx.commandHistory.redo();
-			notifyInfo(`Redone '${command}' command.`);
-		} catch (error) {
-			notifyError(`Failed to redo command '${command}'`);
-			console.error('Error during redo:', error);
-		}
-	}
-
 	function getItemClass(itemId: string) {
 		let itemClass = '';
 		if (editorCtx.selection.isSelected(itemId)) itemClass += 'selected ';
@@ -165,10 +104,22 @@
 		return itemClass;
 	}
 
+	function handleKeyDown(e: KeyboardEvent) {
+		// global shortcuts that work regardless of the current mode
+		if (isTyping(e)) return;
+		if (e.key === 'Escape') {
+			e.preventDefault();
+			editorCtx.selection.clear();
+		} else {
+			// delegate to active mode's specific keydown handler
+			activeMode.keydownHandler(e);
+		}
+	}
+
 	onMount(() => {
 		app.windows.open(WINDOWS_ID.Selection); // open selection panel by default
-		window.addEventListener('keydown', activeMode.keydownHandler);
-		return () => window.removeEventListener('keydown', activeMode.keydownHandler);
+		window.addEventListener('keydown', handleKeyDown);
+		return () => window.removeEventListener('keydown', handleKeyDown);
 	});
 </script>
 
@@ -196,22 +147,7 @@
 	<!-- Top-center controls -->
 	<div class="absolute top-2 left-1/2 flex -translate-x-1/2 items-center gap-2">
 		<!-- Toolbar -->
-		<ul class="mx-2 flex flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow">
-			{#each activeMode.tools as tool (tool.stateName)}
-				{@const Icon = tool.icon}
-				<li>
-					<button
-						onclick={() => activeMode.stateMachine.transitionTo(tool.stateName)}
-						aria-label={tool.kbShortcut}
-						class="btn relative btn-square text-base-content btn-ghost btn-sm btn-secondary
-							{tool.stateName === activeMode.stateMachine.currentState.name ? 'btn-active' : ''}"
-					>
-						<Icon class="h-4 w-4" />
-						<small class="absolute right-0 -bottom-0.5 align-sub">{tool.kbShortcut}</small>
-					</button>
-				</li>
-			{/each}
-		</ul>
+		<StateToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
 
 		{#if app.isSimulating()}
 			<SimulationControls onExit={() => app.exitSimulation()} />
@@ -220,15 +156,8 @@
 
 	<!-- Undo/Redo controls -->
 	{#if app.isEditing()}
-		<div
-			class="absolute top-2 right-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
-		>
-			<UndoRedoControls
-				onUndo={undoCommand}
-				onRedo={redoCommand}
-				canUndo={editorCtx.commandHistory.canUndo}
-				canRedo={editorCtx.commandHistory.canRedo}
-			/>
+		<div class="absolute top-2 right-2">
+			<UndoRedoControls commandHistory={editorCtx.commandHistory} />
 		</div>
 	{/if}
 
@@ -244,9 +173,7 @@
 	</div>
 
 	<!-- Zoom controls -->
-	<div
-		class="absolute right-2 bottom-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
-	>
+	<div class="absolute right-2 bottom-2">
 		<ZoomControls viewport={editorCtx.viewport} />
 	</div>
 
