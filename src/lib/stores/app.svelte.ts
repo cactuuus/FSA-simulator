@@ -64,6 +64,15 @@ export class AppManager {
 		return this._computationTree;
 	}
 
+	exitSimulation(): void {
+		this._mode = 'editing';
+		this._computationTree = null;
+	}
+
+	enterSimulation(): void {
+		this._mode = 'simulating';
+	}
+
 	/**
 	 * Checks if session storage can be used.
 	 * @returns True if session storage is available, false otherwise.

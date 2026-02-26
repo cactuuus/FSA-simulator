@@ -181,7 +181,7 @@
 					</p>
 				{/if}
 				<div>
-					<button class="btn btn-sm btn-success">
+					<button onclick={() => app.enterSimulation()} class="btn btn-sm btn-success">
 						<Play class="h-4 w-4" />
 						Run Full Simulation
 					</button>

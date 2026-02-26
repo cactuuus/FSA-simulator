@@ -2,15 +2,15 @@
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import FloatingWindow from '$lib/ui/components/FloatingWindow.svelte';
 	import SelectedItemPanel from './SelectionPanel.svelte';
-	import { Window } from '$lib/interaction';
 	import { type EditorContext } from '$lib/interaction/editor';
+	import { app } from '$lib/stores/app.svelte';
 
-	const { editor, window }: { editor: EditorContext; window: Window } = $props();
+	const { editor }: { editor: EditorContext } = $props();
 </script>
 
 <FloatingWindow
 	id={WINDOWS_ID.Selection}
-	windowState={window}
+	windowState={app.windows.open(WINDOWS_ID.Selection)}
 	initialPosition={{ x: 0, y: 0 }}
 	canBeResized={false}
 >
