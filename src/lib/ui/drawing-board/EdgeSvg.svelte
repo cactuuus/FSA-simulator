@@ -3,12 +3,12 @@
 	import { GRAPH_GEOMETRY, getRegularEdgePath, getEdgeLabelPosition } from '$lib/automata/visuals';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
-	const { edge, extraClass = '' }: { edge: Edge; extraClass?: string } = $props();
+	const { edge }: { edge: Edge } = $props();
 	const shape = $derived(getRegularEdgePath(edge));
 	const labelPosition = $derived(getEdgeLabelPosition(edge));
 </script>
 
-<g data-id={edge.id} data-fsa-item="edge" class="edge selectable {extraClass}">
+<g data-id={edge.id} data-fsa-item="edge" class="edge selectable">
 	<defs>
 		<ArrowMarkerSvg id="arrow-{edge.id}" size={GRAPH_GEOMETRY.arrowSize} classes="arrowhead" />
 	</defs>

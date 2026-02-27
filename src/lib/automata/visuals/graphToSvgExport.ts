@@ -1,4 +1,5 @@
 import { getGraphCSS } from './graphConfig';
+import { getGraphElement } from '$lib/utils/graphEffects';
 
 /**
  * Cleans and serializes an SVG graph element for export.
@@ -23,7 +24,7 @@ export function cleanAndSerializeSvgGraph(original: SVGSVGElement): string {
  * @param original The original SVG element to read dimensions from.
  */
 function matchViewBox(clone: SVGSVGElement, original: SVGSVGElement, padding: number): void {
-	const originalGraphComponent = original?.querySelector('#fsa-graph') as SVGGElement | null;
+	const originalGraphComponent = getGraphElement();
 	if (originalGraphComponent === null) throw new Error('Graph content not found in SVG');
 	const boundingBox = originalGraphComponent.getBBox();
 	clone.setAttribute(

@@ -27,6 +27,7 @@
 	import { DraftEdgeHandler, type EditorContext } from '$lib/interaction/editor';
 	import { State, StateMachine } from '$lib/interaction';
 	import { isTyping } from '$lib/utils/keyboard';
+	import { toggleInSelectionArea, toggleSelected } from '$lib/utils/graphEffects';
 
 	const editorCtx: EditorContext = {
 		fsaGraph: app.fsaGraph,
@@ -116,6 +117,30 @@
 		}
 	}
 
+	// Highlights items selected
+	$effect(() => {
+		app.fsaGraph.nodes.forEach((node) => {
+			const isSelected = editorCtx.selection.isSelected(node.id);
+			toggleSelected(isSelected, node.id);
+		});
+		app.fsaGraph.edges.forEach((edge) => {
+			const isSelected = editorCtx.selection.isSelected(edge.id);
+			toggleSelected(isSelected, edge.id);
+		});
+	});
+
+	// Highlights items in the selection area
+	$effect(() => {
+		app.fsaGraph.nodes.forEach((node) => {
+			const isInSelectionArea = editorCtx.selection.isInArea(node.id);
+			toggleInSelectionArea(isInSelectionArea, node.id);
+		});
+		app.fsaGraph.edges.forEach((edge) => {
+			const isInSelectionArea = editorCtx.selection.isInArea(edge.id);
+			toggleInSelectionArea(isInSelectionArea, edge.id);
+		});
+	});
+
 	onMount(() => {
 		app.windows.open(WINDOWS_ID.Selection); // open selection panel by default
 		window.addEventListener('keydown', handleKeyDown);
@@ -128,7 +153,6 @@
 		fsa={editorCtx.fsaGraph}
 		viewport={editorCtx.viewport}
 		currentState={activeMode.stateMachine?.currentState}
-		getItemClass={(item) => getItemClass(item.id)}
 	>
 		{#snippet overlay()}
 			{#if app.isEditing()}

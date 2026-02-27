@@ -6,22 +6,22 @@
 	import NodeSvg from './NodeSvg.svelte';
 	import EdgeSvg from './EdgeSvg.svelte';
 	import StartEdgeSvg from './StartEdgeSvg.svelte';
+	import { setGraphElement } from '$lib/utils/graphEffects';
 
 	const {
 		fsa,
 		viewport,
 		currentState,
-		getItemClass = () => '',
 		overlay
 	}: {
 		fsa: FSAGraph;
 		viewport: Viewport;
 		currentState: State;
-		getItemClass?: (item: FSAItem) => string;
 		overlay?: Snippet;
 	} = $props();
 
 	let drawingBoard: SVGSVGElement;
+	let graphElement: SVGElement;
 	// svelte-ignore non_reactive_update - svgInputManager does not need to be reactive
 	let inputHandler: SvgInputHandler;
 
@@ -46,6 +46,7 @@
 	 * Initialize the SVG input handler on mount.
 	 */
 	onMount(() => {
+		setGraphElement(graphElement);
 		inputHandler = new SvgInputHandler(drawingBoard, fsa, () => currentState);
 	});
 
@@ -99,17 +100,17 @@
 		<!--
 		Note: SVG renders elements in the order they appear in the code.
 		-->
-		<g id="fsa-graph">
+		<g id="fsa-graph" bind:this={graphElement}>
 			{#if fsa.startNode}
 				<StartEdgeSvg startingNode={fsa.startNode} />
 			{/if}
 
 			{#each fsa.edges as edge (edge.id)}
-				<EdgeSvg {edge} extraClass={getItemClass(edge)} />
+				<EdgeSvg {edge} />
 			{/each}
 
 			{#each fsa.nodes as node (node.id)}
-				<NodeSvg {node} extraClass={getItemClass(node)} />
+				<NodeSvg {node} />
 			{/each}
 		</g>
 

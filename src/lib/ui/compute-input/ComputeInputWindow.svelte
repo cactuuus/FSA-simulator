@@ -6,8 +6,8 @@
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyWarning, notifyError } from '$lib/utils/notifications';
 	import type { SerializedFSAGraph } from '$lib/automata/models';
+	import { toggleHighlight } from '$lib/utils/graphEffects';
 
-	let graphElement = $state<HTMLElement | null>(null);
 	let inputToProcess = $state<string>('');
 	let fsaDataWhenProcessed = $state<SerializedFSAGraph | null>(null);
 	let lastUsedInput = $state<string[] | []>([]);
@@ -25,10 +25,6 @@
 			errors.push('The graph has no start state, it cannot process any input.');
 		}
 		return { result: errors.length === 0, errors };
-	});
-
-	$effect(() => {
-		graphElement = document.getElementById('fsa-graph');
 	});
 
 	async function runInputComputation(cleanedInput: string[]): Promise<void> {
@@ -59,7 +55,7 @@
 	}
 
 	/**
-	 * Toggles the 'highlighted' class on a given path in the graph. This highlights both nodes and edges used in the path.
+	 * Highlights or unhighlights a path in the graph, given a list of computation nodes representing the path.
 	 * @param state Whether to add or remove the highlight.
 	 * @param path The path to highlight, given as a list of computation nodes.
 	 */
@@ -69,10 +65,7 @@
 			node.config.state.id && ids.add(node.config.state.id);
 			if (node.transitionTaken) ids.add(node.transitionTaken.id);
 		});
-		ids.forEach((id) => {
-			const element = graphElement?.querySelector(`[data-id="${id}"]`);
-			element?.classList.toggle('highlighted', state);
-		});
+		toggleHighlight(state, ...ids);
 	}
 </script>
 
@@ -120,6 +113,7 @@
 			</p>
 			<input
 				type="number"
+				id="max-loops"
 				class="input input-sm w-full max-w-20"
 				bind:value={maxLoopsIterations}
 				min={0}

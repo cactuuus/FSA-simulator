@@ -4,10 +4,10 @@
 	import { FSAGraph, Node, Transition } from '$lib/automata/models';
 	import { DeleteTransitionsCommand } from '$lib/interaction/editor/commands';
 	import { CommandHistory } from '$lib/interaction/editor';
+	import { toggleHighlight } from '$lib/utils/graphEffects';
 
 	const { fsaGraph, commandHistory }: { fsaGraph: FSAGraph; commandHistory: CommandHistory } =
 		$props();
-	let graphElement = $state<HTMLElement | null>(null);
 	let editModal: HTMLDialogElement;
 	let modalContext = $state<{
 		type: 'consume' | 'pop';
@@ -15,10 +15,6 @@
 		originalValue: string;
 	} | null>(null);
 	let editModalValue = $state<string>('');
-
-	$effect(() => {
-		graphElement = document.getElementById('fsa-graph');
-	});
 
 	/**
 	 * Groups consume input symbols, in order to display them in a single cell spanning multiple columns.
@@ -63,18 +59,6 @@
 			nodeToLabel.set(node, label);
 		});
 		return nodeToLabel;
-	}
-
-	/**
-	 * Toggles the 'highlighted' class on one or more elements in the graph by their data-ids.
-	 * @param state Whether to add or remove the highlight.
-	 * @param ids The ids of the elements to toggle highlight on.
-	 */
-	function toggleHighlight(state: boolean, ...ids: string[]): void {
-		ids.forEach((id) => {
-			const element = graphElement?.querySelector(`[data-id="${id}"]`);
-			element?.classList.toggle('highlighted', state);
-		});
 	}
 
 	/**
@@ -230,8 +214,12 @@
 											class="transition-output-entry whitespace-nowrap"
 											role="presentation"
 											data-transition-id={output.transition.id}
-											onmouseenter={() => toggleHighlight(true, output.transition.id)}
-											onmouseleave={() => toggleHighlight(false, output.transition.id)}
+											onmouseenter={() => {
+												toggleHighlight(true, output.transition.id);
+											}}
+											onmouseleave={() => {
+												toggleHighlight(false, output.transition.id);
+											}}
 										>
 											{#if PdaMode}
 												{`(${output.transition.push}, ${stateLabel})`}
