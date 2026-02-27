@@ -21,7 +21,7 @@
 	} = $props();
 
 	let drawingBoard: SVGSVGElement;
-	let graphElement: SVGElement;
+	let graphElement: SVGGElement;
 	// svelte-ignore non_reactive_update - svgInputManager does not need to be reactive
 	let inputHandler: SvgInputHandler;
 
