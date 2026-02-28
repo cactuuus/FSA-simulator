@@ -173,8 +173,11 @@
 		<!-- Toolbar -->
 		<StateToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
 
-		{#if app.isSimulating()}
-			<SimulationControls onExit={() => app.exitSimulation()} />
+		{#if app.isSimulating() && app.computationTree}
+			<SimulationControls
+				onExit={() => app.exitSimulation()}
+				computationTree={app.computationTree}
+			/>
 		{/if}
 	</div>
 
