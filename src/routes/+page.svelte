@@ -19,15 +19,20 @@
 		AddNodeState,
 		SelectState,
 		DrawEdgeState,
-		PanningState,
-		SingleSelectState
+		PanningState
 	} from '$lib/interaction/editor/states';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import { DeleteFSAItemsCommand } from '$lib/interaction/editor/commands/instances';
 	import { DraftEdgeHandler, type EditorContext } from '$lib/interaction/editor';
 	import { State, StateMachine } from '$lib/interaction';
 	import { isTyping } from '$lib/utils/keyboard';
-	import { toggleInSelectionArea, toggleSelected } from '$lib/utils/graphEffects';
+	import {
+		toggleInSelectionArea,
+		toggleSelected,
+		toggleActive,
+		toggleInvalid,
+		toggleAccepted
+	} from '$lib/utils/graphEffects';
 
 	const editorCtx: EditorContext = {
 		fsaGraph: app.fsaGraph,
@@ -71,13 +76,13 @@
 	}
 
 	const simulationStateMachine = new StateMachine(
-		[new PanningState(editorCtx), new SingleSelectState(editorCtx)],
-		SingleSelectState.NAME
+		[new PanningState(editorCtx), new SelectState(editorCtx)],
+		SelectState.NAME
 	);
 
 	const simulationTools: Tool[] = [
 		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand, title: 'Pan (1)' },
-		{ stateName: SingleSelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' }
+		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' }
 	];
 
 	function handleSimulationKeyDown(e: KeyboardEvent) {
@@ -97,13 +102,6 @@
 	};
 
 	const activeMode = $derived(app.isEditing() ? editorConfig : simulationConfig);
-
-	function getItemClass(itemId: string) {
-		let itemClass = '';
-		if (editorCtx.selection.isSelected(itemId)) itemClass += 'selected ';
-		if (editorCtx.selection.isInArea(itemId)) itemClass += 'in-selection-area';
-		return itemClass;
-	}
 
 	function handleKeyDown(e: KeyboardEvent) {
 		// global shortcuts that work regardless of the current mode
@@ -140,6 +138,36 @@
 			toggleInSelectionArea(isInSelectionArea, edge.id);
 		});
 	});
+	$effect(() => {
+		if (!app.isSimulating() || !app.simulationController) return;
+		const step = app.simulationController.currentStep;
+		const subStep = app.simulationController.currentSubStep;
+
+		const activeTransitionIds = new Set(subStep.activeTransitionsIds);
+		const activeNodeIds = new Set(subStep.activeNodes.map((n) => n.config.state.id));
+		const invalidNodeIds = new Set((subStep.invalidNodes ?? []).map((n) => n.config.state.id));
+		const acceptingNodeIds = new Set((subStep.acceptingNodes ?? []).map((n) => n.config.state.id));
+
+		app.fsaGraph.nodes.forEach((node) => {
+			toggleActive(activeNodeIds.has(node.id), node.id);
+			toggleInvalid(invalidNodeIds.has(node.id), node.id);
+			toggleAccepted(acceptingNodeIds.has(node.id), node.id);
+		});
+		app.fsaGraph.transitions.forEach((t) => {
+			toggleActive(activeTransitionIds.has(t.id), t.id);
+		});
+		toggleActive(activeTransitionIds.has('start-edge'), 'start-edge');
+
+		return () => {
+			app.fsaGraph.nodes.forEach((node) => {
+				toggleActive(false, node.id);
+				toggleInvalid(false, node.id);
+				toggleAccepted(false, node.id);
+			});
+			app.fsaGraph.transitions.forEach((t) => toggleActive(false, t.id));
+			toggleActive(false, 'start-edge');
+		};
+	});
 
 	onMount(() => {
 		app.windows.open(WINDOWS_ID.Selection); // open selection panel by default
@@ -159,11 +187,10 @@
 				{#if editorCtx.draftEdge.get}
 					<DraftEdgeSvg draftEdge={editorCtx.draftEdge.get} />
 				{/if}
-
-				{#if editorCtx.selection.area}
-					{@const { start, end } = editorCtx.selection.area}
-					<SelectionArea {start} {end} />
-				{/if}
+			{/if}
+			{#if editorCtx.selection.area}
+				{@const { start, end } = editorCtx.selection.area}
+				<SelectionArea {start} {end} />
 			{/if}
 		{/snippet}
 	</DrawingBoard>
@@ -173,20 +200,27 @@
 		<!-- Toolbar -->
 		<StateToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
 
-		{#if app.isSimulating() && app.computationTree}
+		{#if app.isSimulating() && app.simulationController}
 			<SimulationControls
 				onExit={() => app.exitSimulation()}
-				computationTree={app.computationTree}
+				controller={app.simulationController}
 			/>
 		{/if}
 	</div>
 
-	<!-- Undo/Redo controls -->
-	{#if app.isEditing()}
-		<div class="absolute top-2 right-2">
+	<div class="absolute top-2 right-2">
+		<!-- Undo/Redo controls -->
+		{#if app.isEditing()}
 			<UndoRedoControls commandHistory={editorCtx.commandHistory} />
-		</div>
-	{/if}
+		{:else if app.isSimulating() && app.simulationController}
+			<!-- Current step label -->
+			<div
+				class="flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
+			>
+				{app.simulationController.currentStepLabel}
+			</div>
+		{/if}
+	</div>
 
 	<!-- Graph info panel -->
 	<div

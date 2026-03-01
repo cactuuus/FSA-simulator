@@ -8,6 +8,7 @@ import {
 import { Viewport, type SerializedViewport } from '$lib/interaction';
 import { CommandHistory, type SerializedCommandHistory } from '$lib/interaction/editor';
 import { WindowManager, type SerializedWindowsState, SelectionHandler } from '$lib/interaction';
+import { SimulationController } from '$lib/interaction/SimulationController.svelte';
 
 type AppMode = 'editing' | 'simulating';
 
@@ -23,7 +24,7 @@ export class AppManager {
 	static readonly STORAGE_KEY_COMMAND_HISTORY = 'command-history';
 
 	private _mode = $state<AppMode>('editing');
-	private _computationTree = $state<ComputationTree | null>(null);
+	private _simulationController: SimulationController | null = $state(null);
 	readonly desiredAlphabet: DesiredAlphabet;
 	readonly commandHistory: CommandHistory;
 	readonly fsaGraph: FSAGraph;
@@ -56,21 +57,18 @@ export class AppManager {
 		return this._mode === 'simulating';
 	}
 
-	computeInput(input: string[], maxVisits?: number): void {
-		this._computationTree = new ComputationTree(this.fsaGraph, input, maxVisits);
-	}
-
-	get computationTree(): ComputationTree | null {
-		return this._computationTree;
+	get simulationController(): SimulationController | null {
+		return this._simulationController;
 	}
 
 	exitSimulation(): void {
 		this._mode = 'editing';
-		this._computationTree = null;
+		this._simulationController = null;
 	}
 
-	enterSimulation(): void {
+	enterSimulation(computationTree: ComputationTree): void {
 		this._mode = 'simulating';
+		this._simulationController = new SimulationController(computationTree);
 	}
 
 	/**

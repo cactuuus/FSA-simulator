@@ -46,3 +46,15 @@ export function toggleSelected(state: boolean, ...ids: string[]): void {
 export function toggleInSelectionArea(state: boolean, ...ids: string[]): void {
 	toggleClass(state, 'in-selection-area', ...ids);
 }
+
+export function toggleActive(state: boolean, ...ids: string[]): void {
+	toggleClass(state, 'active', ...ids);
+}
+
+export function toggleInvalid(state: boolean, ...ids: string[]): void {
+	toggleClass(state, 'invalid', ...ids);
+}
+
+export function toggleAccepted(state: boolean, ...ids: string[]): void {
+	toggleClass(state, 'input-accepted', ...ids);
+}

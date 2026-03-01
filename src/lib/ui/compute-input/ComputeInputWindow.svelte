@@ -2,12 +2,13 @@
 	import { Info, TriangleAlert, Check, RefreshCcw, CircleX, Play } from '@lucide/svelte';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import FloatingWindow from '$lib/ui/components/FloatingWindow.svelte';
-	import type { ComputationNode } from '$lib/automata/analisys';
+	import { ComputationTree, type ComputationNode } from '$lib/automata/analisys';
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyWarning, notifyError } from '$lib/utils/notifications';
 	import type { SerializedFSAGraph } from '$lib/automata/models';
 	import { toggleHighlight } from '$lib/utils/graphEffects';
 
+	let computationTree = $state<ComputationTree | null>(null);
 	let inputToProcess = $state<string>('');
 	let fsaDataWhenProcessed = $state<SerializedFSAGraph | null>(null);
 	let lastUsedInput = $state<string[] | []>([]);
@@ -34,10 +35,10 @@
 		}
 		try {
 			isProcessing = true;
-			app.computeInput(cleanedInput, maxLoopsIterations);
+			computationTree = new ComputationTree(app.fsaGraph, cleanedInput, maxLoopsIterations);
 			fsaDataWhenProcessed = app.fsaGraph.toJSON();
 			lastUsedInput = cleanedInput;
-			console.log(app.computationTree?.toString()); // TODO: remove after implementation and testing
+			console.log(computationTree?.toString()); // TODO: remove after implementation and testing
 		} catch (error: unknown) {
 			console.error('Failed to compute input:', error);
 			notifyError(
@@ -122,18 +123,18 @@
 
 		<div class="relative flex flex-col gap-2 rounded-box bg-base-300 p-3">
 			<h3 class="border-b border-base-content/30 font-semibold">Result</h3>
-			{#if app.computationTree}
-				{@const acceptingPaths = app.computationTree.acceptingPaths}
+			{#if computationTree}
+				{@const acceptingPaths = computationTree.acceptingPaths}
 				<!-- Computation results -->
-				{#if app.computationTree.warnings.length > 0}
+				{#if computationTree.warnings.length > 0}
 					<details class="collapse-arrow collapse rounded-box bg-warning/10 text-warning">
 						<summary class="collapse-title p-2 font-semibold">
 							<TriangleAlert class="inline h-4 w-4" />
-							{app.computationTree.warnings.length} Warnings
+							{computationTree.warnings.length} Warnings
 						</summary>
 						<div class="collapse-content">
 							<ul class="list-inside list-disc text-sm">
-								{#each app.computationTree.warnings as warning}
+								{#each computationTree.warnings as warning}
 									<li>{warning}</li>
 								{/each}
 							</ul>
@@ -175,7 +176,10 @@
 					</p>
 				{/if}
 				<div>
-					<button onclick={() => app.enterSimulation()} class="btn btn-sm btn-success">
+					<button
+						onclick={() => app.enterSimulation(computationTree!)}
+						class="btn btn-sm btn-success"
+					>
 						<Play class="h-4 w-4" />
 						Run Full Simulation
 					</button>

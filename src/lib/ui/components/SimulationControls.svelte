@@ -1,91 +1,41 @@
 <script lang="ts">
-	import { Play, Pause, SkipForward, SkipBack, Square, Settings, RefreshCcw } from '@lucide/svelte';
-	import type {
-		ComputationTree,
-		ComputationNode,
-		ComputationStep,
-		StepType
-	} from '$lib/automata/analisys';
+	import { Play, Pause, SkipForward, SkipBack, X, Settings, RefreshCcw } from '@lucide/svelte';
+	import type { SimulationController } from '$lib/interaction/SimulationController.svelte';
 
-	const { onExit, computationTree }: { onExit: () => void; computationTree: ComputationTree } =
-		$props();
-
-	interface SimulationSettings {
-		speed: number;
-	}
-
-	const DEFAULT_SETTINGS: SimulationSettings = { speed: 1 };
+	const { onExit, controller }: { onExit: () => void; controller: SimulationController } = $props();
 	let adjustSettingsModal: HTMLDialogElement | null = $state(null);
-	let isPlaying: boolean = $state(false);
-	let settings: SimulationSettings = $state({ ...DEFAULT_SETTINGS });
-	let stepIndex: number = $state(0);
-
-	const currentStep = $derived<ComputationStep>(computationTree.steps[stepIndex]);
-	const activeNodes = $derived<ComputationNode[]>(currentStep?.activeNodes ?? []);
-	const canGoNext = $derived(stepIndex < computationTree.steps.length - 1);
-	const canGoPrevious = $derived(stepIndex > 0);
-
-	let playInterval: ReturnType<typeof setInterval> | null = null;
-
-	function next() {
-		if (canGoNext) stepIndex++;
-	}
-
-	function previous() {
-		if (canGoPrevious) stepIndex--;
-	}
-
-	function getStepLabel(type: StepType): string {
-		switch (type) {
-			case 'start':
-				return 'Initialization';
-			case 'consume-symbol':
-				return `Reading symbol '${computationTree.input[currentStep.inputIndex]}'`;
-			case 'epsilon-closure':
-				return 'Computing ε-closure';
-			default:
-				return type;
-		}
-	}
 
 	$effect(() => {
-		if (isPlaying) {
-			playInterval = setInterval(() => {
-				if (canGoNext) {
-					next();
-				} else {
-					isPlaying = false;
-				}
-			}, 1000 / settings.speed);
-		} else {
-			if (playInterval) clearInterval(playInterval);
-		}
-		return () => {
-			if (playInterval) clearInterval(playInterval);
-		};
+		const duration = Math.round(800 / controller.settings.speed);
+		document.documentElement.style.setProperty('--simulation-transition-duration', `${duration}ms`);
+		return () => document.documentElement.style.removeProperty('--simulation-transition-duration');
 	});
 </script>
 
 <div class="flex flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow">
 	<!-- Input progress display -->
 	<div class="pointer-events-none flex gap-0 rounded-md bg-base-200 px-2 py-1">
-		{#each computationTree.input as symbol, index}
-			{#if index < currentStep.inputIndex}
-				<span class="text-base-content/70 line-through">{symbol}</span>
-			{:else if index === currentStep.inputIndex}
-				<span class="font-bold text-error underline">{symbol}</span>
-			{:else}
-				<span>{symbol}</span>
-			{/if}
-			{index < computationTree.input.length - 1 ? ',' : ''}
-		{/each}
+		{#if controller.input.length === 0}
+			<span class="text-base-content/70 italic">No input</span>
+		{:else}
+			{#each controller.input as symbol, index}
+				{#if index < controller.currentStep.inputIndex}
+					<span class="text-base-content/70 line-through">{symbol}</span>
+				{:else if index === controller.currentStep.inputIndex}
+					<span class="font-bold text-error underline">{symbol}</span>
+				{:else}
+					<span>{symbol}</span>
+				{/if}
+				{index < controller.input.length - 1 ? ',' : ''}
+			{/each}
+		{/if}
 	</div>
 
 	<div class="divider m-0 divider-horizontal"></div>
 
-	{#if isPlaying}
+	{#if controller.isPlaying}
 		<button
-			onclick={() => (isPlaying = false)}
+			onclick={() => controller.pause()}
 			class="btn btn-square btn-sm btn-warning"
 			title="Pause"
 		>
@@ -93,28 +43,29 @@
 		</button>
 	{:else}
 		<button
-			onclick={() => (isPlaying = true)}
+			onclick={() => controller.play()}
 			class="btn btn-square btn-sm btn-success"
 			title="Play"
+			disabled={!controller.canGoNext}
 		>
 			<Play class="h-4 w-4" />
 		</button>
 	{/if}
 
 	<button
-		onclick={previous}
+		onclick={() => controller.previous()}
 		class="btn btn-square btn-soft btn-sm"
 		title="Previous step"
-		disabled={isPlaying || !canGoPrevious}
+		disabled={controller.isPlaying || !controller.canGoPrevious}
 	>
 		<SkipBack class="h-4 w-4" />
 	</button>
 
 	<button
-		onclick={next}
+		onclick={() => controller.next()}
 		class="btn btn-square btn-soft btn-sm"
 		title="Next step"
-		disabled={isPlaying || !canGoNext}
+		disabled={controller.isPlaying || !controller.canGoNext}
 	>
 		<SkipForward class="h-4 w-4" />
 	</button>
@@ -130,17 +81,9 @@
 	</button>
 
 	<button onclick={onExit} class="btn btn-sm btn-error" title="Stop & exit simulation">
-		<Square class="h-4 w-4" />
+		<X class="h-4 w-4" />
 		Exit
 	</button>
-
-	<!-- TODO -- remove label from here, find better place for it -->
-	<div class="divider m-0 divider-horizontal"></div>
-
-	<!-- Current step label -->
-	<span class="flex items-center px-1 text-xs text-base-content/70">
-		{getStepLabel(currentStep.type)}
-	</span>
 </div>
 
 <!-- Adjust settings modal -->
@@ -152,24 +95,20 @@
 				<div class="w-full max-w-xs">
 					<label for="simulation-speed" class="label flex justify-between">
 						<span class="label-text">Speed</span>
-						<span class="label-text font-bold">{settings.speed.toFixed(1)}x</span>
+						<span class="label-text font-bold">{controller.settings.speed.toFixed(1)}x</span>
 					</label>
 					<input
 						type="range"
 						id="simulation-speed"
 						min="0.5"
-						max="5"
-						bind:value={settings.speed}
+						max="10.0"
+						bind:value={controller.settings.speed}
 						class="range range-xs"
-						step="0.2"
+						step="0.1"
 					/>
 				</div>
 				<div class="mt-4 flex justify-between">
-					<button
-						type="button"
-						class="btn btn-warning"
-						onclick={() => (settings = { ...DEFAULT_SETTINGS })}
-					>
+					<button type="button" class="btn btn-warning" onclick={() => controller.resetSettings()}>
 						<RefreshCcw class="h-4 w-4" />
 						Reset Defaults
 					</button>
