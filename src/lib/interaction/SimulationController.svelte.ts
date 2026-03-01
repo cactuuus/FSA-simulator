@@ -7,7 +7,6 @@ export interface SimulationSubStep {
 	activeTransitionsIds: string[];
 	invalidNodes?: ComputationNode[];
 	acceptingNodes?: ComputationNode[];
-	description?: string;
 }
 
 export interface SimulationStep {
@@ -151,9 +150,11 @@ export class SimulationController {
 		const root = this._tree.root;
 		let inputIndex = root.config.group;
 
+		// NOTE TO SELF: this is way to convoluted. It mighe be a better idea to just keep substeps for epsilon-closures only, and the rest simply having lists of active nodes, transitions, node to prune, etc. potentially having interfaces for each step type, as they are quite different. then, in the UI component we can handle each step type differently.
+
 		// start step
 		const startStep: SimulationStep = { inputIndex: -1, type: 'start', subSteps: [] };
-		startStep.subSteps.push({ activeNodes: [], activeTransitionsIds: ['start-edge'] });
+		startStep.subSteps.push({ activeNodes: [], activeTransitionsIds: [] });
 		startStep.subSteps.push({ activeNodes: [root], activeTransitionsIds: ['start-edge'] });
 		startStep.subSteps.push({ activeNodes: [root], activeTransitionsIds: [] });
 		steps.push(startStep);
@@ -171,7 +172,6 @@ export class SimulationController {
 		}
 
 		let active = [root, ...startWaves.flat()];
-		let lastActive = active;
 
 		while (active.length > 0 && inputIndex < this._tree.input.length - 1) {
 			inputIndex++;
@@ -187,78 +187,84 @@ export class SimulationController {
 			if (reached.length === 0) {
 				// this means none of the active nodes can consume the current symbol
 				consumeStep.subSteps.push({
-					activeNodes: active,
+					activeNodes: [],
 					activeTransitionsIds: [],
-					invalidNodes: active
+					invalidNodes: [...active]
 				});
 				steps.push(consumeStep);
-			} else {
-				if (pruned.length > 0) {
-					// sub-step 1: highlight pruned nodes as invalid, if any
-					consumeStep.subSteps.push({
-						activeNodes: active,
-						activeTransitionsIds: [],
-						invalidNodes: pruned
-					});
-
-					// sub-step 2: show only remaining active nodes
-					consumeStep.subSteps.push({
-						activeNodes: validNodes,
-						activeTransitionsIds: []
-					});
-				}
-				// sub-step 3: show valid transitions
+				active = [];
+				break; // end simulation early
+			}
+			if (pruned.length > 0) {
+				// sub-step 1: highlight pruned nodes as invalid, if any
 				consumeStep.subSteps.push({
-					activeNodes: [...validNodes, ...reached],
-					activeTransitionsIds: transitions.map((t) => t.id)
+					activeNodes: [...validNodes],
+					activeTransitionsIds: [],
+					invalidNodes: [...pruned]
 				});
-				// sub-step 4: settle on reached nodes only
+
+				// sub-step 2: show only remaining active nodes
 				consumeStep.subSteps.push({
-					activeNodes: reached,
+					activeNodes: [...validNodes],
 					activeTransitionsIds: []
 				});
-				steps.push(consumeStep);
-
-				// epsilon closure step
-				const waves = this.collectEpsilonWaves(reached);
-				if (waves.length > 0) {
-					const epsilonStep: SimulationStep = { inputIndex, type: 'epsilon-closure', subSteps: [] };
-					epsilonStep.subSteps.push(...this.buildEpsilonSubSteps(reached, waves));
-					steps.push(epsilonStep);
-				}
-				reached.push(...waves.flat());
 			}
+			// sub-step 3: show valid transitions
+			consumeStep.subSteps.push({
+				activeNodes: [...validNodes, ...reached],
+				activeTransitionsIds: transitions.map((t) => t.id)
+			});
+			// sub-step 4: settle on reached nodes only
+			consumeStep.subSteps.push({
+				activeNodes: [...reached],
+				activeTransitionsIds: []
+			});
+			steps.push(consumeStep);
 
-			lastActive = active;
+			// epsilon closure step
+			const waves = this.collectEpsilonWaves(reached);
+			if (waves.length > 0) {
+				const epsilonStep: SimulationStep = { inputIndex, type: 'epsilon-closure', subSteps: [] };
+				epsilonStep.subSteps.push(...this.buildEpsilonSubSteps(reached, waves));
+				steps.push(epsilonStep);
+			}
+			reached.push(...waves.flat());
 			active = reached;
 		}
 
-		// result step
-		const acceptingNodes = lastActive.filter(
-			(n) => n.config.state.isAccepting && n.config.stack.length === 0
-		);
-		const pruned = lastActive.filter((n) => !acceptingNodes.includes(n));
+		const reachedEndOfInput = inputIndex === this._tree.input.length - 1;
+		if (reachedEndOfInput) inputIndex++;
+
 		const resultStep: SimulationStep = {
-			inputIndex: this._tree.input.length - 1,
+			inputIndex: inputIndex,
 			type: 'result',
 			subSteps: []
 		};
-		if (pruned.length > 0) {
-			// sub-step 1: highlight pruned and accepting nodes
+
+		if (!reachedEndOfInput) {
+			// this means we ended the simulation early because no active nodes could consume the current symbol.
+			// we just show nothing as active.
 			resultStep.subSteps.push({
-				activeNodes: lastActive,
-				activeTransitionsIds: [],
-				invalidNodes: pruned,
-				acceptingNodes: acceptingNodes.length > 0 ? acceptingNodes : undefined
+				activeNodes: [],
+				activeTransitionsIds: []
 			});
+			steps.push(resultStep);
+		} else {
+			const acceptingNodes = active.filter(
+				(n) => n.config.state.isAccepting && n.config.stack.length === 0
+			);
+			const failingNodes = active.filter((n) => !acceptingNodes.includes(n));
+			if (failingNodes.length > 0) {
+				// sub-step 1: highlight pruned and accepting nodes
+				resultStep.subSteps.push({
+					activeNodes: [],
+					activeTransitionsIds: [],
+					invalidNodes: [...failingNodes],
+					acceptingNodes: [...acceptingNodes]
+				});
+			}
+			steps.push(resultStep);
 		}
-		// sub-step 2: show only accepting nodes as active
-		resultStep.subSteps.push({
-			activeNodes: acceptingNodes,
-			activeTransitionsIds: [],
-			acceptingNodes: acceptingNodes.length > 0 ? acceptingNodes : undefined
-		});
-		steps.push(resultStep);
 
 		return steps;
 	}
@@ -288,14 +294,13 @@ export class SimulationController {
 
 		for (const wave of waves) {
 			const waveTransitions = wave.map((n) => n.transitionTaken!);
+			cumulativeNodes = [...cumulativeNodes, ...wave];
 
 			// show transitions firing
 			subSteps.push({
 				activeNodes: cumulativeNodes,
 				activeTransitionsIds: waveTransitions.map((t) => t.id)
 			});
-
-			cumulativeNodes = [...cumulativeNodes, ...wave];
 
 			// show new nodes added, clean up transitions
 			subSteps.push({

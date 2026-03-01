@@ -140,7 +140,6 @@
 	});
 	$effect(() => {
 		if (!app.isSimulating() || !app.simulationController) return;
-		const step = app.simulationController.currentStep;
 		const subStep = app.simulationController.currentSubStep;
 
 		const activeTransitionIds = new Set(subStep.activeTransitionsIds);
