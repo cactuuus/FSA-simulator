@@ -254,15 +254,13 @@ export class SimulationController {
 				(n) => n.config.state.isAccepting && n.config.stack.length === 0
 			);
 			const failingNodes = active.filter((n) => !acceptingNodes.includes(n));
-			if (failingNodes.length > 0) {
-				// sub-step 1: highlight pruned and accepting nodes
-				resultStep.subSteps.push({
-					activeNodes: [],
-					activeTransitionsIds: [],
-					invalidNodes: [...failingNodes],
-					acceptingNodes: [...acceptingNodes]
-				});
-			}
+			// highlight pruned and accepting nodes
+			resultStep.subSteps.push({
+				activeNodes: [],
+				activeTransitionsIds: [],
+				invalidNodes: [...failingNodes],
+				acceptingNodes: [...acceptingNodes]
+			});
 			steps.push(resultStep);
 		}
 
