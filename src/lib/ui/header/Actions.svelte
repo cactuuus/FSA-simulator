@@ -13,19 +13,30 @@
 		Table2,
 		MonitorCog
 	} from '@lucide/svelte';
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
+	import type { SerializedFSAGraph } from '$lib/automata/models';
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
 	import { cleanAndSerializeSvgGraph } from '$lib/automata/visuals';
-	import { validateFSA, ComputationTree } from '$lib/automata/analisys';
+	import { validateFSA } from '$lib/automata/analisys';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import {
 		EnableStackOpsCommand,
 		DisableStackOpsCommand
 	} from '$lib/interaction/editor/commands/instances';
 
+	interface Example {
+		filename: string;
+		type: string;
+		language: string;
+		description: string;
+	}
+
 	let clearFsaModal: HTMLDialogElement;
 	let togglePdaModal: HTMLDialogElement;
+	let loadExampleModal: HTMLDialogElement;
+	let availableExamples = $state<Example[]>([]);
+	let fetchingExamples = $state<boolean>(true);
 	let pendingPdaState = $state<boolean>(false); // used instead of a direct bind to avoid rsponsiveness issues with UI
 
 	/**
@@ -58,21 +69,37 @@
 			notifyError("Invalid file type, select a '.fsa' file.");
 			return;
 		}
+		const text = await file.text();
+		const json = JSON.parse(text);
+		loadFsaFromJSON(json);
+	}
+
+	function loadFsaFromJSON(json: SerializedFSAGraph) {
 		const backup = app.fsaGraph.toJSON();
 		try {
-			const text = await file.text();
-			const json = JSON.parse(text);
 			app.desiredAlphabet.reset();
 			app.commandHistory.reset();
 			app.fsaGraph.loadFromJSON(json);
-			notifySuccess('Graph imported & loaded successfully.');
+			notifySuccess('Graph loaded successfully.');
 		} catch (error: unknown) {
 			app.fsaGraph.loadFromJSON(backup);
-			console.error('Failed to import graph:', error);
+			console.error('Failed to load graph:', error);
 			notifyError(
-				'Failed to import graph. The file may be corrupted or from an incompatible version.'
+				'Failed to load graph. The file may be corrupted or from an incompatible version.'
 			);
 		}
+	}
+
+	async function fetchExamples() {
+		fetchingExamples = true;
+		availableExamples = await fetch('/examples/manifest.json')
+			.then((res) => res.json())
+			.catch((error: unknown) => {
+				console.error('Failed to fetch examples manifest:', error);
+				notifyError('Failed to load examples, an unexpected error occurred.');
+				return [];
+			})
+			.finally(() => (fetchingExamples = false));
 	}
 
 	/**
@@ -190,6 +217,10 @@
 		const window = document.getElementById(windowName);
 		window?.focus();
 	}
+
+	onMount(() => {
+		fetchExamples();
+	});
 </script>
 
 <!-- File menu -->
@@ -208,6 +239,12 @@
 				<Folder class="h-4 w-4" /> Open
 			</button>
 		</li>
+		<li>
+			<button onclick={() => loadExampleModal.showModal()}>
+				<Folder class="h-4 w-4" /> Browse examples
+			</button>
+		</li>
+		<div class="divider m-0"></div>
 		<li>
 			<button onclick={downloadGraph}>
 				<Download class="h-4 w-4" /> Save to disk
@@ -317,6 +354,72 @@
 						Confirm
 					</button>
 				</div>
+			</form>
+		</div>
+	</div>
+</dialog>
+
+<!-- Load example modal -->
+<dialog id="load-example-modal" bind:this={loadExampleModal} class="modal" open>
+	<div class="relative modal-box flex max-h-4/5 max-w-2xl flex-col overflow-hidden">
+		<h3 class="mb-4 flex items-center gap-2 text-lg font-bold">
+			<span>Load Example</span>
+		</h3>
+		<p class="mb-4">This is a selection of pre-made FSA examples, select one to open it</p>
+
+		{#if fetchingExamples}
+			<div
+				class="flex w-full items-center justify-center gap-4 bg-base-200/70 p-4 text-base-content/70"
+			>
+				<span class="loading loading-xl loading-spinner"></span>
+				Loading...
+			</div>
+		{:else if availableExamples.length === 0}
+			<div
+				class="flex w-full items-center justify-center gap-4 bg-base-200/70 p-4 text-base-content/70"
+			>
+				No examples available.
+			</div>
+		{:else}
+			<ul class="list max-h-1/2 gap-2 overflow-y-scroll">
+				{#each availableExamples as example}
+					<li>
+						<button
+							type="button"
+							class="btn flex h-auto flex-col items-start gap-0 p-2 text-left btn-soft"
+							onclick={() => {
+								fetch(`/examples/${example.filename}`)
+									.then((res) => res.json())
+									.then((json) => {
+										loadFsaFromJSON(json);
+										loadExampleModal.close();
+									});
+							}}
+						>
+							<h4 class="font-semibold">
+								Type: <span class="text-secondary">{example.type.toUpperCase()}</span>
+								<br />
+							</h4>
+							<h4 class="font-semibold">
+								Language: <span class="text-secondary">{example.language}</span>
+							</h4>
+							<p>
+								<span class="font-semibold">Description: </span>
+								<span class="text-sm font-normal text-base-content/70 italic">
+									{example.description}
+								</span>
+							</p>
+						</button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+
+		<div class="modal-action mt-4">
+			<form class="w-full" onsubmit={togglePda}>
+				<button type="submit" class="btn mt-4" onclick={() => loadExampleModal.close()}>
+					Cancel
+				</button>
 			</form>
 		</div>
 	</div>
