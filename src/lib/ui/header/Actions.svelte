@@ -360,7 +360,7 @@
 </dialog>
 
 <!-- Load example modal -->
-<dialog id="load-example-modal" bind:this={loadExampleModal} class="modal" open>
+<dialog id="load-example-modal" bind:this={loadExampleModal} class="modal">
 	<div class="relative modal-box flex max-h-4/5 max-w-2xl flex-col overflow-hidden">
 		<h3 class="mb-4 flex items-center gap-2 text-lg font-bold">
 			<span>Load Example</span>
