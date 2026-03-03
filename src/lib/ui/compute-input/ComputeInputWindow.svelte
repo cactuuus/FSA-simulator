@@ -5,22 +5,36 @@
 	import { ComputationTree, type ComputationNode } from '$lib/automata/analisys';
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyWarning, notifyError } from '$lib/utils/notifications';
-	import type { SerializedFSAGraph } from '$lib/automata/models';
+	import { FSAType, type SerializedFSAGraph } from '$lib/automata/models';
 	import { toggleHighlight } from '$lib/utils/graphEffects';
 
 	let computationTree = $state<ComputationTree | null>(null);
 	let inputToProcess = $state<string>('');
 	let fsaDataWhenProcessed = $state<SerializedFSAGraph | null>(null);
-	let lastUsedInput = $state<string[] | []>([]);
+	let lastUsedInput = $state<string[]>([]);
 	let isProcessing = $state<boolean>(false);
 	let maxLoopsIterations = $state<number>(0);
-	const cleanedInput = $derived<string[]>(
-		inputToProcess === '' ? [] : inputToProcess.split(',').map((s) => s.trim())
+	const alphabetIsSingleChar = $derived<boolean>(
+		[...app.fsaGraph.alphabet()].every((s) => s.length === 1)
 	);
+	const cleanedInput = $derived.by<string[]>(() => {
+		const separator = alphabetIsSingleChar ? '' : ',';
+		return inputToProcess
+			.trim()
+			.split(separator)
+			.map((s) => s.trim());
+	});
 	const canProcessInput = $derived.by<{ result: boolean; errors?: string[] }>(() => {
 		const errors: string[] = [];
 		if (cleanedInput.some((s) => s === '') && inputToProcess.length > 0) {
-			errors.push('Input contains empty symbols, please remove any extra commas.');
+			if (alphabetIsSingleChar) {
+				errors.push('Input contains empty symbols, please remove any extra spaces.');
+			} else {
+				errors.push('Input contains empty symbols, please remove any extra commas.');
+			}
+		}
+		if (cleanedInput.some((s) => !app.fsaGraph.alphabet().has(s))) {
+			errors.push("Input contains symbols that are not in the FSA's alphabet.");
 		}
 		if (!app.fsaGraph.hasStart) {
 			errors.push('The graph has no start state, it cannot process any input.');
@@ -81,15 +95,18 @@
 	{#snippet content()}
 		<div class="mb-2 flex flex-col gap-2 rounded-box bg-base-300 p-3">
 			<label for="input-to-process" class="font-semibold"> Input to process </label>
-			<p class="text-xs text-base-content/70 italic">
-				<Info class="inline h-3 w-3" />
-				Enter the input to be processed, as a comma-separated list of symbols.
-			</p>
+			{#if !alphabetIsSingleChar}
+				<p class="text-xs text-warning/70 italic">
+					<TriangleAlert class="inline h-3 w-3" />
+					Since your alphabet contains symbols longer than one character, please separate symbols with
+					commas.
+				</p>
+			{/if}
 			<div class="flex flex-wrap gap-2">
 				<input
 					type="text"
 					id="input-to-process"
-					placeholder="a,b,c"
+					placeholder={alphabetIsSingleChar ? 'e.g. aabbab' : 'e.g. symbol1, symbol2'}
 					class="input input-sm w-full max-w-xs"
 					bind:value={inputToProcess}
 				/>
@@ -106,19 +123,21 @@
 					{/each}
 				</ul>
 			{/if}
-			<label for="max-loops" class="text-sm font-semibold"> Maximum loop iterations </label>
-			<p class="text-xs text-base-content/70 italic">
-				<Info class="inline h-3 w-3" />
-				If an infinite loop is detected, this limits the number of loops before branch exploration is
-				stopped. <strong>Use wisely, a value too high is just as bad as no limit at all.</strong>
-			</p>
-			<input
-				type="number"
-				id="max-loops"
-				class="input input-sm w-full max-w-20"
-				bind:value={maxLoopsIterations}
-				min={0}
-			/>
+			{#if app.fsaGraph.type === FSAType.PDA || app.fsaGraph.type === FSAType.DPDA}
+				<label for="max-loops" class="text-sm font-semibold"> Maximum loop iterations </label>
+				<p class="text-xs text-base-content/70 italic">
+					<Info class="inline h-3 w-3" />
+					If an infinite loop is detected, this limits the number of loops before branch exploration is
+					stopped. <strong>Use wisely, a value too high is just as bad as no limit at all.</strong>
+				</p>
+				<input
+					type="number"
+					id="max-loops"
+					class="input input-sm w-full max-w-20"
+					bind:value={maxLoopsIterations}
+					min={0}
+				/>
+			{/if}
 		</div>
 
 		<div class="relative flex flex-col gap-2 rounded-box bg-base-300 p-3">
