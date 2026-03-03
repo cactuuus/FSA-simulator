@@ -130,8 +130,18 @@ svg text {
 	stroke: var(--invalid-color);
 	filter: drop-shadow(0 0 5px var(--invalid-color));
 }
+
 .node.invalid .node-label {
 	fill: var(--invalid-color);
+}
+
+.node.input-accepted {
+	stroke: var(--success-color);
+	filter: drop-shadow(0 0 5px var(--success-color));
+}
+
+.node.input-accepted .node-label {
+	fill: var(--success-color);
 }
 
 .node.active {
@@ -161,15 +171,6 @@ svg text {
 
 #start-edge.active .arrowhead {
 	color: var(--highlight-color);
-}
-
-.node.input-accepted {
-	stroke: var(--success-color);
-	/* filter: drop-shadow(0 0 5px var(--success-color)); */
-}
-
-.node.input-accepted .node-label {
-	fill: var(--success-color);
 }
 
 /* Animation for toast progress bar */

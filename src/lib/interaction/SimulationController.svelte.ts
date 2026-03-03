@@ -180,7 +180,7 @@ export class SimulationController {
 			);
 			const pruned = active.filter((n) => !n.children.some((c) => c.config.group === inputIndex));
 			const validNodes = active.filter((n) => !pruned.includes(n));
-			const transitions = reached.map((n) => n.transitionTaken!);
+			const transitions = reached.map((n) => n.parent!.via);
 
 			const consumeStep: SimulationStep = { inputIndex, type: 'consume-symbol', subSteps: [] };
 
@@ -291,7 +291,7 @@ export class SimulationController {
 		let cumulativeNodes = [...roots];
 
 		for (const wave of waves) {
-			const waveTransitions = wave.map((n) => n.transitionTaken!);
+			const waveTransitions = wave.map((n) => n.parent!.via);
 			cumulativeNodes = [...cumulativeNodes, ...wave];
 
 			// show transitions firing

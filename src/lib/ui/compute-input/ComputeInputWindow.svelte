@@ -2,11 +2,12 @@
 	import { Info, TriangleAlert, Check, RefreshCcw, CircleX, Play } from '@lucide/svelte';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import FloatingWindow from '$lib/ui/components/FloatingWindow.svelte';
-	import { ComputationTree, type ComputationNode } from '$lib/automata/analisys';
+	import { ComputationTree, type ComputationNode, type PathEnd } from '$lib/automata/analisys';
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyWarning, notifyError } from '$lib/utils/notifications';
 	import { FSAType, type SerializedFSAGraph } from '$lib/automata/models';
-	import { toggleHighlight } from '$lib/utils/graphEffects';
+	import { toggleHighlight, toggleInvalid, toggleAccepted } from '$lib/utils/graphEffects';
+	import VirtualList from './VistualList.svelte';
 
 	let computationTree = $state<ComputationTree | null>(null);
 	let inputToProcess = $state<string>('');
@@ -74,12 +75,20 @@
 	 * @param state Whether to add or remove the highlight.
 	 * @param path The path to highlight, given as a list of computation nodes.
 	 */
-	function togglePathHighlight(state: boolean, path: ComputationNode[]): void {
+	function togglePathHighlight(state: boolean, path: PathEnd): void {
 		const ids = new Set<string>(['start-edge']);
-		path.forEach((node) => {
-			node.config.state.id && ids.add(node.config.state.id);
-			if (node.transitionTaken) ids.add(node.transitionTaken.id);
-		});
+		if (path.isAccepting) {
+			toggleAccepted(state, path.node.config.state.id);
+		} else {
+			toggleInvalid(state, path.node.config.state.id);
+		}
+		let currentNode: ComputationNode | null = path.node;
+		while (currentNode) {
+			if (currentNode.parent) {
+				ids.add(currentNode.parent.via.id);
+			}
+			currentNode = currentNode.parent ? currentNode.parent.node : null;
+		}
 		toggleHighlight(state, ...ids);
 	}
 </script>
@@ -143,8 +152,9 @@
 		<div class="relative flex flex-col gap-2 rounded-box bg-base-300 p-3">
 			<h3 class="border-b border-base-content/30 font-semibold">Result</h3>
 			{#if computationTree}
-				{@const acceptingPaths = computationTree.acceptingPaths}
-				<!-- Computation results -->
+				{@const acceptingPaths = computationTree.allPaths.filter((p) => p.isAccepting)}
+				{@const rejectingPaths = computationTree.allPaths.filter((p) => !p.isAccepting)}
+				<!-- Warnings -->
 				{#if computationTree.warnings.length > 0}
 					<details class="collapse-arrow collapse rounded-box bg-warning/10 text-warning">
 						<summary class="collapse-title p-2 font-semibold">
@@ -160,6 +170,7 @@
 						</div>
 					</details>
 				{/if}
+				<!-- Accepting paths -->
 				{#if acceptingPaths.length > 0}
 					<details class="collapse-arrow collapse rounded-box bg-success/10 text-success">
 						<summary class="collapse-title p-2 font-semibold">
@@ -171,28 +182,35 @@
 								<Info class="inline h-3 w-3" />
 								Click on a path to run a simulation of only the path itself.
 							</p>
-							<ul class="list-inside list-disc font-semibold">
-								{#each acceptingPaths as path, index (index)}
-									<li
-										class="hover:cursor-pointer hover:text-secondary"
-										onmouseenter={() => togglePathHighlight(true, path)}
-										onmouseleave={() => togglePathHighlight(false, path)}
-									>
-										{path.map((node: ComputationNode) => node.config.state.label).join(' → ')}
-									</li>
-								{/each}
-							</ul>
+							<VirtualList
+								items={acceptingPaths}
+								getLabel={(path) => computationTree!.getPathFromRoot(path.node)}
+								onmouseenter={(path) => togglePathHighlight(true, path)}
+								onmouseleave={(path) => togglePathHighlight(false, path)}
+							/>
 						</div>
 					</details>
-				{:else}
-					<p class="rounded-box bg-error/10 p-2 text-sm text-error">
-						<span class="font-bold">
+				{/if}
+				<!--  Rejecting paths -->
+				{#if rejectingPaths.length > 0}
+					<details class="collapse-arrow collapse rounded-box bg-error/10">
+						<summary class="collapse-title p-2 font-semibold text-error">
 							<CircleX class="inline h-4 w-4" />
-							Input rejected!
-						</span>
-						<br />
-						No accepting paths were found in the computation tree.
-					</p>
+							{rejectingPaths.length} Rejecting Path{rejectingPaths.length > 1 ? 's' : ''}
+						</summary>
+						<div class="collapse-content">
+							<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
+								<Info class="inline h-3 w-3" />
+								Click on a path to run a simulation of only the path itself.
+							</p>
+							<VirtualList
+								items={rejectingPaths}
+								getLabel={(path) => computationTree!.getPathFromRoot(path.node)}
+								onmouseenter={(path) => togglePathHighlight(true, path)}
+								onmouseleave={(path) => togglePathHighlight(false, path)}
+							/>
+						</div>
+					</details>
 				{/if}
 				<div>
 					<button

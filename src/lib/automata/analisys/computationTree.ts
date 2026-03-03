@@ -6,33 +6,46 @@ export interface Configuration {
 	group: number;
 }
 
+export interface PathEnd {
+	node: ComputationNode;
+	isAccepting: boolean;
+}
+
 export class ComputationNode {
 	config: Configuration;
-	parent: ComputationNode | null;
-	transitionTaken: Transition | null;
+	parent?: {
+		node: ComputationNode;
+		via: Transition;
+	};
 	children: ComputationNode[];
 
 	constructor(
 		{ state, stack, group }: Configuration,
-		parent: ComputationNode | null = null,
-		transitionTaken: Transition | null = null
+		parent?: { node: ComputationNode; via: Transition }
 	) {
 		this.config = { state, stack, group };
 		this.parent = parent;
-		this.transitionTaken = transitionTaken;
 		this.children = [];
 	}
 
 	addChild(config: Configuration, viaTransition: Transition): ComputationNode {
-		const newNode = new ComputationNode(config, this, viaTransition);
+		const newNode = new ComputationNode(config, { node: this, via: viaTransition });
 		this.children.push(newNode);
 		return newNode;
+	}
+
+	isLeaf(): boolean {
+		return this.children.length === 0;
+	}
+
+	hasEmptyStack(): boolean {
+		return this.config.stack.length === 0;
 	}
 
 	toString(indent: string = '', isLast: boolean = true): string {
 		const prefix = indent + (isLast ? '└─ ' : '├─ ');
 		const stackStr = `[${this.config.stack.join(',')}]`;
-		const transitionStr = this.transitionTaken ? ` via '${this.transitionTaken.toString()}'` : '';
+		const transitionStr = this.parent ? ` via '${this.parent.via.toString()}'` : '';
 		let result = `${prefix}${this.config.state.label}${stackStr} (g${this.config.group})${transitionStr}\n`;
 		const childIndent = indent + (isLast ? ' ' : '│ ');
 		this.children.forEach((child, index) => {
@@ -49,11 +62,13 @@ export class ComputationTree {
 	readonly maxVisits: number;
 	private fsa: FSAGraph;
 	private inputIndex: number = -1;
+	private groups: ComputationNode[][];
 	warnings: string[] = [];
 
 	constructor(fsa: FSAGraph, input: string[], maxVisits: number = 0) {
 		this.fsa = fsa;
 		this.input = input;
+		this.groups = Array.from({ length: input.length + 1 }, () => []);
 		this.maxVisits = maxVisits;
 		if (this.fsa.startNode === null) {
 			throw new Error('FSA is missing start node, cannot compute input.');
@@ -64,6 +79,7 @@ export class ComputationTree {
 			stack: [],
 			group: this.inputIndex
 		});
+		this.addToCurrentGroup(this.root);
 		this.computeEpsilonClosure(
 			this.root,
 			new Map([[this.root.config.state.id, new Set([this.encodeStack(this.root.config.stack)])]])
@@ -71,12 +87,12 @@ export class ComputationTree {
 
 		this.input.forEach((symbol) => {
 			// Process next input symbol
-			let activeNodes = this.getNodesInGroup(this.inputIndex);
+			let activeNodes = this.getCurrentGroupNodes();
 			this.inputIndex++;
 			activeNodes.forEach((node) => this.computeSymbol(node, symbol));
 
 			// process epsilon closure
-			activeNodes = this.getNodesInGroup(this.inputIndex);
+			activeNodes = this.getCurrentGroupNodes();
 			activeNodes.forEach((node) => {
 				this.computeEpsilonClosure(
 					node,
@@ -86,31 +102,37 @@ export class ComputationTree {
 		});
 	}
 
-	/**
-	 * Gets all nodes in the tree belonging to a given group index.
-	 */
-	getNodesInGroup(groupIndex: number): ComputationNode[] {
-		const result: ComputationNode[] = [];
-		const visit = (node: ComputationNode) => {
-			if (node.config.group === groupIndex) result.push(node);
-			node.children.forEach(visit);
-		};
-		visit(this.root);
-		return result;
+	private addToCurrentGroup(node: ComputationNode): void {
+		this.groups[this.inputIndex + 1].push(node);
 	}
 
-	get acceptingPaths(): ComputationNode[][] {
-		return this.getNodesInGroup(this.input.length - 1)
-			.filter((n) => n.config.state.isAccepting && n.config.stack.length === 0)
-			.map((leaf) => this.getPathFromRoot(leaf));
+	private getCurrentGroupNodes(): ComputationNode[] {
+		return this.groups[this.inputIndex + 1];
 	}
 
-	getPathFromRoot(node: ComputationNode): ComputationNode[] {
-		const path: ComputationNode[] = [];
+	get allPaths(): PathEnd[] {
+		const paths: PathEnd[] = [];
+		this.groups.forEach((group, index) => {
+			const isLastGroup = index === this.groups.length - 1;
+			group.forEach((node) => {
+				if (node.isLeaf() || isLastGroup) {
+					const acceptsInput = isLastGroup && node.config.state.isAccepting && node.hasEmptyStack();
+					paths.push({
+						node: node,
+						isAccepting: acceptsInput
+					});
+				}
+			});
+		});
+		return paths;
+	}
+
+	getPathFromRoot(node: ComputationNode): string {
+		let path = '';
 		let current: ComputationNode | null = node;
 		while (current) {
-			path.unshift(current);
-			current = current.parent;
+			path = `${current.config.state.label}${path ? ' → ' + path : ''}`;
+			current = current.parent?.node ?? null;
 		}
 		return path;
 	}
@@ -127,10 +149,11 @@ export class ComputationTree {
 				if (transition.pop !== Transition.EPSILON) adjustedStack.pop();
 				if (transition.push !== Transition.EPSILON) adjustedStack.push(transition.push!);
 			}
-			node.addChild(
+			const newNode = node.addChild(
 				{ state: targetState, stack: adjustedStack, group: this.inputIndex },
 				transition
 			);
+			this.addToCurrentGroup(newNode);
 		});
 	}
 
@@ -170,6 +193,7 @@ export class ComputationTree {
 
 			seenConfigs.set(config.state.id, previouslySeenStacks.add(currentStack));
 			const newNode = node.addChild(config, transition);
+			this.addToCurrentGroup(newNode);
 			this.computeEpsilonClosure(newNode, seenConfigs);
 			seenConfigs.get(config.state.id)?.delete(currentStack);
 		}
@@ -198,10 +222,8 @@ export class ComputationTree {
 			result += 'Warnings:\n';
 			this.warnings.forEach((w) => (result += `- ${w}\n`));
 		}
-		result += `Accepting paths: ${this.acceptingPaths.length}\n`;
-		this.acceptingPaths.forEach((path, i) => {
-			result += `Path ${i + 1}: ${path.map((n) => n.config.state.label).join(' -> ')}\n`;
-		});
+		const acceptingPaths = this.allPaths.filter((p) => p.isAccepting);
+		result += `Accepting paths: ${acceptingPaths.length}\n`;
 		result += 'Tree:\n';
 		result += this.root.toString();
 		return result;
