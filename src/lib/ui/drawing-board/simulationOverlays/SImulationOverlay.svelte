@@ -16,9 +16,10 @@
 	function getColors() {
 		const style = getComputedStyle(document.documentElement);
 		return {
-			accepted: style.getPropertyValue('a') || 'oklch(76% 0.177 163.223)', // green
-			rejected: style.getPropertyValue('v') || 'oklch(57% 0.245 27.325)', // red
-			active: style.getPropertyValue('c') || 'oklch(65% 0.241 354.308)' // pink
+			accepted: style.getPropertyValue('--success-color') || 'oklch(76% 0.177 163.223)', // green
+			rejected: style.getPropertyValue('--invalid-color') || 'oklch(57% 0.245 27.325)', // red
+			active: style.getPropertyValue('--active-color') || 'oklch(65% 0.241 354.308)', // pink
+			drawColor: style.getPropertyValue('--draw-color') || 'oklch(0% 0 0)' // black
 		};
 	}
 
@@ -67,9 +68,16 @@
 				tl.add(
 					edgeEl,
 					{
-						strokeDashoffset: [length, 0],
-						opacity: 1,
+						opacity: [0, 1],
 						stroke: colors.active,
+						duration: 0
+					},
+					time
+				);
+				tl.add(
+					edgeEl,
+					{
+						strokeDashoffset: [length, 0],
 						duration: EDGE_MS,
 						ease: 'inOut(2)'
 					},
@@ -80,7 +88,7 @@
 				tl.add(
 					transitionEl,
 					{
-						fill: ['', colors.active],
+						fill: [colors.drawColor, colors.active],
 						duration: 0
 					},
 					time
@@ -123,7 +131,6 @@
 				tl.add(
 					edgeEl,
 					{
-						stroke: colors.active,
 						opacity: [1, 0],
 						duration: NODE_MS,
 						ease: 'inOut(2)'
@@ -135,7 +142,7 @@
 				tl.add(
 					transitionEl,
 					{
-						fill: [colors.active, ''],
+						fill: [colors.active, colors.drawColor],
 						duration: NODE_MS
 					},
 					time
@@ -169,7 +176,7 @@
 				const nodeEl = getOverlayEl(node.config.state.id);
 				if (nodeEl) {
 					nodeEl.style.opacity = '0';
-					nodeEl.style.fill = '';
+					nodeEl.style.fill = colors.drawColor;
 				}
 				if (i === 0) return;
 				const prev = path[i - 1];
