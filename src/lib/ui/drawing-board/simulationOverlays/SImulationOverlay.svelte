@@ -9,7 +9,7 @@
 
 	const EDGE_MS = 1000;
 	const NODE_MS = 500;
-	const NODE_OPACITY_MED = 0.7;
+	const NODE_OPACITY_MED = 0.8;
 	const NODE_OPACITY_MAX = 1;
 	let cancel: (() => void) | null = null;
 
@@ -65,15 +65,7 @@
 			if (edgeEl) {
 				const length = (edgeEl as SVGPathElement).getTotalLength();
 				edgeEl.style.strokeDasharray = String(length);
-				tl.add(
-					edgeEl,
-					{
-						opacity: [0, 1],
-						stroke: colors.active,
-						duration: 0
-					},
-					time
-				);
+				tl.add(edgeEl, { opacity: [0, 1], stroke: colors.active, duration: 0 }, time);
 				tl.add(
 					edgeEl,
 					{
@@ -152,14 +144,16 @@
 			sourceEl = nodeEl;
 		});
 
-		// final node: accepted or rejected colour
+		tl.call(() => (controller.currentGroup = steps[steps.length - 1].group + 1), time);
 		const lastEl = steps[steps.length - 1].nodeEl;
+
+		// final node: accepted or rejected colour
 		if (lastEl) {
 			const finalColor = controller.isAccepting ? colors.accepted : colors.rejected;
 			tl.add(
 				lastEl,
 				{
-					fill: [colors.active, finalColor],
+					fill: [finalColor, finalColor],
 					opacity: [NODE_OPACITY_MED, NODE_OPACITY_MAX, NODE_OPACITY_MED],
 					duration: NODE_MS,
 					ease: 'inOut(2)'
