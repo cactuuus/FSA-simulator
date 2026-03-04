@@ -1,12 +1,6 @@
 import type { ComputationNode } from '$lib/automata/analisys';
+import type { Timeline } from 'animejs';
 import { Transition } from '$lib/automata/models';
-
-export interface PathAnimationControls {
-	play: () => void;
-	pause: () => void;
-	scrubTo: (ms: number) => void;
-	totalDuration: number;
-}
 
 export interface SimulationSettings {
 	speed: number;
@@ -18,12 +12,12 @@ export class SimulationController {
 	readonly nodePath: ComputationNode[];
 	readonly input: string[];
 	readonly isAccepting: boolean;
-	private _animControls = $state<PathAnimationControls | null>(null);
+
+	private _timeline = $state<Timeline | null>(null);
 	private _isPlaying = $state(false);
 	private _currentTime = $state(0);
-	private _rafId: number | null = null;
-	private _playStartTime: number | null = null;
-	private _playStartCurrentTime: number = 0;
+	private _currentGroup = $state<number | null>(null);
+	private _isEpsilonStep = $state(false);
 
 	settings = $state<SimulationSettings>({ ...DEFAULT_SETTINGS });
 
@@ -42,65 +36,73 @@ export class SimulationController {
 	get isPlaying() {
 		return this._isPlaying;
 	}
-
 	get currentTime() {
 		return this._currentTime;
 	}
-
 	get totalDuration() {
-		return this._animControls?.totalDuration ?? 0;
+		return this._timeline?.duration ?? 0;
 	}
-
 	get canPlay() {
-		return this._animControls !== null && this._currentTime < this.totalDuration;
+		return this._timeline !== null && this._currentTime < this.totalDuration;
+	}
+	get currentGroup() {
+		return this._currentGroup;
+	}
+	get isEpsilonStep() {
+		return this._isEpsilonStep;
+	}
+	set currentGroup(groupNo: number | null) {
+		console.log(groupNo);
+
+		this._currentGroup = groupNo;
 	}
 
-	registerAnimationControls(controls: PathAnimationControls) {
-		this._animControls = controls;
+	registerTimeline(tl: Timeline): void {
+		this._timeline = tl;
+	}
+
+	setCurrentTime(ms: number): void {
+		this._currentTime = ms;
+	}
+
+	onPlaybackEnded(): void {
+		this._isPlaying = false;
 	}
 
 	play(): void {
-		if (this._isPlaying || !this._animControls) return;
+		if (this._isPlaying || !this._timeline) return;
 		this._isPlaying = true;
-		this._animControls.play();
-
-		this._playStartTime = performance.now();
-		this._playStartCurrentTime = this._currentTime;
-
-		const tick = (now: number) => {
-			const elapsed = (now - this._playStartTime!) * this.settings.speed;
-			this._currentTime = Math.min(this._playStartCurrentTime + elapsed, this.totalDuration);
-			if (this._currentTime >= this.totalDuration) {
-				this._isPlaying = false;
-				this._rafId = null;
-				return;
-			}
-			this._rafId = requestAnimationFrame(tick);
-		};
-		this._rafId = requestAnimationFrame(tick);
+		this._timeline.speed = this.settings.speed;
+		this._timeline.play();
 	}
 
 	pause(): void {
-		if (!this._isPlaying) return;
+		if (!this._isPlaying || !this._timeline) return;
 		this._isPlaying = false;
-		this._animControls?.pause();
-		if (this._rafId !== null) {
-			cancelAnimationFrame(this._rafId);
-			this._rafId = null;
-		}
+		this._timeline.pause();
 	}
 
 	scrubTo(ms: number): void {
+		if (!this._timeline) return;
 		this._currentTime = Math.max(0, Math.min(ms, this.totalDuration));
-		this._animControls?.scrubTo(this._currentTime);
+		this._timeline.seek(this._currentTime);
+	}
+
+	setSpeed(speed: number): void {
+		this.settings.speed = speed;
+		if (this._timeline) this._timeline.speed = speed;
 	}
 
 	resetSettings(): void {
 		this.settings = { ...DEFAULT_SETTINGS };
+		if (this._timeline) this._timeline.speed = DEFAULT_SETTINGS.speed;
 	}
 
 	destroy(): void {
-		this.pause();
-		this._animControls = null;
+		this._timeline?.cancel();
+		this._timeline = null;
+		this._isPlaying = false;
+		this._currentTime = 0;
+		this._currentGroup = null;
 	}
 }

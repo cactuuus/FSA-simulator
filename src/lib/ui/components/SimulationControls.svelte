@@ -13,7 +13,13 @@
 			<span class="text-base-content/70 italic">No input</span>
 		{:else}
 			{#each controller.input as symbol, index}
-				<span>{symbol}</span>
+				{#if controller.currentGroup === null || index > controller.currentGroup}
+					<span>{symbol}</span>
+				{:else if index === controller.currentGroup}
+					<span class="font-bold text-error underline">{symbol}</span>
+				{:else}
+					<span class="text-base-content/70 line-through">{symbol}</span>
+				{/if}
 				{index < controller.input.length - 1 ? ',' : ''}
 			{/each}
 		{/if}
