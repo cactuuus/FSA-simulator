@@ -8,10 +8,12 @@
 		items,
 		onmouseenter,
 		onmouseleave,
-		getLabel
+		getLabel,
+		onclick
 	}: {
 		items: T[];
 		getLabel: (item: T) => string;
+		onclick: (item: T) => void;
 		onmouseenter: (item: T) => void;
 		onmouseleave: (item: T) => void;
 	} = $props();
@@ -46,6 +48,7 @@
 					title={label}
 					onmouseenter={() => onmouseenter(item)}
 					onmouseleave={() => onmouseleave(item)}
+					onclick={() => onclick(item)}
 				>
 					{startIndex + i + 1}. {label}
 				</li>

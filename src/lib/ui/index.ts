@@ -11,3 +11,4 @@ export { default as UndoRedoControls } from './components/UndoRedoControls.svelt
 export { default as ComputeInputWindow } from './compute-input/ComputeInputWindow.svelte';
 export { default as SimulationControls } from './components/SimulationControls.svelte';
 export { default as StateToolbar, type Tool } from './components/StateToolbar.svelte';
+export { default as SimulationOverlay } from './drawing-board/simulationOverlays/SImulationOverlay.svelte';

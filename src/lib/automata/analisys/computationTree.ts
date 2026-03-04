@@ -127,14 +127,18 @@ export class ComputationTree {
 		return paths;
 	}
 
-	getPathFromRoot(node: ComputationNode): string {
-		let path = '';
-		let current: ComputationNode | null = node;
-		while (current) {
-			path = `${current.config.state.label}${path ? ' → ' + path : ''}`;
-			current = current.parent?.node ?? null;
+	getPathFromRoot(node: ComputationNode): ComputationNode[] {
+		const path: ComputationNode[] = [];
+		let current: ComputationNode | undefined = node;
+		while (current !== undefined) {
+			path.unshift(current);
+			current = current.parent?.node;
 		}
 		return path;
+	}
+
+	static pathToString(path: ComputationNode[]): string {
+		return path.map((node) => node.config.state.label).join(' → ');
 	}
 
 	private computeSymbol(node: ComputationNode, symbol: string): void {

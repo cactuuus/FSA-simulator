@@ -91,6 +91,12 @@
 		}
 		toggleHighlight(state, ...ids);
 	}
+
+	function startPathSimulation(pathEnd: PathEnd): void {
+		const path = computationTree?.getPathFromRoot(pathEnd.node) ?? [];
+		togglePathHighlight(false, pathEnd);
+		app.enterSimulation(path, pathEnd.isAccepting);
+	}
 </script>
 
 <FloatingWindow
@@ -184,7 +190,9 @@
 							</p>
 							<VirtualList
 								items={acceptingPaths}
-								getLabel={(path) => computationTree!.getPathFromRoot(path.node)}
+								getLabel={(path) =>
+									ComputationTree.pathToString(computationTree!.getPathFromRoot(path.node))}
+								onclick={(path) => startPathSimulation(path)}
 								onmouseenter={(path) => togglePathHighlight(true, path)}
 								onmouseleave={(path) => togglePathHighlight(false, path)}
 							/>
@@ -205,22 +213,15 @@
 							</p>
 							<VirtualList
 								items={rejectingPaths}
-								getLabel={(path) => computationTree!.getPathFromRoot(path.node)}
+								getLabel={(path) =>
+									ComputationTree.pathToString(computationTree!.getPathFromRoot(path.node))}
+								onclick={(path) => startPathSimulation(path)}
 								onmouseenter={(path) => togglePathHighlight(true, path)}
 								onmouseleave={(path) => togglePathHighlight(false, path)}
 							/>
 						</div>
 					</details>
 				{/if}
-				<div>
-					<button
-						onclick={() => app.enterSimulation(computationTree!)}
-						class="btn btn-sm btn-success"
-					>
-						<Play class="h-4 w-4" />
-						Run Full Simulation
-					</button>
-				</div>
 
 				<!-- Overlay to cover outdated results -->
 				{#if fsaHasChangedSinceLastProcess()}

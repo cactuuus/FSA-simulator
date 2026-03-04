@@ -1,31 +1,19 @@
 <script lang="ts">
-	import { Play, Pause, SkipForward, SkipBack, X, Settings, RefreshCcw } from '@lucide/svelte';
+	import { Play, Pause, X, Settings, RefreshCcw } from '@lucide/svelte';
 	import type { SimulationController } from '$lib/interaction/SimulationController.svelte';
 
 	const { onExit, controller }: { onExit: () => void; controller: SimulationController } = $props();
 	let adjustSettingsModal: HTMLDialogElement | null = $state(null);
-
-	$effect(() => {
-		const duration = Math.round(800 / controller.settings.speed);
-		document.documentElement.style.setProperty('--simulation-transition-duration', `${duration}ms`);
-		return () => document.documentElement.style.removeProperty('--simulation-transition-duration');
-	});
 </script>
 
 <div class="flex flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow">
-	<!-- Input progress display -->
+	<!-- Input display -->
 	<div class="pointer-events-none flex gap-0 rounded-md bg-base-200 px-2 py-1">
 		{#if controller.input.length === 0}
 			<span class="text-base-content/70 italic">No input</span>
 		{:else}
 			{#each controller.input as symbol, index}
-				{#if index < controller.currentStep.inputIndex}
-					<span class="text-base-content/70 line-through">{symbol}</span>
-				{:else if index === controller.currentStep.inputIndex}
-					<span class="font-bold text-error underline">{symbol}</span>
-				{:else}
-					<span>{symbol}</span>
-				{/if}
+				<span>{symbol}</span>
 				{index < controller.input.length - 1 ? ',' : ''}
 			{/each}
 		{/if}
@@ -33,6 +21,7 @@
 
 	<div class="divider m-0 divider-horizontal"></div>
 
+	<!-- Play / Pause -->
 	{#if controller.isPlaying}
 		<button
 			onclick={() => controller.pause()}
@@ -46,29 +35,22 @@
 			onclick={() => controller.play()}
 			class="btn btn-square btn-sm btn-success"
 			title="Play"
-			disabled={!controller.canGoNext}
+			disabled={!controller.canPlay}
 		>
 			<Play class="h-4 w-4" />
 		</button>
 	{/if}
 
-	<button
-		onclick={() => controller.previous()}
-		class="btn btn-square btn-soft btn-sm"
-		title="Previous step"
-		disabled={controller.isPlaying || !controller.canGoPrevious}
-	>
-		<SkipBack class="h-4 w-4" />
-	</button>
-
-	<button
-		onclick={() => controller.next()}
-		class="btn btn-square btn-soft btn-sm"
-		title="Next step"
-		disabled={controller.isPlaying || !controller.canGoNext}
-	>
-		<SkipForward class="h-4 w-4" />
-	</button>
+	<!-- Scrub bar -->
+	<input
+		type="range"
+		min="0"
+		max={controller.totalDuration}
+		step="10"
+		value={controller.currentTime}
+		class="range w-32 self-center range-xs"
+		oninput={(e) => controller.scrubTo(Number(e.currentTarget.value))}
+	/>
 
 	<div class="divider m-0 divider-horizontal"></div>
 
@@ -86,8 +68,8 @@
 	</button>
 </div>
 
-<!-- Adjust settings modal -->
-<dialog id="adjust-settings-modal" bind:this={adjustSettingsModal} class="modal">
+<!-- Settings modal -->
+<dialog bind:this={adjustSettingsModal} class="modal">
 	<div class="modal-box w-11/12 max-w-sm">
 		<h3 class="text-lg font-bold">Simulation Settings</h3>
 		<div class="modal-action mt-4">
