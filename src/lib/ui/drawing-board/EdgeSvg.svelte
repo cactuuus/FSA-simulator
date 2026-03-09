@@ -33,7 +33,7 @@
 	/>
 
 	<text class="edge-label" x={labelPosition.x} y={labelPosition.y}>
-		{#each edge.transitions as transition, index}
+		{#each edge.transitions as transition, index (index)}
 			<tspan
 				data-id={transition.id}
 				class="transition"
