@@ -6,7 +6,13 @@ export interface Configuration {
 	group: number;
 }
 
-export interface PathEnd {
+export interface FullPath {
+	nodes: ComputationNode[];
+	isAccepting: boolean;
+	input: string[];
+}
+
+export interface PathLeaf {
 	node: ComputationNode;
 	isAccepting: boolean;
 }
@@ -110,8 +116,9 @@ export class ComputationTree {
 		return this.groups[this.inputIndex + 1];
 	}
 
-	get allPaths(): PathEnd[] {
-		const paths: PathEnd[] = [];
+	// Get all end-of-path nodes. This is purely an optimization to avoid generating potentially a huge number of paths all at once.
+	get pathsLeaves(): PathLeaf[] {
+		const paths: PathLeaf[] = [];
 		this.groups.forEach((group, index) => {
 			const isLastGroup = index === this.groups.length - 1;
 			group.forEach((node) => {
@@ -127,18 +134,22 @@ export class ComputationTree {
 		return paths;
 	}
 
-	getPathFromRoot(node: ComputationNode): ComputationNode[] {
-		const path: ComputationNode[] = [];
-		let current: ComputationNode | undefined = node;
+	getFullPath(pathLeaf: PathLeaf): FullPath {
+		const path: FullPath = {
+			nodes: [],
+			isAccepting: pathLeaf.isAccepting,
+			input: this.input
+		};
+		let current: ComputationNode | undefined = pathLeaf.node;
 		while (current !== undefined) {
-			path.unshift(current);
+			path.nodes.unshift(current);
 			current = current.parent?.node;
 		}
 		return path;
 	}
 
-	static pathToString(path: ComputationNode[]): string {
-		return path.map((node) => node.config.state.label).join(' → ');
+	static pathToString(path: FullPath): string {
+		return path.nodes.map((node) => node.config.state.label).join(' → ');
 	}
 
 	private computeSymbol(node: ComputationNode, symbol: string): void {
@@ -210,7 +221,10 @@ export class ComputationTree {
 	): [Transition, Node][] {
 		const transitions = this.fsa.adjacencyMap.get(state) ?? [];
 		const matchesConsume = (t: Transition) => t.consume === consume;
-		const matchesStack = (t: Transition) => t.pop === Transition.EPSILON || t.pop === stackTop;
+		const matchesStack = (t: Transition) => {
+			if (!this.fsa.hasStackOps) return true; // non-PDAs ignore stack entirely
+			return t.pop === Transition.EPSILON || (stackTop !== null && t.pop === stackTop);
+		};
 		return transitions.filter(([t]) => matchesConsume(t) && matchesStack(t));
 	}
 
@@ -220,13 +234,6 @@ export class ComputationTree {
 
 	toString(): string {
 		let result = `Computation tree for input: '${this.input.join(',')}'\n`;
-		if (this.warnings.length > 0) {
-			result += 'Warnings:\n';
-			this.warnings.forEach((w) => (result += `- ${w}\n`));
-		}
-		const acceptingPaths = this.allPaths.filter((p) => p.isAccepting);
-		result += `Accepting paths: ${acceptingPaths.length}\n`;
-		result += 'Tree:\n';
 		result += this.root.toString();
 		return result;
 	}

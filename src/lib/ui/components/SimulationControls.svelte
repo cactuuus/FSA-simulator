@@ -7,12 +7,12 @@
 
 	const WINDOW = 5; // number of input symbols to show around the current position
 	const visibleInput = $derived.by(() => {
-		if (controller.input.length === 0) return [];
+		if (controller.path.input.length === 0) return [];
 		const current = controller.currentGroup ?? 0;
 		const start = Math.max(0, current - WINDOW);
-		const end = Math.min(controller.input.length, start + WINDOW * 2 + 1);
+		const end = Math.min(controller.path.input.length, start + WINDOW * 2 + 1);
 		const adjustedStart = Math.max(0, end - (WINDOW * 2 + 1));
-		return controller.input.slice(adjustedStart, end).map((symbol, i) => ({
+		return controller.path.input.slice(adjustedStart, end).map((symbol, i) => ({
 			symbol,
 			index: adjustedStart + i
 		}));
@@ -22,7 +22,7 @@
 <div class="flex flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow">
 	<!-- Input display -->
 	<div class="pointer-events-none flex gap-0 rounded-md bg-base-200 px-2 py-1">
-		{#if controller.input.length === 0}
+		{#if controller.path.input.length === 0}
 			<span class="text-base-content/70 italic">No input</span>
 		{:else}
 			{#if visibleInput[0]?.index > 0}
@@ -36,9 +36,9 @@
 				{:else}
 					<span class="text-base-content/70 line-through">{symbol}</span>
 				{/if}
-				{index < controller.input.length - 1 ? ',' : ''}
+				{index < controller.path.input.length - 1 ? ',' : ''}
 			{/each}
-			{#if visibleInput[visibleInput.length - 1]?.index < controller.input.length - 1}
+			{#if visibleInput[visibleInput.length - 1]?.index < controller.path.input.length - 1}
 				<span class="text-base-content/40">...</span>
 			{/if}
 		{/if}

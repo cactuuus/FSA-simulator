@@ -1,6 +1,5 @@
-import type { ComputationNode } from '$lib/automata/analisys';
 import type { Timeline } from 'animejs';
-import { Transition } from '$lib/automata/models';
+import { type FullPath } from '$lib/automata/analisys/computationTree';
 
 export interface SimulationSettings {
 	speed: number;
@@ -9,27 +8,15 @@ export interface SimulationSettings {
 const DEFAULT_SETTINGS: SimulationSettings = { speed: 1 };
 
 export class SimulationController {
-	readonly nodePath: ComputationNode[];
-	readonly input: string[];
-	readonly isAccepting: boolean;
-
+	readonly path: FullPath;
 	private _timeline = $state<Timeline | null>(null);
 	private _isPlaying = $state(false);
 	private _currentTime = $state(0);
 	private _currentGroup = $state<number | null>(null);
-
 	settings = $state<SimulationSettings>({ ...DEFAULT_SETTINGS });
 
-	constructor(path: ComputationNode[], isAccepting: boolean) {
-		this.nodePath = path;
-		this.isAccepting = isAccepting;
-		this.input = [];
-		for (const node of path) {
-			if (node.parent === undefined) continue;
-			const transition = node.parent.via;
-			if (transition.consume === Transition.EPSILON) continue;
-			this.input.push(transition.consume);
-		}
+	constructor(path: FullPath) {
+		this.path = path;
 	}
 
 	get isPlaying() {

@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { Info, TriangleAlert, Check, RefreshCcw, CircleX, Play } from '@lucide/svelte';
+	import { Info, TriangleAlert, Check, RefreshCcw, CircleX } from '@lucide/svelte';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import FloatingWindow from '$lib/ui/components/FloatingWindow.svelte';
-	import { ComputationTree, type ComputationNode, type PathEnd } from '$lib/automata/analisys';
+	import { ComputationTree, type ComputationNode, type PathLeaf } from '$lib/automata/analisys';
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyWarning, notifyError } from '$lib/utils/notifications';
 	import { FSAType, type SerializedFSAGraph } from '$lib/automata/models';
 	import { toggleHighlight, toggleInvalid, toggleAccepted } from '$lib/utils/graphEffects';
 	import VirtualList from './VistualList.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	let computationTree = $state<ComputationTree | null>(null);
 	let inputToProcess = $state<string>('');
@@ -53,7 +54,7 @@
 			computationTree = new ComputationTree(app.fsaGraph, cleanedInput, maxLoopsIterations);
 			fsaDataWhenProcessed = app.fsaGraph.toJSON();
 			lastUsedInput = cleanedInput;
-			console.log(computationTree?.toString()); // TODO: remove after implementation and testing
+			// console.log(computationTree?.toString()); // useful for debugging
 		} catch (error: unknown) {
 			console.error('Failed to compute input:', error);
 			notifyError(
@@ -75,8 +76,8 @@
 	 * @param state Whether to add or remove the highlight.
 	 * @param path The path to highlight, given as a list of computation nodes.
 	 */
-	function togglePathHighlight(state: boolean, path: PathEnd): void {
-		const ids = new Set<string>(['start-edge']);
+	function togglePathHighlight(state: boolean, path: PathLeaf): void {
+		const ids = new SvelteSet<string>(['start-edge']);
 		if (path.isAccepting) {
 			toggleAccepted(state, path.node.config.state.id);
 		} else {
@@ -92,10 +93,14 @@
 		toggleHighlight(state, ...ids);
 	}
 
-	function startPathSimulation(pathEnd: PathEnd): void {
-		const path = computationTree?.getPathFromRoot(pathEnd.node) ?? [];
+	function startPathSimulation(pathEnd: PathLeaf): void {
+		if (!computationTree) {
+			notifyError('No computation tree available, cannot start simulation.');
+			return;
+		}
+		const path = computationTree.getFullPath(pathEnd);
 		togglePathHighlight(false, pathEnd);
-		app.enterSimulation(path, pathEnd.isAccepting);
+		app.enterSimulation(path);
 	}
 </script>
 
@@ -133,7 +138,7 @@
 			</div>
 			{#if canProcessInput.errors}
 				<ul class="flex list-inside flex-col gap-1">
-					{#each canProcessInput.errors as error}
+					{#each canProcessInput.errors as error, index (index)}
 						<li class="rounded-box bg-error/10 p-2 text-error">{error}</li>
 					{/each}
 				</ul>
@@ -158,8 +163,9 @@
 		<div class="relative flex flex-col gap-2 rounded-box bg-base-300 p-3">
 			<h3 class="border-b border-base-content/30 font-semibold">Result</h3>
 			{#if computationTree}
-				{@const acceptingPaths = computationTree.allPaths.filter((p) => p.isAccepting)}
-				{@const rejectingPaths = computationTree.allPaths.filter((p) => !p.isAccepting)}
+				{@const allPathsLeaves = computationTree.pathsLeaves}
+				{@const acceptingLeaves = allPathsLeaves.filter((p) => p.isAccepting)}
+				{@const rejectingLeaves = allPathsLeaves.filter((p) => !p.isAccepting)}
 				<!-- Warnings -->
 				{#if computationTree.warnings.length > 0}
 					<details class="collapse-arrow collapse rounded-box bg-warning/10 text-warning">
@@ -169,7 +175,7 @@
 						</summary>
 						<div class="collapse-content">
 							<ul class="list-inside list-disc text-sm">
-								{#each computationTree.warnings as warning}
+								{#each computationTree.warnings as warning, index (index)}
 									<li>{warning}</li>
 								{/each}
 							</ul>
@@ -177,11 +183,11 @@
 					</details>
 				{/if}
 				<!-- Accepting paths -->
-				{#if acceptingPaths.length > 0}
+				{#if acceptingLeaves.length > 0}
 					<details class="collapse-arrow collapse rounded-box bg-success/10 text-success">
 						<summary class="collapse-title p-2 font-semibold">
 							<Check class="inline h-4 w-4" />
-							{acceptingPaths.length} Accepting Path{acceptingPaths.length > 1 ? 's' : ''}
+							{acceptingLeaves.length} Accepting Path{acceptingLeaves.length > 1 ? 's' : ''}
 						</summary>
 						<div class="collapse-content">
 							<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
@@ -189,9 +195,9 @@
 								Click on a path to run a simulation of only the path itself.
 							</p>
 							<VirtualList
-								items={acceptingPaths}
+								items={acceptingLeaves}
 								getLabel={(path) =>
-									ComputationTree.pathToString(computationTree!.getPathFromRoot(path.node))}
+									ComputationTree.pathToString(computationTree!.getFullPath(path))}
 								onclick={(path) => startPathSimulation(path)}
 								onmouseenter={(path) => togglePathHighlight(true, path)}
 								onmouseleave={(path) => togglePathHighlight(false, path)}
@@ -200,11 +206,11 @@
 					</details>
 				{/if}
 				<!--  Rejecting paths -->
-				{#if rejectingPaths.length > 0}
+				{#if rejectingLeaves.length > 0}
 					<details class="collapse-arrow collapse rounded-box bg-error/10">
 						<summary class="collapse-title p-2 font-semibold text-error">
 							<CircleX class="inline h-4 w-4" />
-							{rejectingPaths.length} Rejecting Path{rejectingPaths.length > 1 ? 's' : ''}
+							{rejectingLeaves.length} Rejecting Path{rejectingLeaves.length > 1 ? 's' : ''}
 						</summary>
 						<div class="collapse-content">
 							<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
@@ -212,9 +218,9 @@
 								Click on a path to run a simulation of only the path itself.
 							</p>
 							<VirtualList
-								items={rejectingPaths}
+								items={rejectingLeaves}
 								getLabel={(path) =>
-									ComputationTree.pathToString(computationTree!.getPathFromRoot(path.node))}
+									ComputationTree.pathToString(computationTree!.getFullPath(path))}
 								onclick={(path) => startPathSimulation(path)}
 								onmouseenter={(path) => togglePathHighlight(true, path)}
 								onmouseleave={(path) => togglePathHighlight(false, path)}

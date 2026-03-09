@@ -15,7 +15,7 @@
 	const NODE_OPACITY_MAX = 1;
 
 	const maxStackDepth = $derived(
-		fsa.hasStackOps ? Math.max(0, ...controller.nodePath.map((n) => n.config.stack.length)) : 0
+		fsa.hasStackOps ? Math.max(0, ...controller.path.nodes.map((n) => n.config.stack.length)) : 0
 	);
 	let stackEls: (HTMLDivElement | null)[] = $derived(
 		Array.from({ length: maxStackDepth }, () => null)
@@ -52,7 +52,7 @@
 		let sourceEl: SVGElement | null = null;
 		let stackPointer = -1;
 
-		controller.nodePath.forEach((node) => {
+		controller.path.nodes.forEach((node) => {
 			const parent = node.parent;
 			const transition = parent?.via ?? null;
 			const edgeId = parent
@@ -192,10 +192,10 @@
 		});
 
 		// final node colour
-		const lastNode = controller.nodePath[controller.nodePath.length - 1];
+		const lastNode = controller.path.nodes[controller.path.nodes.length - 1];
 		const lastNodeEl = getOverlayEl(lastNode.config.state.id);
 		tl.call(() => controller.setCurrentGroup(lastNode.config.group + 1), time);
-		const finalColor = controller.isAccepting ? colors.accepted : colors.rejected;
+		const finalColor = controller.path.isAccepting ? colors.accepted : colors.rejected;
 		if (lastNodeEl) {
 			tl.add(lastNodeEl, { fill: finalColor, duration: 0 }, time);
 			tl.add(
@@ -217,7 +217,7 @@
 		return () => {
 			// cleanup -- stop the timeline and reset all styles
 			controller.stop();
-			controller.nodePath.forEach((node) => {
+			controller.path.nodes.forEach((node) => {
 				const parent = node.parent;
 				const edgeId = parent
 					? Edge.createId(parent.node.config.state.id, node.config.state.id)

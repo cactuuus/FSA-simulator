@@ -3,7 +3,7 @@ import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
 import {
 	DesiredAlphabet,
 	type SerializedDesiredAlphabet,
-	ComputationNode
+	type FullPath
 } from '$lib/automata/analisys';
 import { Viewport, type SerializedViewport } from '$lib/interaction';
 import { CommandHistory, type SerializedCommandHistory } from '$lib/interaction/editor';
@@ -66,9 +66,9 @@ export class AppManager {
 		this._simulationController = null;
 	}
 
-	enterSimulation(path: ComputationNode[], isAccepting: boolean): void {
+	enterSimulation(path: FullPath): void {
 		this._mode = 'simulating';
-		this._simulationController = new SimulationController(path, isAccepting);
+		this._simulationController = new SimulationController(path);
 	}
 
 	/**
