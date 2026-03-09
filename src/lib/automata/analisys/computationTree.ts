@@ -206,14 +206,12 @@ export class ComputationTree {
 	private getValidTransitions(
 		state: Node,
 		consume: string,
-		stackTop?: string
+		stackTop: string | null = null
 	): [Transition, Node][] {
 		const transitions = this.fsa.adjacencyMap.get(state) ?? [];
-		let valid = transitions.filter(([t]) => t.consume === consume);
-		if (stackTop !== undefined) {
-			valid = valid.filter(([t]) => t.pop === Transition.EPSILON || t.pop === stackTop);
-		}
-		return valid;
+		const matchesConsume = (t: Transition) => t.consume === consume;
+		const matchesStack = (t: Transition) => t.pop === Transition.EPSILON || t.pop === stackTop;
+		return transitions.filter(([t]) => matchesConsume(t) && matchesStack(t));
 	}
 
 	private encodeStack(stack: string[]): string {
