@@ -17,7 +17,6 @@ export class SimulationController {
 	private _isPlaying = $state(false);
 	private _currentTime = $state(0);
 	private _currentGroup = $state<number | null>(null);
-	private _isEpsilonStep = $state(false);
 
 	settings = $state<SimulationSettings>({ ...DEFAULT_SETTINGS });
 
@@ -36,25 +35,21 @@ export class SimulationController {
 	get isPlaying() {
 		return this._isPlaying;
 	}
+
 	get currentTime() {
 		return this._currentTime;
 	}
+
 	get totalDuration() {
 		return this._timeline?.duration ?? 0;
 	}
+
 	get canPlay() {
 		return this._timeline !== null && this._currentTime < this.totalDuration;
 	}
+
 	get currentGroup() {
 		return this._currentGroup;
-	}
-	get isEpsilonStep() {
-		return this._isEpsilonStep;
-	}
-	set currentGroup(groupNo: number | null) {
-		console.log(groupNo);
-
-		this._currentGroup = groupNo;
 	}
 
 	registerTimeline(tl: Timeline): void {
@@ -65,6 +60,10 @@ export class SimulationController {
 		this._currentTime = ms;
 	}
 
+	setCurrentGroup(groupNo: number | null): void {
+		this._currentGroup = groupNo;
+	}
+
 	onPlaybackEnded(): void {
 		this._isPlaying = false;
 	}
@@ -72,7 +71,6 @@ export class SimulationController {
 	play(): void {
 		if (this._isPlaying || !this._timeline) return;
 		this._isPlaying = true;
-		this._timeline.speed = this.settings.speed;
 		this._timeline.play();
 	}
 
@@ -80,6 +78,15 @@ export class SimulationController {
 		if (!this._isPlaying || !this._timeline) return;
 		this._isPlaying = false;
 		this._timeline.pause();
+	}
+
+	stop(): void {
+		if (!this._timeline) return;
+		this._isPlaying = false;
+		this._timeline.cancel();
+		this._timeline.seek(0);
+		this._currentTime = 0;
+		this._currentGroup = null;
 	}
 
 	scrubTo(ms: number): void {
@@ -96,13 +103,5 @@ export class SimulationController {
 	resetSettings(): void {
 		this.settings = { ...DEFAULT_SETTINGS };
 		if (this._timeline) this._timeline.speed = DEFAULT_SETTINGS.speed;
-	}
-
-	destroy(): void {
-		this._timeline?.cancel();
-		this._timeline = null;
-		this._isPlaying = false;
-		this._currentTime = 0;
-		this._currentGroup = null;
 	}
 }

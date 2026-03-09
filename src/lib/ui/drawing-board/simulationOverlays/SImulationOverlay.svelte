@@ -5,6 +5,13 @@
 	import { Edge } from '$lib/automata/models';
 	import { getGraphElement } from '$lib/utils/graphEffects';
 
+	interface SimulationStep {
+		nodeEl: SVGElement | null;
+		edgeEl: SVGElement | null;
+		transitionEl: SVGTSpanElement | null;
+		group: number;
+	}
+
 	const { controller }: { controller: SimulationController } = $props();
 
 	const EDGE_MS = 1000;
@@ -12,6 +19,21 @@
 	const NODE_OPACITY_MED = 0.8;
 	const NODE_OPACITY_MAX = 1;
 	let cancel: (() => void) | null = null;
+	const steps = $derived.by<SimulationStep[]>(() => {
+		return controller.nodePath.map((node) => {
+			const parent = node.parent;
+			const edgeId = parent
+				? Edge.createId(parent.node.config.state.id, node.config.state.id)
+				: 'start-edge';
+			const group = node.config.group;
+			return {
+				nodeEl: getOverlayEl(node.config.state.id),
+				edgeEl: getOverlayEl(edgeId),
+				transitionEl: parent?.via ? getTransitionEl(parent.via.id) : null,
+				group
+			};
+		});
+	});
 
 	function getColors() {
 		const style = getComputedStyle(document.documentElement);
@@ -33,33 +55,16 @@
 
 	onMount(() => {
 		const colors = getColors();
-		const path = controller.nodePath;
-
-		const steps = path.map((node) => {
-			const parent = node.parent;
-			const edgeId = parent
-				? Edge.createId(parent.node.config.state.id, node.config.state.id)
-				: 'start-edge';
-			const group = node.config.group;
-			return {
-				nodeEl: getOverlayEl(node.config.state.id),
-				edgeEl: getOverlayEl(edgeId),
-				transitionEl: parent?.via ? getTransitionEl(parent.via.id) : null,
-				group
-			};
-		});
-
 		const tl = createTimeline({
 			autoplay: false,
 			onUpdate: (self) => controller.setCurrentTime(self.currentTime),
 			onComplete: () => controller.onPlaybackEnded()
 		});
-
 		let time = 0;
 		let sourceEl: SVGElement | null = null;
 
 		steps.forEach(({ nodeEl, edgeEl, transitionEl, group }) => {
-			tl.call(() => (controller.currentGroup = group), time);
+			tl.call(() => controller.setCurrentGroup(group), time);
 
 			// highlight edge and transition label
 			if (edgeEl) {
@@ -144,8 +149,9 @@
 			sourceEl = nodeEl;
 		});
 
-		tl.call(() => (controller.currentGroup = steps[steps.length - 1].group + 1), time);
-		const lastEl = steps[steps.length - 1].nodeEl;
+		const lastStep = steps[steps.length - 1];
+		tl.call(() => controller.setCurrentGroup(lastStep.group + 1), time);
+		const lastEl = lastStep.nodeEl;
 
 		// final node: accepted or rejected colour
 		if (lastEl) {
@@ -165,20 +171,21 @@
 		controller.registerTimeline(tl);
 
 		cancel = () => {
-			tl.cancel();
-			path.forEach((node, i) => {
-				const nodeEl = getOverlayEl(node.config.state.id);
+			controller.stop();
+			steps.forEach((step) => {
+				const nodeEl = step.nodeEl;
 				if (nodeEl) {
 					nodeEl.style.opacity = '0';
 					nodeEl.style.fill = colors.drawColor;
 				}
-				if (i === 0) return;
-				const prev = path[i - 1];
-				const edgeId = Edge.createId(prev.config.state.id, node.config.state.id);
-				const edgeEl = getOverlayEl(edgeId);
+				const edgeEl = step.edgeEl;
 				if (edgeEl) {
 					edgeEl.style.opacity = '0';
 					edgeEl.style.strokeDasharray = '';
+				}
+				const transitionEl = step.transitionEl;
+				if (transitionEl) {
+					transitionEl.style.fill = colors.drawColor;
 				}
 			});
 		};

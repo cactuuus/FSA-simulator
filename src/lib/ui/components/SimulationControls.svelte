@@ -12,7 +12,7 @@
 		{#if controller.input.length === 0}
 			<span class="text-base-content/70 italic">No input</span>
 		{:else}
-			{#each controller.input as symbol, index}
+			{#each controller.input as symbol, index (index)}
 				{#if controller.currentGroup === null || index > controller.currentGroup}
 					<span>{symbol}</span>
 				{:else if index === controller.currentGroup}
