@@ -1,9 +1,22 @@
 <script lang="ts">
-	import { Play, Pause, X, Settings, RefreshCcw } from '@lucide/svelte';
+	import { Play, Pause, X, Settings, RefreshCcw, Square } from '@lucide/svelte';
 	import type { SimulationController } from '$lib/interaction/SimulationController.svelte';
 
 	const { onExit, controller }: { onExit: () => void; controller: SimulationController } = $props();
 	let adjustSettingsModal: HTMLDialogElement | null = $state(null);
+
+	const WINDOW = 5; // number of input symbols to show around the current position
+	const visibleInput = $derived.by(() => {
+		if (controller.input.length === 0) return [];
+		const current = controller.currentGroup ?? 0;
+		const start = Math.max(0, current - WINDOW);
+		const end = Math.min(controller.input.length, start + WINDOW * 2 + 1);
+		const adjustedStart = Math.max(0, end - (WINDOW * 2 + 1));
+		return controller.input.slice(adjustedStart, end).map((symbol, i) => ({
+			symbol,
+			index: adjustedStart + i
+		}));
+	});
 </script>
 
 <div class="flex flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow">
@@ -12,7 +25,10 @@
 		{#if controller.input.length === 0}
 			<span class="text-base-content/70 italic">No input</span>
 		{:else}
-			{#each controller.input as symbol, index (index)}
+			{#if visibleInput[0]?.index > 0}
+				<span class="text-base-content/40">...</span>
+			{/if}
+			{#each visibleInput as { symbol, index } (index)}
 				{#if controller.currentGroup === null || index > controller.currentGroup}
 					<span>{symbol}</span>
 				{:else if index === controller.currentGroup}
@@ -22,6 +38,9 @@
 				{/if}
 				{index < controller.input.length - 1 ? ',' : ''}
 			{/each}
+			{#if visibleInput[visibleInput.length - 1]?.index < controller.input.length - 1}
+				<span class="text-base-content/40">...</span>
+			{/if}
 		{/if}
 	</div>
 
@@ -46,6 +65,14 @@
 			<Play class="h-4 w-4" />
 		</button>
 	{/if}
+	<button
+		onclick={() => controller.stop()}
+		class="btn btn-square btn-sm btn-error"
+		title="Stop"
+		disabled={!controller.canStop}
+	>
+		<Square class="h-4 w-4" />
+	</button>
 
 	<!-- Scrub bar -->
 	<input

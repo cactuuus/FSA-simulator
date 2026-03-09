@@ -48,6 +48,10 @@ export class SimulationController {
 		return this._timeline !== null && this._currentTime < this.totalDuration;
 	}
 
+	get canStop() {
+		return this._timeline !== null && (this._isPlaying || this._currentTime > 0);
+	}
+
 	get currentGroup() {
 		return this._currentGroup;
 	}
