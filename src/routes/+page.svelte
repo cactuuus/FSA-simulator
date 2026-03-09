@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { CirclePlus, Spline, Hand, MousePointer, type Icon as IconType } from '@lucide/svelte';
+	import { CirclePlus, Spline, Hand, MousePointer } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import {
 		DrawingBoard,
@@ -12,7 +12,7 @@
 		UndoRedoControls,
 		ComputeInputWindow,
 		SimulationControls,
-		SimulationOverlay,
+		SimulationScene,
 		StateToolbar,
 		type Tool
 	} from '$lib/ui';
@@ -40,7 +40,7 @@
 	interface ModeConfig {
 		stateMachine: StateMachine<State>;
 		tools: Tool[];
-		keydownHandler: (e: KeyboardEvent) => void;
+		keydownHandler: (_e: KeyboardEvent) => void;
 	}
 
 	const editorStateMachine = new StateMachine(
@@ -80,7 +80,7 @@
 		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' }
 	];
 
-	function handleSimulationKeyDown(e: KeyboardEvent) {
+	function handleSimulationKeyDown(_e: KeyboardEvent) {
 		// nothing here yet
 	}
 
@@ -152,8 +152,6 @@
 				{#if editorCtx.draftEdge.get}
 					<DraftEdgeSvg draftEdge={editorCtx.draftEdge.get} />
 				{/if}
-			{:else if app.isSimulating() && app.simulationController}
-				<SimulationOverlay controller={app.simulationController} />
 			{/if}
 			{#if editorCtx.selection.area}
 				{@const { start, end } = editorCtx.selection.area}
@@ -161,6 +159,10 @@
 			{/if}
 		{/snippet}
 	</DrawingBoard>
+
+	{#if app.isSimulating() && app.simulationController}
+		<SimulationScene fsa={app.fsaGraph} controller={app.simulationController} />
+	{/if}
 
 	<!-- Top-center controls -->
 	<div class="absolute top-2 left-1/2 flex -translate-x-1/2 items-center gap-2">

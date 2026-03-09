@@ -10,3 +10,4 @@ export {
 	type SerializedWindowsState,
 	WindowManager
 } from './Windows.svelte';
+export { SimulationController } from './SimulationController.svelte';
