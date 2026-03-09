@@ -90,7 +90,8 @@
 						id="simulation-speed"
 						min="0.5"
 						max="10.0"
-						bind:value={controller.settings.speed}
+						value={controller.settings.speed}
+						oninput={(e) => controller.setSpeed(Number(e.currentTarget.value))}
 						class="range range-xs"
 						step="0.1"
 					/>
