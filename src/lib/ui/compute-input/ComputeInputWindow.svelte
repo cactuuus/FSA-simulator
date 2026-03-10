@@ -2,13 +2,11 @@
 	import { Info, TriangleAlert, Check, RefreshCcw, CircleX } from '@lucide/svelte';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import FloatingWindow from '$lib/ui/components/FloatingWindow.svelte';
-	import { ComputationTree, type ComputationNode, type PathLeaf } from '$lib/automata/analisys';
+	import { ComputationTree, type FullPath } from '$lib/automata/analisys';
 	import { app } from '$lib/stores/app.svelte';
 	import { notifyWarning, notifyError } from '$lib/utils/notifications';
 	import { FSAType, type SerializedFSAGraph } from '$lib/automata/models';
-	import { toggleHighlight, toggleInvalid, toggleAccepted } from '$lib/utils/graphEffects';
-	import VirtualList from './VistualList.svelte';
-	import { SvelteSet } from 'svelte/reactivity';
+	import PathList from './PathList.svelte';
 
 	let computationTree = $state<ComputationTree | null>(null);
 	let inputToProcess = $state<string>('');
@@ -71,35 +69,11 @@
 			: true;
 	}
 
-	/**
-	 * Highlights or unhighlights a path in the graph, given a list of computation nodes representing the path.
-	 * @param state Whether to add or remove the highlight.
-	 * @param path The path to highlight, given as a list of computation nodes.
-	 */
-	function togglePathHighlight(state: boolean, path: PathLeaf): void {
-		const ids = new SvelteSet<string>(['start-edge']);
-		if (path.isAccepting) {
-			toggleAccepted(state, path.node.config.state.id);
-		} else {
-			toggleInvalid(state, path.node.config.state.id);
-		}
-		let currentNode: ComputationNode | null = path.node;
-		while (currentNode) {
-			if (currentNode.parent) {
-				ids.add(currentNode.parent.via.id);
-			}
-			currentNode = currentNode.parent ? currentNode.parent.node : null;
-		}
-		toggleHighlight(state, ...ids);
-	}
-
-	function startPathSimulation(pathEnd: PathLeaf): void {
+	function startPathSimulation(path: FullPath): void {
 		if (!computationTree) {
 			notifyError('No computation tree available, cannot start simulation.');
 			return;
 		}
-		const path = computationTree.getFullPath(pathEnd);
-		togglePathHighlight(false, pathEnd);
 		app.enterSimulation(path);
 	}
 </script>
@@ -194,13 +168,10 @@
 								<Info class="inline h-3 w-3" />
 								Click on a path to run a simulation of only the path itself.
 							</p>
-							<VirtualList
-								items={acceptingLeaves}
-								getLabel={(path) =>
-									ComputationTree.pathToString(computationTree!.getFullPath(path))}
-								onclick={(path) => startPathSimulation(path)}
-								onmouseenter={(path) => togglePathHighlight(true, path)}
-								onmouseleave={(path) => togglePathHighlight(false, path)}
+							<PathList
+								leaves={acceptingLeaves}
+								tree={computationTree}
+								onClick={(path) => startPathSimulation(path)}
 							/>
 						</div>
 					</details>
@@ -217,13 +188,10 @@
 								<Info class="inline h-3 w-3" />
 								Click on a path to run a simulation of only the path itself.
 							</p>
-							<VirtualList
-								items={rejectingLeaves}
-								getLabel={(path) =>
-									ComputationTree.pathToString(computationTree!.getFullPath(path))}
-								onclick={(path) => startPathSimulation(path)}
-								onmouseenter={(path) => togglePathHighlight(true, path)}
-								onmouseleave={(path) => togglePathHighlight(false, path)}
+							<PathList
+								leaves={rejectingLeaves}
+								tree={computationTree}
+								onClick={(path) => startPathSimulation(path)}
 							/>
 						</div>
 					</details>
