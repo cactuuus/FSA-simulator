@@ -17,7 +17,7 @@
 	import { app } from '$lib/stores/app.svelte';
 	import type { SerializedFSAGraph } from '$lib/automata/models';
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
-	import { cleanAndSerializeSvgGraph } from '$lib/automata/visuals';
+	import { cleanAndSerializeSvgGraph, graphToTikz } from '$lib/automata/visuals';
 	import { validateFSA } from '$lib/automata/analisys';
 	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
 	import {
@@ -172,6 +172,23 @@
 		}
 	}
 
+	function exportAsTikz() {
+		if (app.fsaGraph.isEmpty) {
+			notifyWarning('The graph is empty, nothing to export.');
+			return;
+		}
+		try {
+			const tikzCode = graphToTikz(app.fsaGraph);
+			navigator.clipboard.writeText(tikzCode);
+			notifySuccess(
+				'TikZ code has been generated and copied to clipboard. You can now paste it in your LaTeX document.'
+			);
+		} catch (error: unknown) {
+			console.error('Failed to export TikZ:', error);
+			notifyError('Failed to export TikZ, an unexpected error occurred. Please try again.');
+		}
+	}
+
 	/**
 	 * Handles the PDA mode toggle process by showing a confirmation modal.
 	 */
@@ -252,7 +269,12 @@
 		</li>
 		<li>
 			<button onclick={exportAsSvg}>
-				<ImageDown class="h-4 w-4" /> Export as SVG
+				<ImageDown class="h-4 w-4" /> Export to SVG
+			</button>
+		</li>
+		<li>
+			<button onclick={exportAsTikz}>
+				<ImageDown class="h-4 w-4" /> Export to Latex (TikZ)
 			</button>
 		</li>
 	</ul>
@@ -382,7 +404,7 @@
 			</div>
 		{:else}
 			<ul class="list max-h-1/2 gap-2 overflow-y-scroll">
-				{#each availableExamples as example}
+				{#each availableExamples as example, index (index)}
 					<li>
 						<button
 							type="button"

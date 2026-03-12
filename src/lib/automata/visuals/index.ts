@@ -9,3 +9,4 @@ export {
 	getDraftEdgePath
 } from './edgePathsGenerations';
 export { cleanAndSerializeSvgGraph } from './graphToSvgExport';
+export { graphToTikz } from './graphToLatexExport';
