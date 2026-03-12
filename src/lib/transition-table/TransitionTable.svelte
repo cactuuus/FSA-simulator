@@ -6,6 +6,7 @@
 	import { CommandHistory } from '$lib/editor/commands';
 	import { toggleHighlight } from '$lib/utils/graphEffects';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { portal } from '$lib/utils/portal';
 
 	const { fsaGraph, commandHistory }: { fsaGraph: FSAGraph; commandHistory: CommandHistory } =
 		$props();
@@ -240,7 +241,7 @@
 {/if}
 
 <!-- Edit/delete modal -->
-<dialog id="batch-edit-transition-modal" bind:this={editModal} class="modal">
+<dialog id="batch-edit-transition-modal" bind:this={editModal} class="modal" use:portal>
 	<div class="modal-box w-11/12 max-w-sm">
 		<h3 class="text-lg font-bold">
 			Edit {modalContext?.type === 'consume' ? 'input' : 'stack'} symbol

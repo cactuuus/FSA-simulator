@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Play, Pause, X, Settings, RefreshCcw, Square } from '@lucide/svelte';
 	import { type SimulationController } from './SimulationController.svelte';
+	import { portal } from '$lib/utils/portal';
 
 	const { onExit, controller }: { onExit: () => void; controller: SimulationController } = $props();
 	let adjustSettingsModal: HTMLDialogElement | null = $state(null);
@@ -102,7 +103,7 @@
 </div>
 
 <!-- Settings modal -->
-<dialog bind:this={adjustSettingsModal} class="modal">
+<dialog bind:this={adjustSettingsModal} class="modal" use:portal>
 	<div class="modal-box w-11/12 max-w-sm">
 		<h3 class="text-lg font-bold">Simulation Settings</h3>
 		<div class="modal-action mt-4">

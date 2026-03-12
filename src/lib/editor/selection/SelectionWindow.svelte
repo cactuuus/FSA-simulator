@@ -23,7 +23,8 @@
 <FloatingWindow
 	id={WINDOWS_ID.Selection}
 	windowState={app.windows.open(WINDOWS_ID.Selection)}
-	initialPosition={{ x: 0, y: 0 }}
+	onClose={() => app.windows.close(WINDOWS_ID.Selection)}
+	initialPosition={{ x: 0, y: 20 }}
 	canBeResized={false}
 >
 	{#snippet header()}

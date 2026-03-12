@@ -23,6 +23,8 @@
 	import { DraftEdgeHandler, DraftEdgeSvg } from '$lib/editor/draft-edge';
 	import { isTyping } from '$lib/utils/keyboard';
 	import { toggleInSelectionArea, toggleSelected } from '$lib/utils/graphEffects';
+	import MainMenu from '$lib/menu/MainMenu.svelte';
+	import { GraphInfoWindow } from '$lib/graph-info';
 
 	const editorCtx: EditorContext = {
 		fsaGraph: app.fsaGraph,
@@ -159,6 +161,11 @@
 		<SimulationScene fsa={app.fsaGraph} controller={app.simulationController} />
 	{/if}
 
+	<!-- Top-left menu -->
+	<div class="absolute top-2 left-2">
+		<MainMenu simulationActive={app.isSimulating()} />
+	</div>
+
 	<!-- Top-center controls -->
 	<div class="absolute top-2 left-1/2 flex -translate-x-1/2 items-center gap-2">
 		<!-- Toolbar -->
@@ -204,6 +211,9 @@
 		{/if}
 		{#if app.windows.isOpen(WINDOWS_ID.Selection)}
 			<SelectionWindow editor={editorCtx} />
+		{/if}
+		{#if app.windows.isOpen(WINDOWS_ID.GraphInfo)}
+			<GraphInfoWindow />
 		{/if}
 	{/if}
 </section>

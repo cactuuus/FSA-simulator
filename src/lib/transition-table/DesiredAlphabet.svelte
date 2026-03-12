@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { X, Plus, Trash2, ListCheck } from '@lucide/svelte';
 	import { Transition } from '$lib/automata-models';
+	import { portal } from '$lib/utils/portal';
 
 	const {
 		desired = $bindable(),
@@ -95,7 +96,7 @@
 	</div>
 </div>
 
-<dialog bind:this={modal} class="modal" id="alphabet-override-modal">
+<dialog bind:this={modal} class="modal" id="alphabet-override-modal" use:portal>
 	<div class="modal-box w-11/12 max-w-sm">
 		<h3 class="text-lg font-bold">{title}</h3>
 		<p class="py-2 text-sm text-base-content/70">

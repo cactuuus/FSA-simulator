@@ -80,7 +80,6 @@
 				<CircleQuestionMark class="h-4 w-4 pb-0.5" />
 			</div>
 		</div>
-		<p class=" text-sm text-base-content/70"></p>
 		<div class="flex flex-col gap-2">
 			{#each edge.transitions as transition, index (index)}
 				<fieldset class="fieldset flex items-end gap-2 rounded-box bg-base-300 p-2">

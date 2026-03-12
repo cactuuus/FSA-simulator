@@ -43,9 +43,10 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	isEmpty: boolean = $derived(this.nodesMap.size === 0);
 	hasStart: boolean = $derived(this.startNode !== null);
 	hasAcceptingNodes: boolean = $derived(this.nodes.some((node) => node.isAccepting));
+	isDeterministic: boolean = $derived(this._isDeterministic());
 	type: FSAType = $derived.by(() => {
-		if (this.hasStackOps) return this.isDeterministic() ? FSAType.DPDA : FSAType.PDA;
-		return this.isDeterministic() ? FSAType.DFA : FSAType.NFA;
+		if (this.hasStackOps) return this.isDeterministic ? FSAType.DPDA : FSAType.PDA;
+		return this.isDeterministic ? FSAType.DFA : FSAType.NFA;
 	});
 	adjacencyMap: Map<Node, [Transition, Node][]> = $derived.by(() => {
 		const adjMap: Map<Node, [Transition, Node][]> = new SvelteMap(
@@ -287,7 +288,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 * Checks if the FSA is deterministic.
 	 * @returns True if the FSA is deterministic, false otherwise.
 	 */
-	private isDeterministic(): boolean {
+	private _isDeterministic(): boolean {
 		for (const [, transitions] of this.adjacencyMap) {
 			for (let i = 0; i < transitions.length; i++) {
 				const t1 = transitions[i][0];
