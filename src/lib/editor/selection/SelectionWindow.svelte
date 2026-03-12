@@ -24,8 +24,9 @@
 	id={WINDOWS_ID.Selection}
 	windowState={app.windows.open(WINDOWS_ID.Selection)}
 	onClose={() => app.windows.close(WINDOWS_ID.Selection)}
-	initialPosition={{ x: 0, y: 20 }}
+	initialPosition={{ x: 50, y: 0 }}
 	canBeResized={false}
+	defaultWidth={250}
 >
 	{#snippet header()}
 		<span>Selection Panel</span>

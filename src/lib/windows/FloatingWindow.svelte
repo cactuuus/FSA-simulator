@@ -11,7 +11,8 @@
 		initialPosition,
 		windowState,
 		onClose,
-		canBeResized = true
+		canBeResized = true,
+		defaultWidth = 500
 	}: {
 		id?: string;
 		header: Snippet;
@@ -20,8 +21,10 @@
 		initialPosition?: Point;
 		onClose?: () => void;
 		canBeResized?: boolean;
+		defaultWidth?: number;
 	} = $props();
-	const PADDING = 4;
+
+	const PADDING = 8;
 	const MIN_SIZE: Size = { width: 200, height: 100 };
 
 	// Position of the window
@@ -30,7 +33,6 @@
 	let moveStartMouse: Point = $state({ x: 0, y: 0 });
 
 	// Size of the window
-	let defaultSize: Size = $state({ width: 0, height: 0 }); // inferred from the browser
 	let isResizing: boolean = $state(false);
 	let resizeStartSize: Size = $state({ width: 0, height: 0 });
 	let resizeStartMouse: Point = $state({ x: 0, y: 0 });
@@ -38,38 +40,31 @@
 	// HTML reference elements
 	let windowElement: HTMLElement | null = null;
 	let headerElement: HTMLElement | null = null;
-	let parentElement: HTMLElement | null = null;
 	let parentBounds: Size = $state({ width: 0, height: 0 });
 
-	// Default position is centered within the parent element, unless specified otherwise.
-	const defaultPosition = $derived.by((): Point => {
-		if (initialPosition) return initialPosition;
-		return {
-			x: (parentBounds.width - clampedSize.width) / 2,
-			y: (parentBounds.height - clampedSize.height) / 2
-		};
-	});
+	const resolvedWidth = $derived(
+		Math.min(
+			Math.max(windowState.sizeOverride?.width ?? defaultWidth, MIN_SIZE.width),
+			parentBounds.width > 0 ? parentBounds.width - 2 * PADDING : Infinity
+		)
+	);
 
-	// Size adjusted considering the bounds of the window. It stops the window from overflowing outside the parent.
-	const clampedSize: Size = $derived.by(() => {
-		const size = windowState.sizeOverride ?? defaultSize;
-		return {
-			width: Math.max(size.width, MIN_SIZE.width),
-			height: Math.max(size.height, MIN_SIZE.height)
-		};
-	});
+	const resolvedHeight = $derived(
+		windowState.sizeOverride?.height
+			? Math.max(windowState.sizeOverride.height, MIN_SIZE.height)
+			: null // null = CSS 'auto'
+	);
 
-	// Position adjusted considering the bounds of the window. It stops the window from being 'lost/hidden' outside the parent.
-	const clampedPosition = $derived.by(() => {
-		const pos = windowState.positionOverride ?? defaultPosition;
+	const clampedPosition: Point = $derived.by(() => {
+		const pos = windowState.positionOverride ?? { x: PADDING, y: PADDING };
 		return {
 			x: Math.min(
 				Math.max(pos.x, PADDING),
-				parentBounds.width - (headerElement?.offsetWidth ?? clampedSize.width) - PADDING
+				parentBounds.width - (headerElement?.offsetWidth ?? resolvedWidth) - PADDING
 			),
 			y: Math.min(
 				Math.max(pos.y, PADDING),
-				parentBounds.height - (headerElement?.offsetHeight ?? clampedSize.height) - PADDING
+				parentBounds.height - (headerElement?.offsetHeight ?? MIN_SIZE.height) - PADDING
 			)
 		};
 	});
@@ -109,7 +104,10 @@
 		e.preventDefault();
 		e.stopPropagation();
 		isResizing = true;
-		resizeStartSize = { ...clampedSize };
+		resizeStartSize = {
+			width: resolvedWidth,
+			height: resolvedHeight ?? windowElement?.offsetHeight ?? MIN_SIZE.height
+		};
 		resizeStartMouse = { x: e.clientX, y: e.clientY };
 		(e.target as HTMLElement).setPointerCapture(e.pointerId);
 		window.addEventListener('pointermove', handleResizeMove);
@@ -137,33 +135,33 @@
 	}
 
 	onMount(() => {
-		if (!windowElement || !windowElement.parentElement) {
+		if (!windowElement?.parentElement) {
 			throw new Error('Floating window element or parent element not found.');
 		}
-		parentElement = windowElement.parentElement;
+		const parentElement = windowElement.parentElement;
 
-		// Observe parent size changes to adjust bounds.
-		const parentObserver = new ResizeObserver(() => {
-			const rect = parentElement!.getBoundingClientRect();
-			parentBounds = { width: rect.width, height: rect.height };
-		});
+		// Read parent bounds synchronously so resolvedWidth is correct before we measure the window
+		const rect = parentElement.getBoundingClientRect();
+		parentBounds = { width: rect.width, height: rect.height };
 
-		// Observe window size changes to adjust size state. Used to infer the 'automatic' size of the window, as assigned by the browser.
-		const windowObserver = new ResizeObserver(() => {
-			if (isResizing) return;
-			defaultSize = {
-				width: windowElement!.offsetWidth,
-				height: windowElement!.offsetHeight
+		// Set initial position once based on actual rendered size.
+		// After this, positionOverride is the single source of truth and
+		// the user can move the window freely.
+		if (!windowState.positionOverride) {
+			const w = windowElement.offsetWidth;
+			const h = windowElement.offsetHeight;
+			windowState.positionOverride = initialPosition ?? {
+				x: Math.max((parentBounds.width - w) / 2, PADDING),
+				y: Math.max((parentBounds.height - h) / 2, PADDING)
 			};
+		}
+
+		const parentObserver = new ResizeObserver(() => {
+			const r = parentElement.getBoundingClientRect();
+			parentBounds = { width: r.width, height: r.height };
 		});
-
 		parentObserver.observe(parentElement);
-		windowObserver.observe(windowElement);
-
-		return () => {
-			parentObserver.disconnect();
-			windowObserver.disconnect();
-		};
+		return () => parentObserver.disconnect();
 	});
 </script>
 
@@ -173,14 +171,12 @@
 	class:rounded-br-box={windowState.isMinimized || !canBeResized}
 	style:top="{clampedPosition.y}px"
 	style:left="{clampedPosition.x}px"
-	style:width={windowState.sizeOverride && !windowState.isMinimized
-		? `${clampedSize.width}px`
+	style:width="{resolvedWidth}px"
+	style:height={resolvedHeight !== null && !windowState.isMinimized
+		? `${resolvedHeight}px`
 		: 'auto'}
-	style:height={windowState.sizeOverride && !windowState.isMinimized
-		? `${clampedSize.height}px`
-		: 'auto'}
-	style:max-height={parentBounds.height - 2 * PADDING + 'px'}
-	style:max-width={parentBounds.width - 2 * PADDING + 'px'}
+	style:max-height="{parentBounds.height - 2 * PADDING}px"
+	style:max-width="{parentBounds.width - 2 * PADDING}px"
 >
 	<div
 		bind:this={headerElement}
@@ -218,7 +214,7 @@
 		{#if canBeResized}
 			<button
 				class="resize-handle absolute right-0 bottom-0 h-4 w-4 cursor-nwse-resize bg-[linear-gradient(135deg,transparent_50%,currentColor_50%)] opacity-30 hover:opacity-60"
-				title="Drag to resize window, double-click to reset to default size"
+				title="Drag to resize, double-click to reset"
 				onpointerdown={handleResizeMouseDown}
 				ondblclick={() => (windowState.sizeOverride = null)}
 			></button>
