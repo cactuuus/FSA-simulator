@@ -186,17 +186,6 @@
 		{/if}
 	</div>
 
-	<!-- Graph info panel -->
-	<div
-		class="absolute bottom-2 left-2 flex h-10 items-center rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
-	>
-		<span>
-			{editorCtx.fsaGraph.type}
-			| Nodes: {editorCtx.fsaGraph.nodes.length}
-			| Edges: {editorCtx.fsaGraph.edges.length}
-		</span>
-	</div>
-
 	<!-- Zoom controls -->
 	<div class="absolute right-2 bottom-2">
 		<ZoomControls viewport={editorCtx.viewport} />
