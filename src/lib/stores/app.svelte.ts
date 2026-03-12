@@ -1,14 +1,11 @@
 import { storage } from '$lib/utils/storage';
-import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
-import {
-	DesiredAlphabet,
-	type SerializedDesiredAlphabet,
-	type FullPath
-} from '$lib/automata/analisys';
-import { Viewport, type SerializedViewport } from '$lib/interaction';
-import { CommandHistory, type SerializedCommandHistory } from '$lib/interaction/editor';
-import { WindowManager, type SerializedWindowsState, SelectionHandler } from '$lib/interaction';
-import { SimulationController } from '$lib/interaction/SimulationController.svelte';
+import { FSAGraph, type SerializedFSAGraph } from '$lib/automata-models';
+import { DesiredAlphabet, type SerializedDesiredAlphabet } from '$lib/transition-table';
+import { Viewport, type SerializedViewport } from '$lib/editor/viewport';
+import { CommandHistory, type SerializedCommandHistory } from '$lib/editor/commands';
+import { WindowManager, type SerializedWindowsState } from '$lib/windows';
+import { SelectionHandler } from '$lib/editor/selection';
+import { SimulationController, type FullPath } from '$lib/simulation';
 
 type AppMode = 'editing' | 'simulating';
 

@@ -3,7 +3,8 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import { Actions, Toasts, TitleEditor } from '$lib/ui';
+	import { Actions, TitleEditor } from '$lib/header';
+	import { default as Toasts } from '$lib/utils/Toasts.svelte';
 	import { notifyWarning } from '$lib/utils/notifications';
 
 	let { children } = $props();

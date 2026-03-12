@@ -2,30 +2,25 @@
 	import { onMount } from 'svelte';
 	import { CirclePlus, Spline, Hand, MousePointer } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import {
-		DrawingBoard,
-		SelectionWindow,
-		TransitionTableWindow,
-		DraftEdgeSvg,
-		SelectionArea,
-		ZoomControls,
-		UndoRedoControls,
-		ComputeInputWindow,
-		SimulationControls,
-		SimulationScene,
-		StateToolbar,
-		type Tool
-	} from '$lib/ui';
+	import { TransitionTableWindow } from '$lib/transition-table';
+	import { SelectionArea, SelectionWindow } from '$lib/editor/selection';
+	import { ZoomControls } from '$lib/editor/viewport';
+	import { ComputeInputWindow, SimulationScene, SimulationControls } from '$lib/simulation';
+	import { DrawingBoard } from '$lib/graph-rendering';
 	import {
 		AddNodeState,
 		SelectState,
 		DrawEdgeState,
-		PanningState
-	} from '$lib/interaction/editor/states';
-	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
-	import { DeleteFSAItemsCommand } from '$lib/interaction/editor/commands/instances';
-	import { DraftEdgeHandler, type EditorContext } from '$lib/interaction/editor';
-	import { State, StateMachine } from '$lib/interaction';
+		PanningState,
+		type State,
+		StateMachine,
+		StatesToolbar,
+		type Tool
+	} from '$lib/editor/states';
+	import { WINDOWS_ID } from '$lib/windows/Windows.svelte';
+	import { DeleteFSAItemsCommand, UndoRedoControls } from '$lib/editor/commands';
+	import { type EditorContext } from '$lib/editor/EditorContext';
+	import { DraftEdgeHandler, DraftEdgeSvg } from '$lib/editor/draft-edge';
 	import { isTyping } from '$lib/utils/keyboard';
 	import { toggleInSelectionArea, toggleSelected } from '$lib/utils/graphEffects';
 
@@ -167,7 +162,7 @@
 	<!-- Top-center controls -->
 	<div class="absolute top-2 left-1/2 flex -translate-x-1/2 items-center gap-2">
 		<!-- Toolbar -->
-		<StateToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
+		<StatesToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
 
 		{#if app.isSimulating() && app.simulationController}
 			<SimulationControls
