@@ -12,7 +12,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { isTyping } from '$lib/utils/keyboard';
-	import type { StateMachine, State } from '$lib/interaction';
+	import type { StateMachine, State } from '$lib/editor/states';
 
 	const { tools, stateMachine }: { tools: Tool[]; stateMachine: StateMachine<State> } = $props();
 
