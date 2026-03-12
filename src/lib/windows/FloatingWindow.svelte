@@ -167,7 +167,7 @@
 
 <div
 	bind:this={windowElement}
-	class="floating-window absolute flex max-h-full max-w-full touch-none flex-col overflow-hidden rounded-t-box rounded-bl-box border border-base-content/30 bg-base-100/95 text-sm shadow"
+	class="floating-window absolute flex max-h-full max-w-full touch-none flex-col overflow-hidden rounded-t-box rounded-bl-box border border-base-content/30 bg-base-100/90 text-sm shadow backdrop-blur-xs"
 	class:rounded-br-box={windowState.isMinimized || !canBeResized}
 	style:top="{clampedPosition.y}px"
 	style:left="{clampedPosition.x}px"

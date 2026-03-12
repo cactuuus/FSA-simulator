@@ -243,7 +243,7 @@
 
 {#if fsa.hasStackOps}
 	<div
-		class="absolute top-1/2 right-2 flex max-h-[80dvh] -translate-y-1/2 flex-col gap-1 overflow-y-auto rounded-box bg-base-100/95 p-2 shadow"
+		class="absolute top-1/2 right-2 flex max-h-[80dvh] -translate-y-1/2 flex-col gap-1 overflow-y-auto rounded-box bg-base-100/90 p-2 shadow backdrop-blur-xs"
 	>
 		<span class="text-center text-base-content/70">stack</span>
 		<div class="divider mx-0 divider-horizontal w-20 border border-base-content/50"></div>

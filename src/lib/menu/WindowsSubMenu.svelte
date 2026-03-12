@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { Check, MousePointer2, Table2, MonitorCog, Info } from '@lucide/svelte';
+	import { Check, Table2, MonitorCog, Info } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { WINDOWS_ID } from '$lib/windows';
 
 	const WINDOW_ITEMS = [
-		{ id: WINDOWS_ID.Selection, label: 'Selection panel', icon: MousePointer2 },
+		{ id: WINDOWS_ID.GraphInfo, label: 'Graph info', icon: Info },
 		{ id: WINDOWS_ID.TransitionTable, label: 'Transition table', icon: Table2 },
-		{ id: WINDOWS_ID.ComputeInput, label: 'Compute input', icon: MonitorCog },
-		{ id: WINDOWS_ID.GraphInfo, label: 'Graph info', icon: Info }
+		{ id: WINDOWS_ID.ComputeInput, label: 'Compute input', icon: MonitorCog }
 	] as const;
 
 	async function toggleWindow(id: string) {

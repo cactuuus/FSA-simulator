@@ -3,7 +3,7 @@
 	import { CirclePlus, Spline, Hand, MousePointer } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { TransitionTableWindow } from '$lib/transition-table';
-	import { SelectionArea, SelectionWindow } from '$lib/editor/selection';
+	import { SelectionArea, SelectionPanel } from '$lib/editor/selection';
 	import { ZoomControls } from '$lib/editor/viewport';
 	import { ComputeInputWindow, SimulationScene, SimulationControls } from '$lib/simulation';
 	import { DrawingBoard } from '$lib/graph-rendering';
@@ -132,7 +132,6 @@
 	});
 
 	onMount(() => {
-		app.windows.open(WINDOWS_ID.Selection); // open selection panel by default
 		window.addEventListener('keydown', handleKeyDown);
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	});
@@ -198,8 +197,8 @@
 		{#if app.windows.isOpen(WINDOWS_ID.ComputeInput)}
 			<ComputeInputWindow />
 		{/if}
-		{#if app.windows.isOpen(WINDOWS_ID.Selection)}
-			<SelectionWindow editor={editorCtx} />
+		{#if app.isEditing()}
+			<SelectionPanel editor={editorCtx} />
 		{/if}
 		{#if app.windows.isOpen(WINDOWS_ID.GraphInfo)}
 			<GraphInfoWindow />

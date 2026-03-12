@@ -36,7 +36,7 @@
 	}
 </script>
 
-<div class="flex w-full flex-col gap-4">
+<div class="flex w-full flex-col gap-3">
 	<label for="label" class="flex items-center justify-between gap-2">
 		Label
 		<input

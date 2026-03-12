@@ -99,6 +99,19 @@ export class Viewport implements Serializable<SerializedViewport> {
 	}
 
 	/**
+	 * Converts a point from SVG coordinates to screen coordinates.
+	 * Inverse of the transform applied by getPointerPosFromEvent.
+	 * @param point The point in SVG coordinates to convert.
+	 * @returns The point in canvas coordinates.
+	 */
+	svgToScreen(point: Point): Point {
+		return {
+			x: (point.x - this._panOffset.x) * this._zoomLevel,
+			y: (point.y - this._panOffset.y) * this._zoomLevel
+		};
+	}
+
+	/**
 	 * Serializes the current viewport state to a JSON object.
 	 * @returns A JSON object representing the current viewport state.
 	 */

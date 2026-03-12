@@ -68,13 +68,13 @@
 	}
 </script>
 
-<div class="flex w-full flex-col gap-4">
+<div class="flex w-full flex-col gap-3">
 	<div class="flex flex-col gap-2">
 		<div class="flex items-center justify-between">
 			<h2>Transitions</h2>
 			<div
-				class="badge flex cursor-help items-center badge-sm badge-neutral"
-				title="PDA mode allows to use stack operations (pop & push) in transitions. You can toggle it in 'FSA -> Enable/Disable PDA mode'"
+				class="badge flex cursor-help items-center badge-soft badge-sm badge-info"
+				title="PDA mode allows to use stack operations (pop & push) in transitions. You can toggle it in 'Menu -> Windows -> Graph Info -> Stack -> Enable/Disable'"
 			>
 				<span>PDA {fsaGraph.hasStackOps ? 'enabled' : 'disabled'}</span>
 				<CircleQuestionMark class="h-4 w-4 pb-0.5" />
@@ -142,7 +142,7 @@
 		<Plus class="h-4 w-4" /> Add transition
 	</button>
 
-	<hr class="border-base-content/70" />
+	<hr class="border-base-content/30" />
 	{#if !edge.isLoopback}
 		<label for="toggle-symmetric-edge" class="flex items-center justify-between gap-2">
 			Is Symmetric
@@ -155,11 +155,7 @@
 			/>
 		</label>
 	{/if}
-	<button
-		class="btn btn-sm btn-neutral"
-		onclick={resetShape}
-		disabled={edge.hasDefaultControlPoint}
-	>
+	<button class="btn btn-sm" onclick={resetShape} disabled={edge.hasDefaultControlPoint}>
 		<Redo2 class="h-4 w-4" />
 		{edge.isLoopback ? 'Reset Rotation' : 'Reset Shape'}
 	</button>

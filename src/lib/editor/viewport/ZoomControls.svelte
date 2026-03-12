@@ -28,7 +28,9 @@
 	});
 </script>
 
-<div class="flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow">
+<div
+	class="flex h-10 items-center gap-0.5 rounded-box bg-base-100/90 px-3 py-2 text-sm shadow backdrop-blur-xs"
+>
 	<span class="mr-2">{viewport.prettyZoomLevel}</span>
 	<button
 		class="btn btn-square btn-ghost btn-xs"

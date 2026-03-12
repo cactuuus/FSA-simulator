@@ -31,7 +31,7 @@
 	});
 </script>
 
-<ul class="mx-2 flex flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow">
+<ul class="mx-2 flex flex-row gap-2 rounded-box bg-base-100/90 px-2 py-1 shadow backdrop-blur-xs">
 	{#each tools as tool (tool.stateName)}
 		{@const Icon = tool.icon}
 		<li>

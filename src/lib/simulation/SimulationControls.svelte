@@ -20,7 +20,7 @@
 	});
 </script>
 
-<div class="flex flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow">
+<div class="flex flex-row gap-2 rounded-box bg-base-100/90 px-2 py-1 shadow backdrop-blur-xs">
 	<!-- Input display -->
 	<div class="pointer-events-none flex gap-0 rounded-md bg-base-200 px-2 py-1">
 		{#if controller.path.input.length === 0}
