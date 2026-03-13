@@ -27,7 +27,7 @@
 	}
 </script>
 
-<h2 class="menu-title">FSA operations</h2>
+<h2 class="menu-title">FSA</h2>
 <ul>
 	<li>
 		<button onclick={() => openTogglePdaModal()}>
