@@ -17,13 +17,11 @@ export const WINDOWS_ID = {
 export class Window implements Serializable<SerializedWindow> {
 	positionOverride: Point | null = $state(null);
 	sizeOverride: Size | null = $state(null);
-	isMinimized: boolean = $state(false);
 
 	toJSON(): SerializedWindow {
 		return {
 			positionOverride: this.positionOverride,
-			sizeOverride: this.sizeOverride,
-			isMinimized: this.isMinimized
+			sizeOverride: this.sizeOverride
 		};
 	}
 
@@ -31,7 +29,6 @@ export class Window implements Serializable<SerializedWindow> {
 		const window = new Window();
 		window.positionOverride = json.positionOverride ?? null;
 		window.sizeOverride = json.sizeOverride ?? null;
-		window.isMinimized = json.isMinimized ?? false;
 		return window;
 	}
 }
@@ -42,7 +39,6 @@ export class Window implements Serializable<SerializedWindow> {
 export interface SerializedWindow {
 	positionOverride: Point | null;
 	sizeOverride: Size | null;
-	isMinimized: boolean;
 }
 
 /**

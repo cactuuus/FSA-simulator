@@ -243,16 +243,16 @@
 
 {#if fsa.hasStackOps}
 	<div
-		class="absolute top-1/2 right-2 flex max-h-[80dvh] -translate-y-1/2 flex-col gap-1 overflow-y-auto rounded-box bg-base-100/90 p-2 shadow backdrop-blur-xs"
+		class="absolute top-1/2 right-2 flex max-h-[80dvh] -translate-y-1/2 flex-col gap-1 overflow-y-auto rounded-box border border-base-content/10 bg-base-100/90 p-2 shadow backdrop-blur-xs"
 	>
 		<span class="text-center text-base-content/70">stack</span>
-		<div class="divider mx-0 divider-horizontal w-20 border border-base-content/50"></div>
+		<div class="divider mx-0 divider-horizontal w-28 border border-base-content/50"></div>
 		<!-- slots rendered bottom-to-top: index 0 at bottom, maxDepth-1 at top -->
 		<div class="flex flex-col-reverse gap-1">
 			{#each stackEls as _, i (i)}
 				<div
 					bind:this={stackEls[i]}
-					class="flex h-8 w-20 items-center justify-center rounded-box bg-base-200 text-sm font-semibold"
+					class="flex h-8 w-28 items-center justify-center overflow-hidden rounded-box bg-base-200 text-sm font-semibold"
 					style:opacity="0"
 					style:display="none"
 				></div>

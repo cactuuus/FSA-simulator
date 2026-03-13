@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, type Snippet } from 'svelte';
-	import { X, Minus, Fullscreen } from '@lucide/svelte';
+	import { X } from '@lucide/svelte';
 	import type { Point, Size } from '$lib/utils/geometry';
 	import type { Window } from './Windows.svelte';
 
@@ -167,14 +167,12 @@
 
 <div
 	bind:this={windowElement}
-	class="floating-window absolute flex max-h-full max-w-full touch-none flex-col overflow-hidden rounded-t-box rounded-bl-box border border-base-content/30 bg-base-100/90 text-sm shadow backdrop-blur-xs"
-	class:rounded-br-box={windowState.isMinimized || !canBeResized}
+	class="floating-window absolute flex max-h-full max-w-full touch-none flex-col overflow-hidden rounded-t-box rounded-bl-box border border-base-content/10 bg-base-100/90 text-sm shadow backdrop-blur-xs"
+	class:rounded-br-box={!canBeResized}
 	style:top="{clampedPosition.y}px"
 	style:left="{clampedPosition.x}px"
 	style:width="{resolvedWidth}px"
-	style:height={resolvedHeight !== null && !windowState.isMinimized
-		? `${resolvedHeight}px`
-		: 'auto'}
+	style:height={resolvedHeight !== null ? `${resolvedHeight}px` : 'auto'}
 	style:max-height="{parentBounds.height - 2 * PADDING}px"
 	style:max-width="{parentBounds.width - 2 * PADDING}px"
 >
@@ -189,16 +187,6 @@
 	>
 		{@render header()}
 		<div class="window-actions flex">
-			<button
-				onclick={() => (windowState.isMinimized = !windowState.isMinimized)}
-				class="btn btn-square btn-ghost btn-xs"
-			>
-				{#if windowState.isMinimized}
-					<Fullscreen class="h-4 w-4" />
-				{:else}
-					<Minus class="h-4 w-4" />
-				{/if}
-			</button>
 			{#if onClose}
 				<button onclick={onClose} class="btn btn-square btn-ghost btn-xs btn-error">
 					<X class="h-4 w-4" />
@@ -206,18 +194,16 @@
 			{/if}
 		</div>
 	</div>
-	{#if !windowState.isMinimized}
-		<div class="w-full flex-1 overflow-auto p-2">
-			{@render content()}
-		</div>
-		<!-- Resize handle, it is simply styled to appear as a triangle on the bottom-right corner -->
-		{#if canBeResized}
-			<button
-				class="resize-handle absolute right-0 bottom-0 h-4 w-4 cursor-nwse-resize bg-[linear-gradient(135deg,transparent_50%,currentColor_50%)] opacity-30 hover:opacity-60"
-				title="Drag to resize, double-click to reset"
-				onpointerdown={handleResizeMouseDown}
-				ondblclick={() => (windowState.sizeOverride = null)}
-			></button>
-		{/if}
+	<div class="w-full flex-1 overflow-auto p-2">
+		{@render content()}
+	</div>
+	<!-- Resize handle, it is simply styled to appear as a triangle on the bottom-right corner -->
+	{#if canBeResized}
+		<button
+			class="resize-handle absolute right-0 bottom-0 h-4 w-4 cursor-nwse-resize bg-[linear-gradient(135deg,transparent_50%,currentColor_50%)] opacity-30 hover:opacity-60"
+			title="Drag to resize, double-click to reset"
+			onpointerdown={handleResizeMouseDown}
+			ondblclick={() => (windowState.sizeOverride = null)}
+		></button>
 	{/if}
 </div>

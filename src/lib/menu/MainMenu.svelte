@@ -9,7 +9,7 @@
 
 <div class="dropdown dropdown-start">
 	<div
-		class="flex h-10 items-center gap-0.5 rounded-box bg-base-100/90 shadow backdrop-blur-xs"
+		class="flex h-10 items-center gap-0.5 rounded-box border border-base-content/10 bg-base-100/90 shadow backdrop-blur-xs"
 		class:cursor-not-allowed={simulationActive}
 		title={simulationActive ? 'Menu is disabled during simulation' : 'Menu'}
 	>

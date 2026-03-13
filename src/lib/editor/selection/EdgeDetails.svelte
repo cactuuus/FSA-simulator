@@ -80,7 +80,7 @@
 				<CircleQuestionMark class="h-4 w-4 pb-0.5" />
 			</div>
 		</div>
-		<div class="flex flex-col gap-2">
+		<div class="flex max-h-80 flex-col gap-2 overflow-y-scroll">
 			{#each edge.transitions as transition, index (index)}
 				<fieldset class="fieldset flex items-end gap-2 rounded-box bg-base-300 p-2">
 					<legend class="fieldset-legend w-full py-0">
