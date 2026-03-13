@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X, Plus, Trash2, ListCheck } from '@lucide/svelte';
+	import { X, Plus, Trash2, TextInitial } from '@lucide/svelte';
 	import { Transition } from '$lib/automata-models';
 	import { portal } from '$lib/utils/portal';
 
@@ -65,7 +65,7 @@
 		onclick={openModal}
 		title="Allows you to specify symbols that you'd want to be part of your FSA's {type} alphabet. This is purely for visual guidance and does not affect the FSA behavior."
 	>
-		<ListCheck class="h-4 w-4" />
+		<TextInitial class="h-4 w-4" />
 		<span class="line-clamp-1 truncate overflow-hidden font-bold">{title}</span>
 		{#if hasDesiredSymbols}
 			<span class="opacity-70">[{desired.size} symbols]</span>

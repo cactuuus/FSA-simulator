@@ -1,5 +1,12 @@
 <script lang="ts">
-	import { Loader, Folder, Download, ImageDown } from '@lucide/svelte';
+	import {
+		Loader,
+		FolderOpen,
+		FolderOpenDot,
+		Download,
+		ImageDown,
+		FileBraces
+	} from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import type { SerializedFSAGraph } from '$lib/automata-models';
@@ -138,12 +145,12 @@
 	</li>
 	<li>
 		<button onclick={openFileDialog}>
-			<Folder class="h-4 w-4" /> Open
+			<FolderOpen class="h-4 w-4" /> Open
 		</button>
 	</li>
 	<li>
 		<button onclick={() => loadExampleModal.showModal()}>
-			<Folder class="h-4 w-4" /> Browse examples
+			<FolderOpenDot class="h-4 w-4" /> Browse examples
 		</button>
 	</li>
 	<li>
@@ -158,7 +165,7 @@
 	</li>
 	<li>
 		<button onclick={exportAsTikz}>
-			<ImageDown class="h-4 w-4" /> Export LaTeX (TikZ)
+			<FileBraces class="h-4 w-4" /> Export LaTeX (TikZ)
 		</button>
 	</li>
 </ul>
