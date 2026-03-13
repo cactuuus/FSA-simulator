@@ -91,7 +91,7 @@
 	// Focus panel when it appears
 	$effect(() => {
 		if (screenPos && panelElement) {
-			panelElement.focus();
+			panelElement.focus({ preventScroll: true });
 		}
 	});
 
