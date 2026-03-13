@@ -106,7 +106,7 @@
 	<div
 		bind:this={panelElement}
 		tabindex="-1"
-		class="border-content max-w-90% absolute flex w-64 flex-col gap-2 rounded-r-box rounded-b-box border bg-base-100/80 text-sm shadow backdrop-blur-xs"
+		class="border-content max-w-90% absolute flex w-64 flex-col gap-2 rounded-r-box rounded-b-box border border-base-content/10 bg-base-100/80 text-sm shadow backdrop-blur-xs"
 		transition:scale={{ duration: 200, start: 0.9 }}
 		style:left="{screenPos.x}px"
 		style:top="{screenPos.y}px"
@@ -114,7 +114,7 @@
 		<!-- Header (drag handle) -->
 		<div
 			role="toolbar"
-			class="border-content flex items-center justify-between gap-2 border-b p-2 hover:bg-base-content/5"
+			class="border-content flex items-center justify-between gap-2 border-b border-base-content/30 p-2 hover:bg-base-content/5"
 			style:cursor={isDragging ? 'grabbing' : 'grab'}
 			onpointerdown={onDragStart}
 		>
