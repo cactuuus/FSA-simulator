@@ -161,12 +161,12 @@
 	{/if}
 
 	<!-- Top-left menu -->
-	<div class="absolute top-2 left-2">
+	<div class="controls-container top-2 left-2">
 		<MainMenu simulationActive={app.isSimulating()} />
 	</div>
 
 	<!-- Top-center controls -->
-	<div class="absolute top-2 left-1/2 flex -translate-x-1/2 items-center gap-2">
+	<div class="controls-container top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2">
 		<!-- Toolbar -->
 		<StatesToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
 
@@ -178,7 +178,7 @@
 		{/if}
 	</div>
 
-	<div class="absolute top-2 right-2">
+	<div class="controls-container top-2 right-2">
 		<!-- Undo/Redo controls -->
 		{#if app.isEditing()}
 			<UndoRedoControls commandHistory={editorCtx.commandHistory} />
@@ -186,7 +186,7 @@
 	</div>
 
 	<!-- Zoom controls -->
-	<div class="absolute right-2 bottom-2">
+	<div class="controls-container right-2 bottom-2">
 		<ZoomControls viewport={editorCtx.viewport} />
 	</div>
 

@@ -17,6 +17,13 @@
 	border-collapse: collapse;
 }
 
+.controls-container {
+	@apply absolute z-30;
+}
+.controls {
+	@apply z-30 h-10 rounded-box border border-base-content/10 bg-base-100/90 shadow backdrop-blur-xs;
+}
+
 :root {
 	/* come colors are controlled by daisy UI theme */
 	--board-bg-color: var(--color-base-200);

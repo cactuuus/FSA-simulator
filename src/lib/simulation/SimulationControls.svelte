@@ -19,9 +19,7 @@
 	});
 </script>
 
-<div
-	class="flex flex-row gap-2 rounded-box border border-base-content/10 bg-base-100/90 px-2 py-1 shadow backdrop-blur-xs"
->
+<div class="controls flex flex-row gap-2 px-2 py-1">
 	<!-- Input display -->
 	<div class="pointer-events-none flex gap-0 rounded-md bg-base-200 px-2 py-1">
 		{#if controller.input.length === 0}

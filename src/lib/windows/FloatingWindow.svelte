@@ -3,6 +3,7 @@
 	import { X } from '@lucide/svelte';
 	import type { Point, Size } from '$lib/utils/geometry';
 	import type { Window } from './Windows.svelte';
+	import { portal } from '$lib/utils/portal';
 
 	let {
 		id,
@@ -167,8 +168,9 @@
 
 <div
 	bind:this={windowElement}
-	class="floating-window absolute flex max-h-full max-w-full touch-none flex-col overflow-hidden rounded-t-box rounded-bl-box border border-base-content/10 bg-base-100/90 text-sm shadow backdrop-blur-xs"
+	class="floating-window absolute z-20 flex max-h-full max-w-full touch-none flex-col overflow-hidden rounded-t-box rounded-bl-box border border-base-content/10 bg-base-100/90 text-sm shadow backdrop-blur-xs"
 	class:rounded-br-box={!canBeResized}
+	use:portal
 	style:top="{clampedPosition.y}px"
 	style:left="{clampedPosition.x}px"
 	style:width="{resolvedWidth}px"
