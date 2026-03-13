@@ -4,6 +4,7 @@
 	import { SimulationController } from './SimulationController.svelte';
 	import { Edge, type FSAGraph, Transition } from '$lib/automata-models';
 	import { getGraphElement } from '$lib/utils/graphEffects';
+	import type { FullPath } from './computationTree';
 
 	const { controller, fsa }: { controller: SimulationController; fsa: FSAGraph } = $props();
 
@@ -14,8 +15,9 @@
 	const NODE_OPACITY_MED = 0.8;
 	const NODE_OPACITY_MAX = 1;
 
+	const path: FullPath = $derived(controller.selectedPath!);
 	const maxStackDepth = $derived(
-		fsa.hasStackOps ? Math.max(0, ...controller.path.nodes.map((n) => n.config.stack.length)) : 0
+		fsa.hasStackOps ? Math.max(0, ...path.nodes.map((n) => n.config.stack.length)) : 0
 	);
 	let stackEls: (HTMLDivElement | null)[] = $derived(
 		Array.from({ length: maxStackDepth }, () => null)
@@ -52,7 +54,7 @@
 		let sourceEl: SVGElement | null = null;
 		let stackPointer = -1;
 
-		controller.path.nodes.forEach((node) => {
+		path.nodes.forEach((node) => {
 			const parent = node.parent;
 			const transition = parent?.via ?? null;
 			const edgeId = parent
@@ -192,10 +194,10 @@
 		});
 
 		// final node colour
-		const lastNode = controller.path.nodes[controller.path.nodes.length - 1];
+		const lastNode = path.nodes[path.nodes.length - 1];
 		const lastNodeEl = getOverlayEl(lastNode.config.state.id);
 		tl.call(() => controller.setCurrentGroup(lastNode.config.group + 1), time);
-		const finalColor = controller.path.isAccepting ? colors.accepted : colors.rejected;
+		const finalColor = path.isAccepting ? colors.accepted : colors.rejected;
 		if (lastNodeEl) {
 			tl.add(lastNodeEl, { fill: finalColor, duration: 0 }, time);
 			tl.add(
@@ -217,7 +219,7 @@
 		return () => {
 			// cleanup -- stop the timeline and reset all styles
 			controller.stop();
-			controller.path.nodes.forEach((node) => {
+			path.nodes.forEach((node) => {
 				const parent = node.parent;
 				const edgeId = parent
 					? Edge.createId(parent.node.config.state.id, node.config.state.id)

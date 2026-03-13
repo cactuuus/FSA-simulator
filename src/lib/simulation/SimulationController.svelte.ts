@@ -1,5 +1,6 @@
 import { type Timeline } from 'animejs';
-import { type FullPath } from './computationTree';
+import { FSAGraph } from '$lib/automata-models';
+import { ComputationTree, type FullPath, type PathLeaf } from './computationTree';
 
 export interface SimulationSettings {
 	speed: number;
@@ -8,15 +9,37 @@ export interface SimulationSettings {
 const DEFAULT_SETTINGS: SimulationSettings = { speed: 1 };
 
 export class SimulationController {
-	readonly path: FullPath;
+	// Computation state
+	private _input = $state<string[]>([]);
+	private _tree = $state<ComputationTree | null>(null);
+	private _selectedPath = $state<FullPath | null>(null);
+	private _fsaSnapshotWhenComputed = $state<string | null>(null);
+
+	// Timeline state
 	private _timeline = $state<Timeline | null>(null);
 	private _isPlaying = $state(false);
 	private _currentTime = $state(0);
 	private _currentGroup = $state<number | null>(null);
 	settings = $state<SimulationSettings>({ ...DEFAULT_SETTINGS });
 
-	constructor(path: FullPath) {
-		this.path = path;
+	get input() {
+		return this._input;
+	}
+
+	get tree() {
+		return this._tree;
+	}
+
+	get selectedPath() {
+		return this._selectedPath;
+	}
+
+	get pathsLeaves(): PathLeaf[] {
+		return this._tree?.pathsLeaves ?? [];
+	}
+
+	get warnings(): string[] {
+		return this._tree?.warnings ?? [];
 	}
 
 	get isPlaying() {
@@ -31,6 +54,10 @@ export class SimulationController {
 		return this._timeline?.duration ?? 0;
 	}
 
+	get currentGroup() {
+		return this._currentGroup;
+	}
+
 	get canPlay() {
 		return this._timeline !== null && this._currentTime < this.totalDuration;
 	}
@@ -39,8 +66,29 @@ export class SimulationController {
 		return this._timeline !== null && (this._isPlaying || this._currentTime > 0);
 	}
 
-	get currentGroup() {
-		return this._currentGroup;
+	fsaHasChangedSince(fsa: FSAGraph): boolean {
+		if (!this._fsaSnapshotWhenComputed) return true;
+		return JSON.stringify(fsa.toJSON()) !== this._fsaSnapshotWhenComputed;
+	}
+
+	computeInput(fsa: FSAGraph, input: string[], maxLoopIterations: number = 0): void {
+		this._input = input;
+		this._tree = new ComputationTree(fsa, input, maxLoopIterations);
+		this._fsaSnapshotWhenComputed = JSON.stringify(fsa.toJSON());
+		this._selectedPath = null;
+	}
+
+	selectPath(leaf: PathLeaf): void {
+		if (!this._tree) return;
+		this.stop();
+		this._selectedPath = this._tree.getFullPath(leaf);
+		this._timeline = null;
+	}
+
+	clearSelection(): void {
+		this.stop();
+		this._selectedPath = null;
+		this._timeline = null;
 	}
 
 	registerTimeline(tl: Timeline): void {
@@ -94,5 +142,13 @@ export class SimulationController {
 	resetSettings(): void {
 		this.settings = { ...DEFAULT_SETTINGS };
 		if (this._timeline) this._timeline.speed = DEFAULT_SETTINGS.speed;
+	}
+
+	reset(): void {
+		this.stop();
+		this._input = [];
+		this._tree = null;
+		this._fsaSnapshotWhenComputed = null;
+		this._selectedPath = null;
 	}
 }

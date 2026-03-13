@@ -3,15 +3,14 @@
 	import { app } from '$lib/stores/app.svelte';
 	import { Info, TriangleAlert, Check, RefreshCcw, CircleX } from '@lucide/svelte';
 	import { WINDOWS_ID, FloatingWindow } from '$lib/windows';
-	import { ComputationTree, type FullPath } from './computationTree';
 	import { notifyWarning, notifyError } from '$lib/utils/notifications';
-	import { FSAType, type SerializedFSAGraph } from '$lib/automata-models';
+	import { FSAType } from '$lib/automata-models';
 	import PathList from './PathList.svelte';
+	import { type PathLeaf } from './computationTree';
+	import { onMount } from 'svelte';
 
-	let computationTree = $state<ComputationTree | null>(null);
+	const controller = $derived(app.simulationController);
 	let inputToProcess = $state<string>('');
-	let fsaDataWhenProcessed = $state<SerializedFSAGraph | null>(null);
-	let lastUsedInput = $state<string[]>([]);
 	let isProcessing = $state<boolean>(false);
 	let maxLoopsIterations = $state<number>(0);
 	const alphabetIsSingleChar = $derived<boolean>(
@@ -27,11 +26,11 @@
 	const canProcessInput = $derived.by<{ result: boolean; errors?: string[] }>(() => {
 		const errors: string[] = [];
 		if (cleanedInput.some((s) => s === '') && inputToProcess.length > 0) {
-			if (alphabetIsSingleChar) {
-				errors.push('Input contains empty symbols, please remove any extra spaces.');
-			} else {
-				errors.push('Input contains empty symbols, please remove any extra commas.');
-			}
+			errors.push(
+				alphabetIsSingleChar
+					? 'Input contains empty symbols, please remove any extra spaces.'
+					: 'Input contains empty symbols, please remove any extra commas.'
+			);
 		}
 		if (cleanedInput.some((s) => !app.fsaGraph.alphabet().has(s))) {
 			errors.push("Input contains symbols that are not in the FSA's alphabet.");
@@ -49,10 +48,7 @@
 		}
 		try {
 			isProcessing = true;
-			computationTree = new ComputationTree(app.fsaGraph, cleanedInput, maxLoopsIterations);
-			fsaDataWhenProcessed = app.fsaGraph.toJSON();
-			lastUsedInput = cleanedInput;
-			// console.log(computationTree?.toString()); // useful for debugging
+			controller.computeInput(app.fsaGraph, cleanedInput, maxLoopsIterations);
 		} catch (error: unknown) {
 			console.error('Failed to compute input:', error);
 			notifyError(
@@ -63,25 +59,30 @@
 		}
 	}
 
-	function fsaHasChangedSinceLastProcess(): boolean {
-		return fsaDataWhenProcessed
-			? JSON.stringify(app.fsaGraph.toJSON()) !== JSON.stringify(fsaDataWhenProcessed)
-			: true;
+	function startPathSimulation(leaf: PathLeaf): void {
+		controller.selectPath(leaf);
+		app.enterSimulation();
 	}
 
-	function startPathSimulation(path: FullPath): void {
-		if (!computationTree) {
-			notifyError('No computation tree available, cannot start simulation.');
-			return;
-		}
-		app.enterSimulation(path);
+	/**
+	 * Close the windows and resets the simulation. This is in order to avoid extra computation and memory used by the simulation controller (such as tracking changes to the FSA) when the window is closed.
+	 */
+	function closeAndReset() {
+		controller.reset();
+		app.windows.close(WINDOWS_ID.ComputeInput);
 	}
+
+	onMount(() => {
+		// initialize the input field with the current input from the controller, if any
+		// useful to maintain state when entering/exiting the simulation
+		inputToProcess = controller.input.join(alphabetIsSingleChar ? '' : ', ');
+	});
 </script>
 
 <FloatingWindow
 	id={WINDOWS_ID.ComputeInput}
 	windowState={app.windows.open(WINDOWS_ID.ComputeInput)}
-	onClose={() => app.windows.close(WINDOWS_ID.ComputeInput)}
+	onClose={closeAndReset}
 >
 	{#snippet header()}
 		<span>Compute Input</span>
@@ -136,20 +137,20 @@
 
 		<div class="relative flex flex-col gap-2 rounded-box bg-base-300 p-3">
 			<h3 class="border-b border-base-content/30 font-semibold">Result</h3>
-			{#if computationTree}
-				{@const allPathsLeaves = computationTree.pathsLeaves}
+			{#if controller.tree}
+				{@const allPathsLeaves = controller.pathsLeaves}
 				{@const acceptingLeaves = allPathsLeaves.filter((p) => p.isAccepting)}
 				{@const rejectingLeaves = allPathsLeaves.filter((p) => !p.isAccepting)}
 				<!-- Warnings -->
-				{#if computationTree.warnings.length > 0}
+				{#if controller.warnings.length > 0}
 					<details class="collapse-arrow collapse rounded-box bg-warning/10 text-warning">
 						<summary class="collapse-title p-2 font-semibold">
 							<TriangleAlert class="inline h-4 w-4" />
-							{computationTree.warnings.length} Warnings
+							{controller.warnings.length} Warnings
 						</summary>
 						<div class="collapse-content">
 							<ul class="list-inside list-disc text-sm">
-								{#each computationTree.warnings as warning, index (index)}
+								{#each controller.warnings as warning, index (index)}
 									<li>{warning}</li>
 								{/each}
 							</ul>
@@ -170,13 +171,13 @@
 							</p>
 							<PathList
 								leaves={acceptingLeaves}
-								tree={computationTree}
-								onClick={(path) => startPathSimulation(path)}
+								tree={controller.tree!}
+								onClick={startPathSimulation}
 							/>
 						</div>
 					</details>
 				{/if}
-				<!--  Rejecting paths -->
+				<!-- Rejecting paths -->
 				{#if rejectingLeaves.length > 0}
 					<details class="collapse-arrow collapse rounded-box bg-error/10">
 						<summary class="collapse-title p-2 font-semibold text-error">
@@ -190,15 +191,14 @@
 							</p>
 							<PathList
 								leaves={rejectingLeaves}
-								tree={computationTree}
-								onClick={(path) => startPathSimulation(path)}
+								tree={controller.tree!}
+								onClick={startPathSimulation}
 							/>
 						</div>
 					</details>
 				{/if}
-
 				<!-- Overlay to cover outdated results -->
-				{#if fsaHasChangedSinceLastProcess()}
+				{#if controller.fsaHasChangedSince(app.fsaGraph)}
 					<div
 						class="absolute inset-0 flex flex-col items-center justify-center rounded-box bg-base-200/90"
 					>
@@ -208,7 +208,7 @@
 						</p>
 						<button
 							class="btn btn-sm btn-neutral"
-							onclick={() => runInputComputation(lastUsedInput)}
+							onclick={() => runInputComputation(controller.input)}
 						>
 							<RefreshCcw class="h-4 w-4" /> Re-Compute Previous Input
 						</button>

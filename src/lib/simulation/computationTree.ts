@@ -9,7 +9,6 @@ export interface Configuration {
 export interface FullPath {
 	nodes: ComputationNode[];
 	isAccepting: boolean;
-	input: string[];
 }
 
 export interface PathLeaf {
@@ -137,8 +136,7 @@ export class ComputationTree {
 	getFullPath(pathLeaf: PathLeaf): FullPath {
 		const path: FullPath = {
 			nodes: [],
-			isAccepting: pathLeaf.isAccepting,
-			input: this.input
+			isAccepting: pathLeaf.isAccepting
 		};
 		let current: ComputationNode | undefined = pathLeaf.node;
 		while (current !== undefined) {

@@ -5,7 +5,7 @@ import { Viewport, type SerializedViewport } from '$lib/editor/viewport';
 import { CommandHistory, type SerializedCommandHistory } from '$lib/editor/commands';
 import { WindowManager, type SerializedWindowsState } from '$lib/windows';
 import { SelectionHandler } from '$lib/editor/selection';
-import { SimulationController, type FullPath } from '$lib/simulation';
+import { SimulationController } from '$lib/simulation';
 
 type AppMode = 'editing' | 'simulating';
 
@@ -21,7 +21,7 @@ export class AppManager {
 	static readonly STORAGE_KEY_COMMAND_HISTORY = 'command-history';
 
 	private _mode = $state<AppMode>('editing');
-	private _simulationController: SimulationController | null = $state(null);
+	readonly simulationController: SimulationController;
 	readonly desiredAlphabet: DesiredAlphabet;
 	readonly commandHistory: CommandHistory;
 	readonly fsaGraph: FSAGraph;
@@ -36,6 +36,7 @@ export class AppManager {
 		this.commandHistory = new CommandHistory(this.fsaGraph);
 		this.windows = new WindowManager();
 		this.selectionHandler = new SelectionHandler(this.fsaGraph);
+		this.simulationController = new SimulationController();
 	}
 
 	/**
@@ -54,18 +55,13 @@ export class AppManager {
 		return this._mode === 'simulating';
 	}
 
-	get simulationController(): SimulationController | null {
-		return this._simulationController;
-	}
-
 	exitSimulation(): void {
 		this._mode = 'editing';
-		this._simulationController = null;
+		this.simulationController.clearSelection();
 	}
 
-	enterSimulation(path: FullPath): void {
+	enterSimulation(): void {
 		this._mode = 'simulating';
-		this._simulationController = new SimulationController(path);
 	}
 
 	/**
