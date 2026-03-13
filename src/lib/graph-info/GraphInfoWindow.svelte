@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Pencil, Check, X, Info, ChevronRight } from '@lucide/svelte';
+	import { Pencil, Check, X, ChevronRight, CircleQuestionMark } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { FloatingWindow, WINDOWS_ID } from '$lib/windows';
 	import { portal } from '$lib/utils/portal';
@@ -59,6 +59,7 @@
 		windowState={app.windows.open(WINDOWS_ID.GraphInfo)}
 		onClose={() => app.windows.close(WINDOWS_ID.GraphInfo)}
 		canBeResized={true}
+		defaultWidth={300}
 	>
 		{#snippet header()}
 			<span>Graph Info</span>
@@ -68,11 +69,13 @@
 			<div class="flex flex-col gap-3">
 				<!-- Title -->
 				<div class="flex flex-col gap-1">
-					<h3 class="font-semibold">Title</h3>
-					<p class="text-base-content/70">
-						<Info class="inline h-3 w-3" />
-						This is purely cosmetic, to help you identify your FSA when importing/exporting.
-					</p>
+					<div
+						class="flex items-baseline gap-1 hover:cursor-help"
+						title="This is purely cosmetic, to help you identify your FSA when importing/exporting."
+					>
+						<h3 class="font-semibold">Title</h3>
+						<CircleQuestionMark class="h-3 w-3" />
+					</div>
 					<div class="flex items-center gap-2">
 						<input
 							id="readonly-fsa-title"
@@ -87,7 +90,7 @@
 					</div>
 				</div>
 
-				<hr class="border-base-content/70" />
+				<hr class="border-base-content/30" />
 
 				<!-- Type -->
 				<div class="flex flex-col gap-1">
@@ -103,7 +106,7 @@
 					</div>
 				</div>
 
-				<hr class="border-base-content/70" />
+				<hr class="border-base-content/30" />
 
 				<!-- Useful properties -->
 				<div class="flex flex-col gap-1">
@@ -114,7 +117,7 @@
 					{@render statusRow('Has stack', fsa.hasStackOps)}
 				</div>
 
-				<hr class="border-base-content/70" />
+				<hr class="border-base-content/30" />
 
 				<!-- Less useful properties -->
 				<div class="flex flex-col gap-1">
