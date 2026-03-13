@@ -2,6 +2,7 @@
 	import { Menu } from '@lucide/svelte';
 	import FileSubMenu from './FileSubMenu.svelte';
 	import WindowsSubMenu from './WindowsSubMenu.svelte';
+	import FsaSubMenu from './FsaSubMenu.svelte';
 
 	const { simulationActive }: { simulationActive: boolean } = $props();
 </script>
@@ -25,5 +26,6 @@
 	>
 		<li><FileSubMenu /></li>
 		<li><WindowsSubMenu /></li>
+		<li><FsaSubMenu /></li>
 	</ul>
 </div>

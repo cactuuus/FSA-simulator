@@ -2,21 +2,12 @@
 	import { Pencil, Check, X, Info, ChevronRight } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { FloatingWindow, WINDOWS_ID } from '$lib/windows';
-	import { EnableStackOpsCommand, DisableStackOpsCommand } from '$lib/editor/commands';
-	import { notifySuccess } from '$lib/utils/notifications';
 	import { portal } from '$lib/utils/portal';
 	import { FSAType } from '$lib/automata-models';
 
 	const fsa = $derived(app.fsaGraph);
 	let draftTitle = $state('');
 	let editTitleModal: HTMLDialogElement;
-	let togglePdaModal: HTMLDialogElement;
-	let pendingPdaState = $state(false);
-
-	function openEditTitleModal() {
-		draftTitle = fsa.title;
-		editTitleModal.showModal();
-	}
 
 	function commitTitle(e: SubmitEvent) {
 		e.preventDefault();
@@ -25,26 +16,14 @@
 		closeTitleModal();
 	}
 
+	function openEditTitleModal() {
+		draftTitle = fsa.title;
+		editTitleModal.showModal();
+	}
+
 	function closeTitleModal() {
 		draftTitle = '';
 		editTitleModal.close();
-	}
-
-	function openTogglePdaModal() {
-		pendingPdaState = !fsa.hasStackOps;
-		togglePdaModal.showModal();
-	}
-
-	function togglePda(e: SubmitEvent) {
-		e.preventDefault();
-		if (pendingPdaState) {
-			app.commandHistory.pushAndExecute(new EnableStackOpsCommand());
-			notifySuccess('PDA mode enabled.');
-		} else {
-			app.commandHistory.pushAndExecute(new DisableStackOpsCommand());
-			notifySuccess('PDA mode disabled.');
-		}
-		togglePdaModal.close();
 	}
 
 	function typeToFullLabel(type: FSAType): string {
@@ -132,18 +111,7 @@
 					{@render statusRow('Has start state', fsa.hasStart)}
 					{@render statusRow('Has accepting state', fsa.hasAcceptingNodes)}
 					{@render statusRow('Is deterministic', fsa.isDeterministic)}
-					<div class="flex items-center gap-2">
-						{@render statusRow('Has stack', fsa.hasStackOps)}
-						{#if fsa.hasStackOps}
-							<button class="btn shrink-0 btn-soft btn-xs btn-error" onclick={openTogglePdaModal}>
-								Disable
-							</button>
-						{:else}
-							<button class="btn shrink-0 btn-soft btn-xs btn-info" onclick={openTogglePdaModal}>
-								Enable
-							</button>
-						{/if}
-					</div>
+					{@render statusRow('Has stack', fsa.hasStackOps)}
 				</div>
 
 				<hr class="border-base-content/70" />
@@ -181,38 +149,6 @@
 				<div class="mt-4 flex justify-end gap-4">
 					<button type="button" class="btn" onclick={closeTitleModal}>Cancel</button>
 					<button type="submit" class="btn btn-success">Confirm</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</dialog>
-
-<!-- PDA toggle modal -->
-<dialog bind:this={togglePdaModal} class="modal" use:portal>
-	<div class="modal-box">
-		<h3 class="text-lg font-bold {pendingPdaState ? 'text-info' : 'text-error'}">
-			{pendingPdaState ? 'Enable PDA Mode' : 'Disable PDA Mode'}
-		</h3>
-		<p class="pt-2 text-sm text-base-content/70">
-			{#if pendingPdaState}
-				This will turn your FSA into a PDA, enabling stack operations (pop & push) for all
-				transitions. You can always revert this later.
-			{:else}
-				This will remove all stack operations from all transitions.
-				<br />
-				<strong
-					>Stack symbols can only be recovered by undoing this action (via the undo button or
-					CTRL+Z). Simply re-enabling the stack will not recover the them.</strong
-				>
-			{/if}
-		</p>
-		<div class="modal-action mt-4">
-			<form class="w-full" onsubmit={togglePda}>
-				<div class="flex justify-end gap-4">
-					<button type="button" class="btn" onclick={() => togglePdaModal.close()}>Cancel</button>
-					<button type="submit" class="btn {pendingPdaState ? 'btn-info' : 'btn-error'}"
-						>Confirm</button
-					>
 				</div>
 			</form>
 		</div>

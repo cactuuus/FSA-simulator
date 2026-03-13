@@ -74,7 +74,7 @@
 			<h2>Transitions</h2>
 			<div
 				class="badge flex cursor-help items-center badge-soft badge-sm badge-info"
-				title="PDA mode allows to use stack operations (pop & push) in transitions. You can toggle it in 'Menu -> Windows -> Graph Info -> Stack -> Enable/Disable'"
+				title="PDA mode allows to use stack operations (pop & push) in transitions. You can toggle it in 'Menu -> FSA -> Enable/Disable stack'"
 			>
 				<span>PDA {fsaGraph.hasStackOps ? 'enabled' : 'disabled'}</span>
 				<CircleQuestionMark class="h-4 w-4 pb-0.5" />
