@@ -4,8 +4,7 @@ import {
 	vectorBetween,
 	pointOnLine,
 	midPointOnBezier,
-	angleTo,
-	midPoint
+	angleTo
 } from '$lib/utils/geometry';
 import { Edge, DraftEdge } from '$lib/automata-models';
 import { GRAPH_GEOMETRY } from '$lib/utils/graphStyle';
@@ -60,21 +59,6 @@ export function getEdgeLabelPosition(edge: Edge): Point {
 		x: position.x,
 		y: position.y - verticalOffset
 	};
-}
-
-export function getEdgeAnchor(edge: Edge): Point {
-	if (edge.isLoopback) {
-		const angle = edge.hasDefaultControlPoint
-			? GRAPH_GEOMETRY.loopbackDefaultAngle
-			: angleTo(edge.sourcePoint, edge.controlPoint);
-		return pointOnCircle(edge.sourcePoint, loopbackDistance, angle);
-	}
-	if (edge.hasDefaultControlPoint) {
-		// straight edge — just use the midpoint
-		return midPoint(edge.sourcePoint, edge.targetPoint);
-	}
-	// curved edge — apex of the bezier
-	return midPointOnBezier(edge.sourcePoint, edge.controlPoint, edge.targetPoint);
 }
 
 /**

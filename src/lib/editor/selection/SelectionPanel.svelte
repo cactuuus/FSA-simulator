@@ -7,7 +7,7 @@
 	import { DeleteFSAItemsCommand } from '../commands';
 	import { type Point } from '$lib/utils/geometry';
 	import { scale } from 'svelte/transition';
-	import { getEdgeAnchor } from '$lib/utils/edgeUtils';
+	import { getEdgeLabelPosition } from '$lib/utils/edgeUtils';
 
 	const { editor }: { editor: EditorContext } = $props();
 
@@ -21,7 +21,7 @@
 		if (items.length === 1) {
 			const item = items[0];
 			if (item instanceof Node) return item.pos;
-			if (item instanceof Edge) return getEdgeAnchor(item);
+			if (item instanceof Edge) return getEdgeLabelPosition(item);
 			return null;
 		}
 
@@ -36,7 +36,7 @@
 		// selection is made of edges only
 		const edges = items.filter((i): i is Edge => i instanceof Edge);
 		return edges
-			.map(getEdgeAnchor)
+			.map(getEdgeLabelPosition)
 			.reduce((prev, curr) => (curr.x + curr.y > prev.x + prev.y ? curr : prev));
 	});
 
@@ -97,7 +97,7 @@
 
 	// Reset drag when selection changes
 	$effect(() => {
-		void anchorSvg; // way to depend on anchorSvg without actually using it
+		void items; // way to depend on anchorSvg without actually using it
 		dragOffset = null;
 	});
 </script>
