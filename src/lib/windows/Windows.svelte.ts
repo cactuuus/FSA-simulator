@@ -17,6 +17,7 @@ export const WINDOWS_ID = {
 export class Window implements Serializable<SerializedWindow> {
 	positionOverride: Point | null = $state(null);
 	sizeOverride: Size | null = $state(null);
+	zIndex: number = $state(0);
 
 	toJSON(): SerializedWindow {
 		return {
@@ -53,6 +54,7 @@ export interface SerializedWindowsState {
  */
 export class WindowManager implements Serializable<SerializedWindowsState> {
 	private active = new SvelteMap<string, Window>();
+	private _topZIndex: number = $state(0);
 
 	/**
 	 * Opens a window with the given name (if not already open), then returns it.
@@ -81,6 +83,18 @@ export class WindowManager implements Serializable<SerializedWindowsState> {
 	 */
 	close(name: string): void {
 		this.active.delete(name);
+	}
+
+	/**
+	 * Brings the window with the given name to the front by updating its z-index.
+	 * @param name Name of the window to bring to the front.
+	 */
+	bringToFront(name: string): void {
+		const window = this.active.get(name);
+		if (window) {
+			this._topZIndex++;
+			window.zIndex = this._topZIndex;
+		}
 	}
 
 	/**

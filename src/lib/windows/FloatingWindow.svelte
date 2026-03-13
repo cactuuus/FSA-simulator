@@ -12,7 +12,7 @@
 		initialPosition,
 		windowState,
 		onClose,
-		canBeResized = true,
+		onFocus,
 		defaultWidth = 500
 	}: {
 		id?: string;
@@ -21,7 +21,7 @@
 		windowState: Window;
 		initialPosition?: Point;
 		onClose?: () => void;
-		canBeResized?: boolean;
+		onFocus?: () => void;
 		defaultWidth?: number;
 	} = $props();
 
@@ -72,7 +72,6 @@
 
 	function handleMouseDown(e: PointerEvent) {
 		e.preventDefault();
-		e.stopPropagation();
 		isMoving = true;
 		moveStartPos = { ...clampedPosition };
 		moveStartMouse = { x: e.clientX, y: e.clientY };
@@ -83,7 +82,6 @@
 
 	function handleMouseMove(e: PointerEvent) {
 		e.preventDefault();
-		e.stopPropagation();
 		if (isMoving) {
 			windowState.positionOverride = {
 				x: moveStartPos.x + (e.clientX - moveStartMouse.x),
@@ -94,7 +92,6 @@
 
 	function handleMouseUp(e: PointerEvent) {
 		e.preventDefault();
-		e.stopPropagation();
 		isMoving = false;
 		if (e.target instanceof HTMLElement) e.target.releasePointerCapture(e.pointerId);
 		window.removeEventListener('pointermove', handleMouseMove);
@@ -103,7 +100,6 @@
 
 	function handleResizeMouseDown(e: PointerEvent) {
 		e.preventDefault();
-		e.stopPropagation();
 		isResizing = true;
 		resizeStartSize = {
 			width: resolvedWidth,
@@ -117,7 +113,6 @@
 
 	function handleResizeMove(e: PointerEvent) {
 		e.preventDefault();
-		e.stopPropagation();
 		if (isResizing) {
 			windowState.sizeOverride = {
 				width: Math.max(MIN_SIZE.width, resizeStartSize.width + (e.clientX - resizeStartMouse.x)),
@@ -128,7 +123,6 @@
 
 	function handleResizeUp(e: PointerEvent) {
 		e.preventDefault();
-		e.stopPropagation();
 		isResizing = false;
 		if (e.target instanceof HTMLElement) e.target.releasePointerCapture(e.pointerId);
 		window.removeEventListener('pointermove', handleResizeMove);
@@ -141,13 +135,9 @@
 		}
 		const parentElement = windowElement.parentElement;
 
-		// Read parent bounds synchronously so resolvedWidth is correct before we measure the window
+		// first read of parent element (done synchronously) to ensure we calculate the correct initial size and position of the window
 		const rect = parentElement.getBoundingClientRect();
 		parentBounds = { width: rect.width, height: rect.height };
-
-		// Set initial position once based on actual rendered size.
-		// After this, positionOverride is the single source of truth and
-		// the user can move the window freely.
 		if (!windowState.positionOverride) {
 			const w = windowElement.offsetWidth;
 			const h = windowElement.offsetHeight;
@@ -157,9 +147,10 @@
 			};
 		}
 
+		// then we just watch for changes in parent's size
 		const parentObserver = new ResizeObserver(() => {
-			const r = parentElement.getBoundingClientRect();
-			parentBounds = { width: r.width, height: r.height };
+			const parentRect = parentElement.getBoundingClientRect();
+			parentBounds = { width: parentRect.width, height: parentRect.height };
 		});
 		parentObserver.observe(parentElement);
 		return () => parentObserver.disconnect();
@@ -168,15 +159,16 @@
 
 <div
 	bind:this={windowElement}
-	class="floating-window absolute z-20 flex max-h-full max-w-full touch-none flex-col overflow-hidden rounded-t-box rounded-bl-box border border-base-content/10 bg-base-100/90 text-sm shadow backdrop-blur-xs"
-	class:rounded-br-box={!canBeResized}
+	class="floating-window absolute flex max-h-full max-w-full touch-none flex-col overflow-hidden rounded-t-box rounded-bl-box border border-base-content/10 bg-base-100/90 text-sm shadow backdrop-blur-xs"
 	use:portal
+	style:z-index={windowState.zIndex + 20}
 	style:top="{clampedPosition.y}px"
 	style:left="{clampedPosition.x}px"
 	style:width="{resolvedWidth}px"
 	style:height={resolvedHeight !== null ? `${resolvedHeight}px` : 'auto'}
 	style:max-height="{parentBounds.height - 2 * PADDING}px"
 	style:max-width="{parentBounds.width - 2 * PADDING}px"
+	onpointerdown={() => onFocus?.()}
 >
 	<div
 		bind:this={headerElement}
@@ -200,12 +192,10 @@
 		{@render content()}
 	</div>
 	<!-- Resize handle, it is simply styled to appear as a triangle on the bottom-right corner -->
-	{#if canBeResized}
-		<button
-			class="resize-handle absolute right-0 bottom-0 h-4 w-4 cursor-nwse-resize bg-[linear-gradient(135deg,transparent_50%,currentColor_50%)] opacity-30 hover:opacity-60"
-			title="Drag to resize, double-click to reset"
-			onpointerdown={handleResizeMouseDown}
-			ondblclick={() => (windowState.sizeOverride = null)}
-		></button>
-	{/if}
+	<button
+		class="resize-handle absolute right-0 bottom-0 h-4 w-4 cursor-nwse-resize bg-[linear-gradient(135deg,transparent_50%,currentColor_50%)] opacity-30 hover:opacity-60"
+		title="Drag to resize, double-click to reset"
+		onpointerdown={handleResizeMouseDown}
+		ondblclick={() => (windowState.sizeOverride = null)}
+	></button>
 </div>

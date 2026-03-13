@@ -58,7 +58,7 @@
 		id={WINDOWS_ID.GraphInfo}
 		windowState={app.windows.open(WINDOWS_ID.GraphInfo)}
 		onClose={() => app.windows.close(WINDOWS_ID.GraphInfo)}
-		canBeResized={true}
+		onFocus={() => app.windows.bringToFront(WINDOWS_ID.GraphInfo)}
 		defaultWidth={300}
 	>
 		{#snippet header()}

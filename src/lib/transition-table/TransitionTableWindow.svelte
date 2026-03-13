@@ -11,6 +11,7 @@
 	id={WINDOWS_ID.TransitionTable}
 	windowState={app.windows.open(WINDOWS_ID.TransitionTable)!}
 	onClose={() => app.windows.close(WINDOWS_ID.TransitionTable)}
+	onFocus={() => app.windows.bringToFront(WINDOWS_ID.TransitionTable)}
 	defaultWidth={600}
 >
 	{#snippet header()}

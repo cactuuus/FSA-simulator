@@ -83,6 +83,8 @@
 	id={WINDOWS_ID.ComputeInput}
 	windowState={app.windows.open(WINDOWS_ID.ComputeInput)}
 	onClose={closeAndReset}
+	onFocus={() => app.windows.bringToFront(WINDOWS_ID.ComputeInput)}
+	defaultWidth={500}
 >
 	{#snippet header()}
 		<span>Compute Input</span>
