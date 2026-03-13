@@ -7,7 +7,8 @@
 		DeleteTransitionsCommand,
 		AdjustEdgeShapeCommand,
 		ToggleEdgeSymmetricCommand,
-		UpdateTransitionCommand
+		UpdateTransitionCommand,
+		type UpdateTransitionData
 	} from '../commands';
 
 	const {
@@ -59,11 +60,12 @@
 			rawPop: transition.popRawValue,
 			rawPush: transition.pushRawValue
 		};
-		const command = new UpdateTransitionCommand(
-			transition.id,
-			beforeEditTransitionValues,
-			toRawValues
-		);
+		const transitionData: UpdateTransitionData = {
+			transitionId: transition.id,
+			from: beforeEditTransitionValues,
+			to: toRawValues
+		};
+		const command = new UpdateTransitionCommand(transitionData);
 		commandHistory.pushAndExecute(command);
 	}
 </script>

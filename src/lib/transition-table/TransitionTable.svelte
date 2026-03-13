@@ -3,7 +3,11 @@
 	import { InputSymbol, getTransitionTable } from './transitionTable';
 	import { FSAGraph, Node, Transition } from '$lib/automata-models';
 	import { DeleteTransitionsCommand } from '$lib/editor/commands';
-	import { CommandHistory } from '$lib/editor/commands';
+	import {
+		CommandHistory,
+		UpdateTransitionCommand,
+		type UpdateTransitionData
+	} from '$lib/editor/commands';
 	import { toggleHighlight } from '$lib/utils/graphEffects';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { portal } from '$lib/utils/portal';
@@ -93,15 +97,20 @@
 			closeModal();
 			return;
 		}
-		modalContext.transitions.forEach((transition) => {
-			if (modalContext!.type === 'consume') {
-				transition.consumeRawValue = editModalValue;
-			} else if (modalContext!.type === 'pop') {
-				transition.popRawValue = editModalValue;
-			} else {
-				throw new Error(`Unknown symbol type: ${modalContext!.type}`);
+		const updates: UpdateTransitionData[] = modalContext.transitions.map((transition) => ({
+			transitionId: transition.id,
+			from: {
+				rawConsume: transition.consumeRawValue,
+				rawPop: transition.popRawValue ?? null,
+				rawPush: transition.pushRawValue ?? null
+			},
+			to: {
+				rawConsume: modalContext!.type === 'consume' ? editModalValue : transition.consumeRawValue,
+				rawPop: modalContext!.type === 'pop' ? editModalValue : (transition.popRawValue ?? null),
+				rawPush: transition.pushRawValue ?? null
 			}
-		});
+		}));
+		commandHistory.pushAndExecute(new UpdateTransitionCommand(...updates));
 		closeModal();
 	}
 

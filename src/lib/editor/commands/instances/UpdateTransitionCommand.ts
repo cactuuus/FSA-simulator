@@ -14,36 +14,36 @@ export interface UpdateTransitionData {
 	to: TransitionData;
 }
 
-export class UpdateTransitionCommand extends Command<UpdateTransitionData> {
+export class UpdateTransitionCommand extends Command<UpdateTransitionData[]> {
 	static ID = 'update-transition-command';
 	id = UpdateTransitionCommand.ID;
-	data: UpdateTransitionData;
+	data: UpdateTransitionData[];
 
-	constructor(transitionId: string, from: TransitionData, to: TransitionData) {
+	constructor(...transitionsData: UpdateTransitionData[]) {
 		super();
-		this.data = { transitionId, from, to };
+		this.data = transitionsData;
 	}
 
 	execute(fsa: FSAGraph): void {
-		const transition = fsa.requireTransition(this.data.transitionId);
-		transition.consumeRawValue = this.data.to.rawConsume;
-		transition.popRawValue = this.data.to.rawPop;
-		transition.pushRawValue = this.data.to.rawPush;
+		for (const { transitionId, to } of this.data) {
+			const transition = fsa.requireTransition(transitionId);
+			transition.consumeRawValue = to.rawConsume;
+			transition.popRawValue = to.rawPop;
+			transition.pushRawValue = to.rawPush;
+		}
 	}
 
 	undo(fsa: FSAGraph): void {
-		const transition = fsa.requireTransition(this.data.transitionId);
-		transition.consumeRawValue = this.data.from.rawConsume;
-		transition.popRawValue = this.data.from.rawPop;
-		transition.pushRawValue = this.data.from.rawPush;
+		for (const { transitionId, from } of this.data) {
+			const transition = fsa.requireTransition(transitionId);
+			transition.consumeRawValue = from.rawConsume;
+			transition.popRawValue = from.rawPop;
+			transition.pushRawValue = from.rawPush;
+		}
 	}
 
-	static fromJSON(commandJson: { data: UpdateTransitionData }): UpdateTransitionCommand {
-		return new UpdateTransitionCommand(
-			commandJson.data.transitionId,
-			commandJson.data.from,
-			commandJson.data.to
-		);
+	static fromJSON(commandJson: { data: UpdateTransitionData[] }): UpdateTransitionCommand {
+		return new UpdateTransitionCommand(...commandJson.data);
 	}
 }
 
