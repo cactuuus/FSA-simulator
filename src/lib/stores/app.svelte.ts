@@ -1,13 +1,11 @@
 import { storage } from '$lib/utils/storage';
-import { FSAGraph, type SerializedFSAGraph } from '$lib/automata/models';
-import { DesiredAlphabet, type SerializedDesiredAlphabet } from '$lib/automata/analisys';
-import { Viewport, type SerializedViewport } from '$lib/interaction';
-import {
-	CommandHistory,
-	EditorManager,
-	type SerializedCommandHistory
-} from '$lib/interaction/editor';
-import { WindowManager, type SerializedWindowsState } from '$lib/interaction/Windows.svelte';
+import { FSAGraph, type SerializedFSAGraph } from '$lib/automata-models';
+import { DesiredAlphabet, type SerializedDesiredAlphabet } from '$lib/transition-table';
+import { Viewport, type SerializedViewport } from '$lib/editor/viewport';
+import { CommandHistory, type SerializedCommandHistory } from '$lib/editor/commands';
+import { WindowManager, type SerializedWindowsState } from '$lib/windows';
+import { SelectionHandler } from '$lib/editor/selection';
+import { SimulationController } from '$lib/simulation';
 
 type AppMode = 'editing' | 'simulating';
 
@@ -23,23 +21,22 @@ export class AppManager {
 	static readonly STORAGE_KEY_COMMAND_HISTORY = 'command-history';
 
 	private _mode = $state<AppMode>('editing');
+	readonly simulationController: SimulationController;
 	readonly desiredAlphabet: DesiredAlphabet;
 	readonly commandHistory: CommandHistory;
 	readonly fsaGraph: FSAGraph;
 	readonly viewport: Viewport;
 	readonly windows: WindowManager;
-
-	readonly editor: EditorManager;
-	// readonly simulationManager: SimulationManager;
+	readonly selectionHandler: SelectionHandler;
 
 	constructor() {
 		this.fsaGraph = new FSAGraph();
 		this.viewport = new Viewport();
 		this.desiredAlphabet = new DesiredAlphabet();
 		this.commandHistory = new CommandHistory(this.fsaGraph);
-		this.editor = new EditorManager(this.fsaGraph, this.viewport, this.commandHistory);
 		this.windows = new WindowManager();
-		// this.simulationManager = new SimulationManager();
+		this.selectionHandler = new SelectionHandler(this.fsaGraph);
+		this.simulationController = new SimulationController();
 	}
 
 	/**
@@ -56,6 +53,15 @@ export class AppManager {
 	 */
 	isSimulating(): boolean {
 		return this._mode === 'simulating';
+	}
+
+	exitSimulation(): void {
+		this._mode = 'editing';
+		this.simulationController.clearSelection();
+	}
+
+	enterSimulation(): void {
+		this._mode = 'simulating';
 	}
 
 	/**
@@ -109,6 +115,7 @@ export class AppManager {
 		this.windows.reset();
 		this.desiredAlphabet.reset();
 		this.commandHistory.reset();
+		this.simulationController.reset();
 		storage.remove(AppManager.STORAGE_KEY_FSA);
 		storage.remove(AppManager.STORAGE_KEY_VIEWPORT);
 		storage.remove(AppManager.STORAGE_KEY_WINDOWS);

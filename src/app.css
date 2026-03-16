@@ -17,13 +17,21 @@
 	border-collapse: collapse;
 }
 
+.controls-container {
+	@apply absolute z-200;
+}
+.controls {
+	@apply h-10 rounded-box border border-base-content/10 bg-base-100/90 shadow backdrop-blur-xs;
+}
+
 :root {
 	/* come colors are controlled by daisy UI theme */
 	--board-bg-color: var(--color-base-200);
 	--draw-color: var(--color-base-content);
-	--selected-color: limegreen;
-	--draft-edge-color: darkorange;
-	--draft-edge-invalid-color: red;
+	--selected-color: var(--color-info);
+	--draft-edge-color: var(--color-warning);
+	--invalid-color: var(--color-red-500);
+	--success-color: var(--color-success);
 	--highlight-color: var(--color-secondary);
 	--selection-area-color: var(--color-secondary);
 	--hover-shadow: oklch(from var(--draw-color) l c h / 0.8);
@@ -52,6 +60,7 @@ input[type='text'] {
 
 .node.selected,
 .edge.selected {
+	stroke-width: 3px;
 	stroke: var(--selected-color);
 	color: var(--selected-color);
 }
@@ -83,8 +92,8 @@ svg text {
 }
 
 .draft-edge.invalid {
-	stroke: var(--draft-edge-invalid-color);
-	color: var(--draft-edge-invalid-color);
+	stroke: var(--invalid-color);
+	color: var(--invalid-color);
 }
 
 .selection-area {
@@ -107,10 +116,67 @@ svg text {
 	fill: var(--highlight-color);
 }
 
+#start-edge.highlighted .edge-path {
+	stroke: var(--highlight-color);
+}
+
+#start-edge.highlighted .arrowhead {
+	color: var(--highlight-color);
+}
+
 .edge:has(.transition.highlighted) .edge-path {
 	stroke: var(--highlight-color);
 }
 .edge:has(.transition.highlighted) .arrowhead {
+	color: var(--highlight-color);
+}
+
+/* Simulation */
+
+.node.invalid {
+	stroke: var(--invalid-color);
+	filter: drop-shadow(0 0 5px var(--invalid-color));
+}
+
+.node.invalid .node-label {
+	fill: var(--invalid-color);
+}
+
+.node.input-accepted {
+	stroke: var(--success-color);
+	filter: drop-shadow(0 0 5px var(--success-color));
+}
+
+.node.input-accepted .node-label {
+	fill: var(--success-color);
+}
+
+.node.active {
+	stroke: var(--highlight-color);
+	color: var(--highlight-color);
+}
+
+.node.active .node-label {
+	fill: var(--highlight-color);
+}
+
+.transition.active {
+	fill: var(--highlight-color);
+}
+
+.edge:has(.transition.active) .edge-path {
+	stroke: var(--highlight-color);
+}
+
+.edge:has(.transition.active) .arrowhead {
+	color: var(--highlight-color);
+}
+
+#start-edge.active .edge-path {
+	stroke: var(--highlight-color);
+}
+
+#start-edge.active .arrowhead {
 	color: var(--highlight-color);
 }
 

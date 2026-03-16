@@ -1,199 +1,207 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		CirclePlus,
-		Spline,
-		Hand,
-		MousePointer,
-		Plus,
-		Minus,
-		Redo,
-		Undo,
-		type Icon as IconType,
-		Delete
-	} from '@lucide/svelte';
+	import { CirclePlus, Spline, Hand, MousePointer } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import { DrawingBoard, SelectionWindow, TransitionTableWindow } from '$lib/ui';
+	import { TransitionTableWindow } from '$lib/transition-table';
+	import { SelectionArea, SelectionPanel } from '$lib/editor/selection';
+	import { ZoomControls } from '$lib/editor/viewport';
+	import { ComputeInputWindow, SimulationScene, SimulationControls } from '$lib/simulation';
+	import { DrawingBoard } from '$lib/graph-rendering';
 	import {
 		AddNodeState,
 		SelectState,
 		DrawEdgeState,
-		PanningState
-	} from '$lib/interaction/editor/states';
-	import { WINDOWS_ID } from '$lib/interaction/Windows.svelte';
-	import { notifyInfo, notifyError } from '$lib/utils/notifications';
-	import { DeleteFSAItemsCommand } from '$lib/interaction/editor/commands/instances';
+		PanningState,
+		type State,
+		StateMachine,
+		StatesToolbar,
+		type Tool
+	} from '$lib/editor/states';
+	import { WINDOWS_ID } from '$lib/windows/Windows.svelte';
+	import { DeleteFSAItemsCommand, UndoRedoControls } from '$lib/editor/commands';
+	import { type EditorContext } from '$lib/editor/EditorContext';
+	import { DraftEdgeHandler, DraftEdgeSvg } from '$lib/editor/draft-edge';
+	import { isTyping } from '$lib/utils/keyboard';
+	import { toggleInSelectionArea, toggleSelected } from '$lib/utils/graphEffects';
+	import MainMenu from '$lib/menu/MainMenu.svelte';
+	import { GraphInfoWindow } from '$lib/graph-info';
 
-	interface Tool {
-		state: string;
-		kbShortcut: string;
-		icon: typeof IconType;
+	const editorCtx: EditorContext = {
+		fsaGraph: app.fsaGraph,
+		viewport: app.viewport,
+		commandHistory: app.commandHistory,
+		selection: app.selectionHandler,
+		draftEdge: new DraftEdgeHandler(app.fsaGraph)
+	};
+
+	interface ModeConfig {
+		stateMachine: StateMachine<State>;
+		tools: Tool[];
+		keydownHandler: (_e: KeyboardEvent) => void;
 	}
 
-	/**
-	 * Toolbar tools configuration.
-	 */
-	const tools: Tool[] = [
-		{ state: PanningState.NAME, kbShortcut: '1', icon: Hand },
-		{ state: SelectState.NAME, kbShortcut: '2', icon: MousePointer },
-		{ state: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline },
-		{ state: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus }
+	const editorStateMachine = new StateMachine(
+		[
+			new PanningState(editorCtx),
+			new SelectState(editorCtx),
+			new DrawEdgeState(editorCtx),
+			new AddNodeState(editorCtx)
+		],
+		SelectState.NAME
+	);
+
+	const editorTools: Tool[] = [
+		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand, title: 'Pan (1)' },
+		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' },
+		{ stateName: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline, title: 'Draw Edge (3)' },
+		{ stateName: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus, title: 'Add Node (4)' }
 	];
 
-	function setActive(state: string) {
-		app.editor.transitionTo(state);
-	}
-
-	function undoCommand() {
-		const command = app.editor.commandHistory.peekUndo();
-		try {
-			if (!app.editor.commandHistory.canUndo) return;
-			app.editor.commandHistory.undo();
-			notifyInfo(`Undone '${command}' command.`);
-		} catch (error) {
-			notifyError(`Failed to undo command '${command}'`);
-			console.error('Error during undo:', error);
-		}
-	}
-
-	function redoCommand() {
-		const command = app.editor.commandHistory.peekRedo();
-		try {
-			if (!app.editor.commandHistory.canRedo) return;
-			app.editor.commandHistory.redo();
-			notifyInfo(`Redone '${command}' command.`);
-		} catch (error) {
-			notifyError(`Failed to redo command '${command}'`);
-			console.error('Error during redo:', error);
-		}
-	}
-
-	function handleKeyDown(e: KeyboardEvent) {
-		// prevent interfering with input fields
-		const target = e.target as HTMLElement;
-		const isTyping =
-			target.tagName === 'INPUT' ||
-			target.tagName === 'TEXTAREA' ||
-			target.tagName === 'SELECT' ||
-			target.isContentEditable;
-		if (isTyping) {
-			return;
-		}
-
-		const tool = tools.find((a) => a.kbShortcut === e.key);
-		if (tool) {
+	function handleEditorKeyDown(e: KeyboardEvent) {
+		if (e.key === 'Delete') {
 			e.preventDefault();
-			setActive(tool.state);
-		} else if (e.key === 'Escape') {
-			e.preventDefault();
-			app.editor.selection.clear();
-		} else if (e.key === 'Delete') {
-			e.preventDefault();
-			const toDelete = app.editor.selection.items.map((item) => item.id);
+			const toDelete = editorCtx.selection.items.map((item) => item.id);
 			if (toDelete.length === 0) return;
 			const command = new DeleteFSAItemsCommand(...toDelete);
-			app.editor.commandHistory.pushAndExecute(command);
-		} else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-			e.preventDefault();
-			undoCommand();
-		} else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-			e.preventDefault();
-			redoCommand();
+			editorCtx.commandHistory.pushAndExecute(command);
 		}
 	}
+
+	const simulationStateMachine = new StateMachine(
+		[new PanningState(editorCtx), new SelectState(editorCtx)],
+		SelectState.NAME
+	);
+
+	const simulationTools: Tool[] = [
+		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand, title: 'Pan (1)' },
+		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' }
+	];
+
+	function handleSimulationKeyDown(_e: KeyboardEvent) {
+		// nothing here yet
+	}
+
+	const editorConfig: ModeConfig = {
+		stateMachine: editorStateMachine,
+		tools: editorTools,
+		keydownHandler: handleEditorKeyDown
+	};
+
+	const simulationConfig: ModeConfig = {
+		stateMachine: simulationStateMachine,
+		tools: simulationTools,
+		keydownHandler: handleSimulationKeyDown
+	};
+
+	const activeMode = $derived(app.isEditing() ? editorConfig : simulationConfig);
+
+	function handleKeyDown(e: KeyboardEvent) {
+		// global shortcuts that work regardless of the current mode
+		if (isTyping(e)) return;
+		if (e.key === 'Escape') {
+			e.preventDefault();
+			editorCtx.selection.clear();
+		} else {
+			// delegate to active mode's specific keydown handler
+			activeMode.keydownHandler(e);
+		}
+	}
+
+	// Highlights items selected
+	$effect(() => {
+		app.fsaGraph.nodes.forEach((node) => {
+			const isSelected = editorCtx.selection.isSelected(node.id);
+			toggleSelected(isSelected, node.id);
+		});
+		app.fsaGraph.edges.forEach((edge) => {
+			const isSelected = editorCtx.selection.isSelected(edge.id);
+			toggleSelected(isSelected, edge.id);
+		});
+	});
+
+	// Highlights items in the selection area
+	$effect(() => {
+		app.fsaGraph.nodes.forEach((node) => {
+			const isInSelectionArea = editorCtx.selection.isInArea(node.id);
+			toggleInSelectionArea(isInSelectionArea, node.id);
+		});
+		app.fsaGraph.edges.forEach((edge) => {
+			const isInSelectionArea = editorCtx.selection.isInArea(edge.id);
+			toggleInSelectionArea(isInSelectionArea, edge.id);
+		});
+	});
 
 	onMount(() => {
 		window.addEventListener('keydown', handleKeyDown);
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown);
-		};
+		return () => window.removeEventListener('keydown', handleKeyDown);
 	});
 </script>
 
 <section class="relative h-full w-full overflow-hidden">
-	<DrawingBoard />
-
-	<!-- Toolbar -->
-	<ul
-		class="absolute top-2 left-1/2 mx-2 flex -translate-x-1/2 flex-row gap-2 rounded-box bg-base-100/95 px-2 py-1 shadow"
+	<DrawingBoard
+		fsa={editorCtx.fsaGraph}
+		viewport={editorCtx.viewport}
+		currentState={activeMode.stateMachine?.currentState}
 	>
-		{#each tools as tool (tool.state)}
-			{@const Icon = tool.icon}
-			<li>
-				<button
-					onclick={() => setActive(tool.state)}
-					aria-label={tool.kbShortcut}
-					class="btn relative btn-square text-base-content btn-ghost btn-sm btn-secondary
-							{tool.state === app.editor.currentState?.name ? 'btn-active' : ''}"
-				>
-					<Icon class="h-4 w-4" />
-					<small class="absolute right-0 -bottom-0.5 align-sub">{tool.kbShortcut}</small>
-				</button>
-			</li>
-		{/each}
-	</ul>
+		{#snippet overlay()}
+			{#if app.isEditing()}
+				{#if editorCtx.draftEdge.get}
+					<DraftEdgeSvg draftEdge={editorCtx.draftEdge.get} />
+				{/if}
+			{/if}
+			{#if editorCtx.selection.area}
+				{@const { start, end } = editorCtx.selection.area}
+				<SelectionArea {start} {end} />
+			{/if}
+		{/snippet}
+	</DrawingBoard>
 
-	<!-- Undo/Redo controls -->
-	<div
-		class="absolute top-2 right-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
-	>
-		<button
-			class="btn btn-square btn-ghost btn-sm"
-			onclick={undoCommand}
-			aria-label="Undo"
-			title="Undo"
-			disabled={!app.editor.commandHistory.canUndo}
-		>
-			<Undo class="h-4 w-4" />
-		</button>
-		<button
-			class="btn btn-square btn-ghost btn-sm"
-			onclick={redoCommand}
-			aria-label="Redo"
-			title="Redo"
-			disabled={!app.editor.commandHistory.canRedo}
-		>
-			<Redo class="h-4 w-4" />
-		</button>
+	{#if app.isSimulating() && app.simulationController}
+		<SimulationScene fsa={app.fsaGraph} controller={app.simulationController} />
+	{/if}
+
+	<!-- Top-left menu -->
+	<div class="controls-container top-2 left-2">
+		<MainMenu simulationActive={app.isSimulating()} />
 	</div>
 
-	<!-- Graph info panel -->
-	<div
-		class="absolute bottom-2 left-2 flex h-10 items-center rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
-	>
-		<span>
-			{app.editor.fsaGraph.type}
-			| Nodes: {app.editor.fsaGraph.nodes.length}
-			| Edges: {app.editor.fsaGraph.edges.length}
-		</span>
+	<!-- Top-center controls -->
+	<div class="controls-container top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2">
+		<!-- Toolbar -->
+		<StatesToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
+
+		{#if app.isSimulating() && app.simulationController}
+			<SimulationControls
+				onExit={() => app.exitSimulation()}
+				controller={app.simulationController}
+			/>
+		{/if}
+	</div>
+
+	<div class="controls-container top-2 right-2">
+		<!-- Undo/Redo controls -->
+		{#if app.isEditing()}
+			<UndoRedoControls commandHistory={editorCtx.commandHistory} />
+		{/if}
 	</div>
 
 	<!-- Zoom controls -->
-	<div
-		class="absolute right-2 bottom-2 flex h-10 items-center gap-0.5 rounded-box bg-base-100/95 px-3 py-2 text-sm shadow"
-	>
-		<span class="mr-2">{app.viewport.prettyZoomLevel}</span>
-
-		<button
-			class="btn btn-square btn-ghost btn-sm"
-			onclick={() => app.viewport.zoomIn()}
-			aria-label="Zoom In"
-		>
-			<Plus class="h-4 w-4" />
-		</button>
-		<button
-			class="btn btn-square btn-ghost btn-sm"
-			onclick={() => app.viewport.zoomOut()}
-			aria-label="Zoom Out"
-		>
-			<Minus class="h-4 w-4" />
-		</button>
+	<div class="controls-container right-2 bottom-2">
+		<ZoomControls viewport={editorCtx.viewport} />
 	</div>
 
-	{#if app.windows.isOpen(WINDOWS_ID.TransitionTable)}
-		<TransitionTableWindow />
+	{#if app.isEditing()}
+		{#if app.windows.isOpen(WINDOWS_ID.TransitionTable)}
+			<TransitionTableWindow />
+		{/if}
+		{#if app.windows.isOpen(WINDOWS_ID.ComputeInput)}
+			<ComputeInputWindow />
+		{/if}
+		{#if app.isEditing()}
+			<SelectionPanel editor={editorCtx} />
+		{/if}
+		{#if app.windows.isOpen(WINDOWS_ID.GraphInfo)}
+			<GraphInfoWindow />
+		{/if}
 	{/if}
-
-	<!-- Instance of selection panel always present -->
-	<SelectionWindow />
 </section>

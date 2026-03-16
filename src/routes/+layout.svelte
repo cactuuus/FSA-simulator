@@ -3,7 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import { Actions, Toasts, TitleEditor } from '$lib/ui';
+	import { default as Toasts } from '$lib/utils/Toasts.svelte';
 	import { notifyWarning } from '$lib/utils/notifications';
 
 	let { children } = $props();
@@ -68,16 +68,7 @@
 	</div>
 {/if}
 
-<header class="navbar flex min-h-12! items-end gap-6 bg-base-100">
-	<div id="banner" class="text-lg font-extrabold">
-		<TitleEditor fsaGraph={app.fsaGraph} />
-	</div>
-	<div id="page-actions" class="flex grow items-end">
-		<Actions />
-	</div>
-</header>
-
-<main class="relative h-[calc(100dvh-3rem)] w-full">
+<main class="relative h-dvh w-full">
 	{@render children?.()}
 </main>
 <Toasts />

@@ -1,0 +1,38 @@
+[
+    {
+        "filename": "NFA_1.fsa",
+        "type": "NFA",
+        "language": "L={(0|1)*(101|010)(0|1)*}",
+        "description": "NFA for the language of all strings over {0,1} that contain either 101 or 010 as a substring."
+    },
+    {
+        "filename": "DFA_1.fsa",
+        "type": "DFA",
+        "language": "L={acd(a+b+c)*bad}",
+        "description": "DFA for the language of all strings over {a,b,c} that start with 'acd', followed by any number of a's, b's, or c's, and end with 'bad'."
+    },
+    {
+        "filename": "DPDA_1.fsa",
+        "type": "DPDA",
+        "language": "L={0^n1^n|n>0}",
+        "description": "DPDA for the language of all strings over {0,1} that consist of n 0's followed by n 1's, where n is greater than 0."
+    },
+    {
+        "filename": "PDA_1.fsa",
+        "type": "PDA",
+        "language": "L={ww^R|w∈Σ*}",
+        "description": "PDA for the language of all strings over {0,1} that contains a word w followed by its reverse w^R"
+    },
+    {
+        "filename": "DFA_automatic_door.fsa",
+        "type": "DFA",
+        "language": "L={∅}",
+        "description": "A simple DFA recognizing the alphabet {front, rear, neither, both}, that represent the behavior of an automatic door. The door starts closed, and can only open if a person is standing in front of it and no one is behind it. Once the door is open, it can only close once it is safe to do so, meaning that no one is standing either in front of it or behind it. This example has no accepting states, and it is simply meant to demonstrate how Finite Automata can be used to describe the behavior of real-world systems."
+    },
+    {
+        "filename": "PDA_path_explosion.fsa",
+        "type": "PDA",
+        "language": "L={∅}",
+        "description": "PDA recognizing the alphabeth {1} only, and doesn't accept any input. This example is solely meant to demonstrate how infinite loops (ones with ever growing stacks) are handled by the simulator, and specifically highlight the phenomenon of path explosion."
+    }
+]
