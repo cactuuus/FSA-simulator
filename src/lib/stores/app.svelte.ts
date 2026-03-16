@@ -115,6 +115,7 @@ export class AppManager {
 		this.windows.reset();
 		this.desiredAlphabet.reset();
 		this.commandHistory.reset();
+		this.simulationController.reset();
 		storage.remove(AppManager.STORAGE_KEY_FSA);
 		storage.remove(AppManager.STORAGE_KEY_VIEWPORT);
 		storage.remove(AppManager.STORAGE_KEY_WINDOWS);
