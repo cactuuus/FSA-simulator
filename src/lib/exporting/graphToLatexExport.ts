@@ -3,13 +3,13 @@ import { type FSAGraph, Transition, type Edge, Node } from '$lib/automata-models
 import { GRAPH_GEOMETRY } from '$lib/utils/graphStyle';
 
 const SCALE = 50; // scale factor to convert from SVG (pixels) to TikZ (cm)
-const TIKZ_PACKAGES = `% Required packages:
+const TIKZ_PACKAGES = `% Required packages, add them to your preamble:
 % \\usepackage{tikz}
 % \\usepackage{amsmath}
 % \\usetikzlibrary{automata, positioning, arrows.meta, bending}`;
 
 /**
- * Convert SVG (pixel) coordinates to TikZ (cm) coordinates.
+ * Convert SVG (pixel) coordinates to TikZ (cm) coordinates, rounding to two decimal places.
  * Note: SVG y-axis points down, while TikZ y-axis points up, hence we negate it in the conversion.
  * @param p The point in SVG coordinates.
  * @returns The point converted to TikZ coordinates.
@@ -52,9 +52,9 @@ function transitionLabel(t: Transition): string {
 			.replace(Transition.EPSILON, '\\varepsilon{}');
 
 	if (t.hasStackOps()) {
-		return `$${escape(t.consume)}, ${escape(t.pop!)} \\to ${escape(t.push!)}$`;
+		return `${escape(t.consume)}, ${escape(t.pop!)} \\to ${escape(t.push!)}`;
 	}
-	return `$${escape(t.consume)}$`;
+	return escape(t.consume);
 }
 
 /**
@@ -63,7 +63,7 @@ function transitionLabel(t: Transition): string {
  * @returns A TikZ label string.
  */
 function edgeLabel(transitions: Transition[]): string {
-	if (transitions.length === 1) return transitionLabel(transitions[0]);
+	if (transitions.length === 1) return `$${transitionLabel(transitions[0])}$`;
 	const rows = transitions.map(transitionLabel).join(' \\\\ ');
 	return `$\\begin{array}{c} ${rows} \\end{array}$`;
 }
@@ -90,7 +90,6 @@ function loopLabelAnchor(tikzAngleDeg: number): string {
 function nodeToTikz(node: Node, isStart: boolean): string {
 	const { x, y } = toTikz(node.pos);
 	const label = cleanNodeLabel(node.label);
-
 	const styles: string[] = ['state'];
 	if (isStart) styles.push('initial');
 	if (node.isAccepting) styles.push('accepting');
@@ -173,7 +172,6 @@ export function graphToTikz(fsa: FSAGraph): string {
 	lines.push('  shorten > = 2pt,');
 	lines.push('  shorten < = 2pt,');
 	lines.push('  auto,');
-	lines.push('  node distance = 2cm,');
 	lines.push('  semithick');
 	lines.push(']');
 	lines.push('');
