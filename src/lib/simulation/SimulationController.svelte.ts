@@ -39,7 +39,7 @@ export class SimulationController {
 	}
 
 	get warnings(): string[] {
-		return this._tree?.warnings ?? [];
+		return this._tree?.warnings.map((w) => w.message) ?? [];
 	}
 
 	get isPlaying() {
