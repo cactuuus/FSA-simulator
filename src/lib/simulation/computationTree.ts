@@ -16,6 +16,17 @@ export interface PathLeaf {
 	isAccepting: boolean;
 }
 
+export const Warning_ID = {
+	INFINITE_LOOP: 'infinite_loop'
+} as const;
+
+type Warning_ID = (typeof Warning_ID)[keyof typeof Warning_ID];
+
+export interface Warning {
+	id: Warning_ID;
+	message: string;
+}
+
 export class ComputationNode {
 	config: Configuration;
 	parent?: {
@@ -68,7 +79,7 @@ export class ComputationTree {
 	private fsa: FSAGraph;
 	private inputIndex: number = -1;
 	private groups: ComputationNode[][];
-	warnings: string[] = [];
+	warnings: Warning[] = [];
 
 	constructor(fsa: FSAGraph, input: string[], maxVisits: number = 0) {
 		this.fsa = fsa;
@@ -198,9 +209,10 @@ export class ComputationTree {
 				return count + (currentStack.startsWith(seenStack) ? 1 : 0);
 			}, 0);
 			if (prefixCount > this.maxVisits) {
-				this.warnings.push(
-					`Possible infinite epsilon loop involving state '${node.config.state.label}' and transition '${transition.toString()}'. Halted exploration of this branch after ${this.maxVisits} loops through it.`
-				);
+				this.warnings.push({
+					id: Warning_ID.INFINITE_LOOP,
+					message: `Possible infinite epsilon loop involving state '${node.config.state.label}' and transition '${transition.toString()}'. Halted exploration of this branch after ${this.maxVisits} loops through it.`
+				});
 				continue;
 			}
 
