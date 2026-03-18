@@ -67,7 +67,7 @@
 
 	async function downloadGraph() {
 		if (app.fsaGraph.isEmpty) {
-			notifyWarning('The graph is empty.');
+			notifyWarning('The graph is empty, nothing to download.');
 			return;
 		}
 		try {
@@ -88,7 +88,7 @@
 
 	async function exportAsSvg() {
 		if (app.fsaGraph.isEmpty) {
-			notifyWarning('The graph is empty.');
+			notifyWarning('The graph is empty, nothing to export.');
 			return;
 		}
 		try {
@@ -110,7 +110,7 @@
 
 	function exportAsTikz() {
 		if (app.fsaGraph.isEmpty) {
-			notifyWarning('The graph is empty.');
+			notifyWarning('The graph is empty, nothing to export.');
 			return;
 		}
 		try {
