@@ -8,7 +8,7 @@
     {
         "filename": "DFA_1.fsa",
         "type": "DFA",
-        "language": "L={acd(a+b+c)*bad}",
+        "language": "L={acd(a|b|c)*bad}",
         "description": "DFA for the language of all strings over {a,b,c} that start with 'acd', followed by any number of a's, b's, or c's, and end with 'bad'."
     },
     {
