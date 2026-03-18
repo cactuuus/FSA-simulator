@@ -110,9 +110,10 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	 * @param withStackOps True to create the transition symbol with stack operations, false otherwise.
 	 * @param id Optional ID for the new transition symbol.
 	 */
-	addEmptyTransition(withStackOps: boolean = false, id: string): void {
+	addEmptyTransition(withStackOps: boolean = false, id: string): Transition {
 		const newTransition = Transition.createEmpty(withStackOps, id);
 		this._transitionsMap.set(newTransition.id, newTransition);
+		return newTransition;
 	}
 
 	/**

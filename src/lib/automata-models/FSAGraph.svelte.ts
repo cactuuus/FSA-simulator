@@ -108,7 +108,6 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 			throw new Error(`Edge from ${from.id} to ${to.id} already exists in FSA graph.`);
 		}
 		const newEdge = new Edge(from, to, id);
-		newEdge.addTransitions(Transition.createEmpty(this.hasStackOps));
 		this.edgesMap.set(newEdge.id, newEdge);
 		return newEdge;
 	}
