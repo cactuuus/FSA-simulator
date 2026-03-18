@@ -30,6 +30,10 @@ export function fixBidirectionalEdges(fsa: FSAGraph): void {
 	const visited = new Set<string>();
 
 	for (const edge of fsa.edges) {
+		// reset the edge for consistency
+		edge.resetControlPoint();
+		edge.isSymmetric = false;
+
 		if (edge.isLoopback) continue; // skip if loopback (they have no reverse)
 		// skip if we already fixed this pair of if there is no reverse edge
 		const reverseId = Edge.createId(edge.to.id, edge.from.id);
