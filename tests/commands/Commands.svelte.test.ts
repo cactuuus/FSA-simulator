@@ -25,7 +25,8 @@ function makeFSA() {
 	const q0 = fsa.createNewNode({ x: 0, y: 0 }, 'node-0');
 	const q1 = fsa.createNewNode({ x: 100, y: 0 }, 'node-1');
 	const edge = fsa.createNewEdge(q0, q1);
-	return { fsa, q0, q1, edge };
+	const transition = edge.addEmptyTransition(fsa.hasStackOps, 't0');
+	return { fsa, q0, q1, edge, transition };
 }
 
 // --- AddNodeCommand
@@ -187,9 +188,8 @@ describe('AddTransitionCommand', () => {
 describe('DeleteTransitionsCommand', () => {
 	it('execute deletes a transition, undo restores it', () => {
 		withReactivity(() => {
-			const { fsa, edge } = makeFSA();
-			const transitionId = edge.transitions[0].id;
-			const cmd = new DeleteTransitionsCommand(transitionId);
+			const { fsa, edge, transition } = makeFSA();
+			const cmd = new DeleteTransitionsCommand(transition.id);
 			cmd.execute(fsa);
 			expect(edge.transitions).toHaveLength(0);
 			cmd.undo(fsa);
@@ -199,9 +199,8 @@ describe('DeleteTransitionsCommand', () => {
 
 	it('deleting all transitions from an edge also deletes the edge, undo restores both', () => {
 		withReactivity(() => {
-			const { fsa, edge } = makeFSA();
-			const transitionId = edge.transitions[0].id;
-			const cmd = new DeleteTransitionsCommand(transitionId);
+			const { fsa, transition } = makeFSA();
+			const cmd = new DeleteTransitionsCommand(transition.id);
 			cmd.execute(fsa);
 			expect(fsa.edges).toHaveLength(0);
 			cmd.undo(fsa);
@@ -216,8 +215,7 @@ describe('DeleteTransitionsCommand', () => {
 describe('UpdateTransitionCommand', () => {
 	it('execute updates transition values, undo restores them', () => {
 		withReactivity(() => {
-			const { fsa, edge } = makeFSA();
-			const transition = edge.transitions[0];
+			const { fsa, transition } = makeFSA();
 			const cmd = new UpdateTransitionCommand({
 				transitionId: transition.id,
 				from: { rawConsume: '', rawPop: null, rawPush: null },
@@ -287,20 +285,20 @@ describe('EnableStackOpsCommand', () => {
 describe('DisableStackOpsCommand', () => {
 	it('execute disables stack ops, undo restores previous pop/push values', () => {
 		withReactivity(() => {
-			const { fsa, edge } = makeFSA();
+			const { fsa, transition } = makeFSA();
 			const pop = 'x';
 			const push = 'y';
 			fsa.hasStackOps = true;
-			edge.transitions[0].popRawValue = pop;
-			edge.transitions[0].pushRawValue = push;
+			transition.popRawValue = pop;
+			transition.pushRawValue = push;
 			const cmd = new DisableStackOpsCommand();
 			cmd.execute(fsa);
 			expect(fsa.hasStackOps).toBe(false);
 			expect(fsa.transitions.every((t) => !t.hasStackOps())).toBe(true);
 			cmd.undo(fsa);
 			expect(fsa.hasStackOps).toBe(true);
-			expect(edge.transitions[0].pop).toBe(pop);
-			expect(edge.transitions[0].push).toBe(push);
+			expect(transition.pop).toBe(pop);
+			expect(transition.push).toBe(push);
 		});
 	});
 });

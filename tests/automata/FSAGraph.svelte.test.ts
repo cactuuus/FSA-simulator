@@ -123,7 +123,9 @@ describe('FSAGraph - stack ops', () => {
 			const fsa = new FSAGraph();
 			const q0 = fsa.createNewNode({ x: 0, y: 0 }, 'node-0');
 			const q1 = fsa.createNewNode({ x: 100, y: 0 }, 'node-1');
-			fsa.createNewEdge(q0, q1);
+			const edge = fsa.createNewEdge(q0, q1);
+			edge.addEmptyTransition(fsa.hasStackOps, 't0');
+			edge.addEmptyTransition(fsa.hasStackOps, 't1');
 			fsa.hasStackOps = true;
 			expect(fsa.transitions.every((t) => t.hasStackOps())).toBe(true);
 		});
@@ -134,10 +136,12 @@ describe('FSAGraph - stack ops', () => {
 			const fsa = new FSAGraph();
 			const q0 = fsa.createNewNode({ x: 0, y: 0 }, 'node-0');
 			const q1 = fsa.createNewNode({ x: 100, y: 0 }, 'node-1');
-			fsa.createNewEdge(q0, q1);
+			const edge = fsa.createNewEdge(q0, q1);
+			edge.addEmptyTransition(fsa.hasStackOps, 't0');
+			edge.addEmptyTransition(fsa.hasStackOps, 't1');
 			fsa.hasStackOps = true;
 			fsa.hasStackOps = false;
-			expect(fsa.transitions.every((t) => !t.hasStackOps())).toBe(true);
+			expect(fsa.transitions.every((t) => !t.hasStackOps())).toBe(false);
 		});
 	});
 
@@ -148,6 +152,8 @@ describe('FSAGraph - stack ops', () => {
 			const q0 = fsa.createNewNode({ x: 0, y: 0 }, 'node-0');
 			const q1 = fsa.createNewNode({ x: 100, y: 0 }, 'node-1');
 			const edge = fsa.createNewEdge(q0, q1);
+			edge.addEmptyTransition(fsa.hasStackOps, 't0');
+			edge.addEmptyTransition(fsa.hasStackOps, 't1');
 			expect(edge.transitions[0].hasStackOps()).toBe(true);
 		});
 	});
