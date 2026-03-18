@@ -12,6 +12,7 @@
 	import type { SerializedFSAGraph } from '$lib/automata-models';
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
 	import { cleanAndSerializeSvgGraph, graphToTikz } from '$lib/exporting';
+	import { LoadGraphCommand } from '$lib/editor/commands';
 	import { portal } from '$lib/utils/portal';
 
 	/**
@@ -54,10 +55,10 @@
 		const backup = app.fsaGraph.toJSON();
 		try {
 			app.desiredAlphabet.reset();
-			app.commandHistory.reset();
-			app.fsaGraph.loadFromJSON(json);
+			app.commandHistory.pushAndExecute(new LoadGraphCommand(json));
 			notifySuccess('Graph loaded successfully.');
 		} catch (err) {
+			// restore grpah directly, without pushing to command history, to avoid messing up the undo stack
 			app.fsaGraph.loadFromJSON(backup);
 			console.error(err);
 			notifyError('Failed to load graph. The file may be corrupted.');

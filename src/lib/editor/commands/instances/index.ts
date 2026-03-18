@@ -18,3 +18,4 @@ export { type UpdateTransitionData, UpdateTransitionCommand } from './UpdateTran
 export { type SetStartNodeData, SetStartNodeCommand } from './SetStartNodeCommand';
 export { type EnableStackOpsData, EnableStackOpsCommand } from './EnableStackOpsCommand';
 export { type DisableStackOpsData, DisableStackOpsCommand } from './DisableStackOpsCommand';
+export { type LoadGraphData, LoadGraphCommand } from './LoadGraphCommand';
