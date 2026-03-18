@@ -1,8 +1,14 @@
 <script lang="ts">
 	import { ListPlus, ListX } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
-	import { EnableStackOpsCommand, DisableStackOpsCommand } from '$lib/editor/commands';
-	import { notifySuccess } from '$lib/utils/notifications';
+	import {
+		EnableStackOpsCommand,
+		DisableStackOpsCommand,
+		LoadGraphCommand
+	} from '$lib/editor/commands';
+	import { notifySuccess, notifyError } from '$lib/utils/notifications';
+	import { NfaToDfa } from '$lib/fsa-operations';
+	import { FSAType } from '$lib/automata-models';
 	import { portal } from '$lib/utils/portal';
 
 	const fsa = $derived(app.fsaGraph);
@@ -25,6 +31,25 @@
 		}
 		togglePdaModal.close();
 	}
+
+	function convertToDfa() {
+		if (fsa.type !== FSAType.NFA) {
+			notifyError('Only NFAs can be converted to DFAs.');
+			return;
+		}
+		if (!fsa.hasStart) {
+			notifyError('The FSA must have a start node to be converted.');
+			return;
+		}
+		try {
+			const dfa = NfaToDfa(fsa);
+			app.commandHistory.pushAndExecute(new LoadGraphCommand(dfa));
+			notifySuccess('NFA successfully converted to DFA.');
+		} catch (error) {
+			console.error('Error converting NFA to DFA:', error);
+			notifyError('Conversion failed, check the console for details.');
+		}
+	}
 </script>
 
 <h2 class="menu-title">FSA</h2>
@@ -40,6 +65,11 @@
 			{/if}
 		</button>
 	</li>
+	{#if fsa.type === FSAType.NFA}
+		<li>
+			<button onclick={() => convertToDfa()}> Convert to DFA </button>
+		</li>
+	{/if}
 </ul>
 
 <!-- Modals  -->
