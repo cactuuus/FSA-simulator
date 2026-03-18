@@ -6,11 +6,12 @@
 		DisableStackOpsCommand,
 		LoadGraphCommand
 	} from '$lib/editor/commands';
-	import { notifySuccess, notifyError } from '$lib/utils/notifications';
-	import { NfaToDfa } from '$lib/fsa-operations';
-	import { FSAType } from '$lib/automata-models';
+	import { notifySuccess, notifyError, notifyWarning } from '$lib/utils/notifications';
+	import { NfaToDfa, minimizeDfa } from '$lib/fsa-operations';
 	import { portal } from '$lib/utils/portal';
+	import { FSAType } from '$lib/automata-models';
 
+	const BIG_FSA_THRESHOLD = 20;
 	const fsa = $derived(app.fsaGraph);
 	let togglePdaModal: HTMLDialogElement;
 	let pendingPdaState = $state(false);
@@ -44,10 +45,38 @@
 		try {
 			const dfa = NfaToDfa(fsa);
 			app.commandHistory.pushAndExecute(new LoadGraphCommand(dfa));
-			notifySuccess('NFA successfully converted to DFA.');
+			if (dfa.nodes.length > BIG_FSA_THRESHOLD) {
+				notifyWarning(
+					'The resulting DFA seems to have a large number of states, consider minimizing it!'
+				);
+			}
 		} catch (error) {
 			console.error('Error converting NFA to DFA:', error);
 			notifyError('Conversion failed, check the console for details.');
+		}
+	}
+
+	function toMinimizedDfa() {
+		if (fsa.type !== FSAType.DFA) {
+			notifyError('Only DFAs can be minimized.');
+			return;
+		}
+		if (!fsa.hasStart) {
+			notifyError('The FSA must have a start node to be minimized.');
+			return;
+		}
+		try {
+			const minimized = minimizeDfa(fsa);
+			if (minimized === null) {
+				notifySuccess('The DFA is already minimal, no changes were made.');
+				return;
+			} else {
+				app.commandHistory.pushAndExecute(new LoadGraphCommand(minimized));
+				notifySuccess('DFA minimized successfully.');
+			}
+		} catch (error) {
+			console.error('Error minimizing DFA:', error);
+			notifyError('Minimization failed, check the console for details.');
 		}
 	}
 </script>
@@ -68,6 +97,10 @@
 	{#if fsa.type === FSAType.NFA}
 		<li>
 			<button onclick={() => convertToDfa()}> Convert to DFA </button>
+		</li>
+	{:else if fsa.type === FSAType.DFA}
+		<li>
+			<button onclick={() => toMinimizedDfa()}> Minimize DFA </button>
 		</li>
 	{/if}
 </ul>
