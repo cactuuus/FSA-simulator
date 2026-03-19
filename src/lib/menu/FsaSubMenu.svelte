@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ListPlus, ListX } from '@lucide/svelte';
+	import { ListPlus, ListX, Copy, Check } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import {
 		EnableStackOpsCommand,
@@ -7,14 +7,25 @@
 		LoadGraphCommand
 	} from '$lib/editor/commands';
 	import { notifySuccess, notifyError, notifyWarning } from '$lib/utils/notifications';
-	import { NfaToDfa, minimizeDfa } from '$lib/fsa-operations';
+	import { NfaToDfa, minimizeDfa, toRegex } from '$lib/fsa-operations';
 	import { portal } from '$lib/utils/portal';
 	import { FSAType } from '$lib/automata-models';
 
 	const BIG_FSA_THRESHOLD = 20;
 	const fsa = $derived(app.fsaGraph);
+
 	let togglePdaModal: HTMLDialogElement;
 	let pendingPdaState = $state(false);
+
+	let regexModal: HTMLDialogElement;
+	let regex = $state('');
+	let regexCopied = $state(false);
+
+	async function copyRegex() {
+		await navigator.clipboard.writeText(regex);
+		regexCopied = true;
+		setTimeout(() => (regexCopied = false), 2000);
+	}
 
 	function openTogglePdaModal() {
 		pendingPdaState = !fsa.hasStackOps;
@@ -79,6 +90,24 @@
 			notifyError('Minimization failed, check the console for details.');
 		}
 	}
+
+	function convertToRegex() {
+		if (fsa.hasStackOps) {
+			notifyError('FSAs with stack operations cannot be converted to regex.');
+			return;
+		}
+		if (!fsa.hasStart) {
+			notifyError('The FSA must have a start node to be converted.');
+			return;
+		}
+		try {
+			regex = toRegex(fsa);
+			regexModal.show();
+		} catch (error) {
+			console.error('Error converting FSA to regex:', error);
+			notifyError('Conversion failed, check the console for details.');
+		}
+	}
 </script>
 
 <h2 class="menu-title">FSA</h2>
@@ -94,6 +123,11 @@
 			{/if}
 		</button>
 	</li>
+	{#if !fsa.hasStackOps}
+		<li>
+			<button onclick={() => convertToRegex()}> Convert to Regex </button>
+		</li>
+	{/if}
 	{#if fsa.type === FSAType.NFA}
 		<li>
 			<button onclick={() => convertToDfa()}> Convert to DFA </button>
@@ -134,6 +168,32 @@
 					</button>
 				</div>
 			</form>
+		</div>
+	</div>
+</dialog>
+
+<dialog bind:this={regexModal} class="modal" use:portal>
+	<div class="modal-box max-w-2xl">
+		<div class="flex items-start justify-between">
+			<div>
+				<h3 class="text-lg font-bold">Equivalent Regular Expression</h3>
+				<p class="pt-1 text-sm text-base-content/70">
+					Note that this might not be the most optimal regex for this language!
+				</p>
+			</div>
+			<button class="btn btn-sm {regexCopied ? 'btn-success' : 'btn-ghost'}" onclick={copyRegex}>
+				{#if regexCopied}
+					<Check class="h-4 w-4" /> Copied!
+				{:else}
+					<Copy class="h-4 w-4" /> Copy
+				{/if}
+			</button>
+		</div>
+		<div class="mt-4 max-h-[50vh] overflow-auto rounded-md bg-base-200 p-4 font-mono text-sm">
+			{regex}
+		</div>
+		<div class="modal-action mt-4">
+			<button class="btn" onclick={() => regexModal.close()}>Close</button>
 		</div>
 	</div>
 </dialog>
