@@ -5,7 +5,9 @@
 		FolderOpenDot,
 		Download,
 		ImageDown,
-		FileBraces
+		FileBraces,
+		Check,
+		Copy
 	} from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
@@ -26,9 +28,14 @@
 	}
 
 	let clearFsaModal: HTMLDialogElement;
+
 	let loadExampleModal: HTMLDialogElement;
 	let availableExamples = $state<Example[]>([]);
 	let fetchingExamples = $state(true);
+
+	let tikzModal: HTMLDialogElement;
+	let tikzContent = $state('');
+	let tikzCopied = $state(false);
 
 	function openFileDialog() {
 		const input = document.createElement('input');
@@ -108,14 +115,20 @@
 		}
 	}
 
+	async function copyTikz() {
+		await navigator.clipboard.writeText(tikzContent);
+		tikzCopied = true;
+		setTimeout(() => (tikzCopied = false), 2000);
+	}
+
 	function exportAsTikz() {
 		if (app.fsaGraph.isEmpty) {
 			notifyWarning('The graph is empty, nothing to export.');
 			return;
 		}
 		try {
-			navigator.clipboard.writeText(graphToTikz(app.fsaGraph));
-			notifySuccess('TikZ code copied to clipboard.');
+			tikzContent = graphToTikz(app.fsaGraph);
+			tikzModal.show();
 		} catch (err) {
 			console.error(err);
 			notifyError('Failed to export TikZ.');
@@ -236,6 +249,29 @@
 		{/if}
 		<div class="modal-action mt-4">
 			<button class="btn btn-sm" onclick={() => loadExampleModal.close()}>Close</button>
+		</div>
+	</div>
+</dialog>
+
+<dialog bind:this={tikzModal} class="modal" use:portal>
+	<div class="modal-box max-w-4xl">
+		<div class="flex items-start justify-between">
+			<div>
+				<h3 class="text-lg font-bold">LaTeX (TikZ) Export</h3>
+			</div>
+			<button class="btn btn-sm {tikzCopied ? 'btn-success' : 'btn-ghost'}" onclick={copyTikz}>
+				{#if tikzCopied}
+					<Check class="h-4 w-4" /> Copied!
+				{:else}
+					<Copy class="h-4 w-4" /> Copy
+				{/if}
+			</button>
+		</div>
+		<pre class="mt-4 max-h-[70vh] overflow-auto rounded-md bg-base-200 p-4 font-mono text-sm">
+			{tikzContent}
+		</pre>
+		<div class="modal-action mt-4">
+			<button class="btn" onclick={() => tikzModal.close()}>Close</button>
 		</div>
 	</div>
 </dialog>
