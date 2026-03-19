@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ListPlus, ListX, Copy, Check } from '@lucide/svelte';
+	import { ListPlus, ListX, Copy, Check, Regex, Combine } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import {
 		EnableStackOpsCommand,
@@ -110,7 +110,7 @@
 	}
 </script>
 
-<h2 class="menu-title">FSA</h2>
+<h2 class="menu-title">{fsa.type} Operations</h2>
 <ul>
 	<li>
 		<button onclick={() => openTogglePdaModal()}>
@@ -125,16 +125,22 @@
 	</li>
 	{#if !fsa.hasStackOps}
 		<li>
-			<button onclick={() => convertToRegex()}> Convert to Regex </button>
+			<button onclick={() => convertToRegex()}>
+				<Regex class="h-4 w-4" /> To Regex
+			</button>
 		</li>
 	{/if}
 	{#if fsa.type === FSAType.NFA}
 		<li>
-			<button onclick={() => convertToDfa()}> Convert to DFA </button>
+			<button onclick={() => convertToDfa()}>
+				<Combine class="h-4 w-4" /> Convert to DFA
+			</button>
 		</li>
 	{:else if fsa.type === FSAType.DFA}
 		<li>
-			<button onclick={() => toMinimizedDfa()}> Minimize DFA </button>
+			<button onclick={() => toMinimizedDfa()}>
+				<Combine class="h-4 w-4" /> Minimize DFA
+			</button>
 		</li>
 	{/if}
 </ul>
