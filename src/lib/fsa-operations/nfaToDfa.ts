@@ -19,7 +19,7 @@ function encodeStateSet(states: Set<Node>): string {
  * @returns A string representation of the set of states, separated by commas and enclosed in curly braces.
  */
 function stateSetLabel(states: Set<Node>): string {
-	if (states.size === 0) return '∅';
+	if (states.size === 0) return '{∅}';
 	return `{${[...states]
 		.map((s) => s.label)
 		.sort()
@@ -139,6 +139,7 @@ export function NfaToDfa(nfa: FSAGraph): FSAGraph {
 	const nfaClosures = closuresMap(nfa);
 	const NfaStatesSubsets = powerSet(nfa.nodes);
 	const subsetToDfaState = new Map<string, Node>();
+	const nfaAdjacencyMap = nfa.adjacencyMap;
 
 	// create a DFA node for every subset
 	for (const subset of NfaStatesSubsets) {
@@ -158,15 +159,15 @@ export function NfaToDfa(nfa: FSAGraph): FSAGraph {
 	for (const subset of NfaStatesSubsets) {
 		const fromNode = subsetToDfaState.get(encodeStateSet(subset))!;
 		for (const symbol of nfa.alphabet(false)) {
-			const reached = consumeSymbol(subset, symbol, nfa.adjacencyMap);
+			const reached = consumeSymbol(subset, symbol, nfaAdjacencyMap);
 			const reachedClosure = closureUnion(reached, nfaClosures);
 			const toNode = subsetToDfaState.get(encodeStateSet(reachedClosure))!;
 
-			if (!dfa.edgeAlreadyExists(fromNode, toNode)) {
+			const edgeId = Edge.createId(fromNode.id, toNode.id);
+			if (dfa.getEdge(edgeId) === null) {
 				dfa.addEdge(new Edge(fromNode, toNode));
 			}
-			const edgeId = Edge.createId(fromNode.id, toNode.id);
-			const edge = dfa.getEdge(edgeId)!;
+			const edge = dfa.requireEdge(edgeId);
 			edge.addTransitions(new Transition(symbol, null, null));
 		}
 	}
