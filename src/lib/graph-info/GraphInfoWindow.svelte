@@ -1,30 +1,10 @@
 <script lang="ts">
-	import { Pencil, Check, X, ChevronRight, CircleQuestionMark } from '@lucide/svelte';
+	import { Check, X, ChevronRight, CircleQuestionMark } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { FloatingWindow, WINDOWS_ID } from '$lib/windows';
-	import { portal } from '$lib/utils/portal';
 	import { FSAType } from '$lib/automata-models';
 
 	const fsa = $derived(app.fsaGraph);
-	let draftTitle = $state('');
-	let editTitleModal: HTMLDialogElement;
-
-	function commitTitle(e: SubmitEvent) {
-		e.preventDefault();
-		const trimmed = draftTitle.trim();
-		if (trimmed) fsa.title = trimmed;
-		closeTitleModal();
-	}
-
-	function openEditTitleModal() {
-		draftTitle = fsa.title;
-		editTitleModal.showModal();
-	}
-
-	function closeTitleModal() {
-		draftTitle = '';
-		editTitleModal.close();
-	}
 
 	function typeToFullLabel(type: FSAType): string {
 		switch (type) {
@@ -73,21 +53,10 @@
 						class="flex items-baseline gap-1 hover:cursor-help"
 						title="This is purely cosmetic, to help you identify your FSA when importing/exporting."
 					>
-						<h3 class="font-semibold">Title</h3>
+						<label for="fsa-title" class="font-semibold">Title</label>
 						<CircleQuestionMark class="h-3 w-3" />
 					</div>
-					<div class="flex items-center gap-2">
-						<input
-							id="readonly-fsa-title"
-							type="text"
-							class="pointer-events-none input w-full max-w-xs"
-							bind:value={fsa.title}
-							readonly
-						/>
-						<button class="btn btn-sm" onclick={openEditTitleModal}>
-							<Pencil class="h-3 w-3" /> Edit
-						</button>
-					</div>
+					<input id="fsa-title" type="text" class="input w-full max-w-xs" bind:value={fsa.title} />
 				</div>
 
 				<hr class="border-base-content/30" />
@@ -141,19 +110,3 @@
 		{/snippet}
 	</FloatingWindow>
 {/if}
-
-<!-- Edit title modal -->
-<dialog bind:this={editTitleModal} class="modal" use:portal>
-	<div class="modal-box w-11/12 max-w-md">
-		<h3 class="text-lg font-bold">Edit FSA Title</h3>
-		<div class="modal-action mt-4">
-			<form class="w-full" onsubmit={commitTitle}>
-				<input class="input w-full" bind:value={draftTitle} required autocomplete="off" />
-				<div class="mt-4 flex justify-end gap-4">
-					<button type="button" class="btn" onclick={closeTitleModal}>Cancel</button>
-					<button type="submit" class="btn btn-success">Confirm</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</dialog>

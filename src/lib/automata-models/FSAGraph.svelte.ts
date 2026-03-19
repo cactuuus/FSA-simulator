@@ -354,7 +354,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	}
 
 	set title(newTitle: string) {
-		this._title = newTitle;
+		this._title = newTitle.trim();
 	}
 
 	toJSON(): SerializedFSAGraph {
