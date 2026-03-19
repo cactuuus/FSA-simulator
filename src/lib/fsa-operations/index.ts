@@ -1,2 +1,2 @@
-export { NfaToDfa } from './NfaToDfa';
+export { NfaToDfa } from './nfaToDfa';
 export { minimizeDfa } from './minimizeDfa';
