@@ -267,9 +267,8 @@
 				{/if}
 			</button>
 		</div>
-		<pre class="mt-4 max-h-[70vh] overflow-auto rounded-md bg-base-200 p-4 font-mono text-sm">
-			{tikzContent}
-		</pre>
+		<pre
+			class="mt-4 max-h-[70vh] overflow-auto rounded-md bg-base-200 p-4 font-mono text-sm">{tikzContent}</pre>
 		<div class="modal-action mt-4">
 			<button class="btn" onclick={() => tikzModal.close()}>Close</button>
 		</div>
