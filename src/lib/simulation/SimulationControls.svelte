@@ -3,7 +3,7 @@
 	import { type SimulationController } from './SimulationController.svelte';
 	import { portal } from '$lib/utils/portal';
 
-	const { onExit, controller }: { onExit: () => void; controller: SimulationController } = $props();
+	const { controller }: { controller: SimulationController } = $props();
 	let adjustSettingsModal: HTMLDialogElement | null = $state(null);
 
 	const WINDOW = 5; // number of input symbols to show around the current position
@@ -95,7 +95,11 @@
 		<Settings class="h-4 w-4" />
 	</button>
 
-	<button onclick={onExit} class="btn btn-sm btn-error" title="Stop & exit simulation">
+	<button
+		onclick={() => controller.endSimulation()}
+		class="btn btn-sm btn-error"
+		title="Stop & exit simulation"
+	>
 		<X class="h-4 w-4" />
 		Exit
 	</button>
