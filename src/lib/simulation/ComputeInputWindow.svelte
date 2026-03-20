@@ -60,8 +60,7 @@
 	}
 
 	function startPathSimulation(leaf: PathLeaf): void {
-		controller.selectPath(leaf);
-		app.enterSimulation();
+		controller.startSimulation(leaf);
 	}
 
 	/**
@@ -160,45 +159,43 @@
 					</details>
 				{/if}
 				<!-- Accepting paths -->
-				{#if acceptingLeaves.length > 0}
-					<details class="collapse-arrow collapse rounded-box bg-success/10 text-success">
-						<summary class="collapse-title p-2 font-semibold">
-							<Check class="inline h-4 w-4" />
-							{acceptingLeaves.length} Accepting Path{acceptingLeaves.length > 1 ? 's' : ''}
-						</summary>
-						<div class="collapse-content">
-							<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
-								<Info class="inline h-3 w-3" />
-								Click on a path to run a simulation of only the path itself.
-							</p>
-							<PathList
-								leaves={acceptingLeaves}
-								tree={controller.tree!}
-								onClick={startPathSimulation}
-							/>
-						</div>
-					</details>
-				{/if}
+				<details class="collapse-arrow collapse rounded-box bg-success/10 text-success">
+					<summary class="collapse-title p-2 font-semibold">
+						<Check class="inline h-4 w-4" />
+						{acceptingLeaves.length} Accepting Path{acceptingLeaves.length > 1 ? 's' : ''}
+					</summary>
+					<div class="collapse-content">
+						<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
+							<Info class="inline h-3 w-3" />
+							Click on a path to run a simulation of only the path itself.
+						</p>
+						<PathList
+							leaves={acceptingLeaves}
+							tree={controller.tree!}
+							onClick={startPathSimulation}
+						/>
+					</div>
+				</details>
+
 				<!-- Rejecting paths -->
-				{#if rejectingLeaves.length > 0}
-					<details class="collapse-arrow collapse rounded-box bg-error/10">
-						<summary class="collapse-title p-2 font-semibold text-error">
-							<CircleX class="inline h-4 w-4" />
-							{rejectingLeaves.length} Rejecting Path{rejectingLeaves.length > 1 ? 's' : ''}
-						</summary>
-						<div class="collapse-content">
-							<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
-								<Info class="inline h-3 w-3" />
-								Click on a path to run a simulation of only the path itself.
-							</p>
-							<PathList
-								leaves={rejectingLeaves}
-								tree={controller.tree!}
-								onClick={startPathSimulation}
-							/>
-						</div>
-					</details>
-				{/if}
+				<details class="collapse-arrow collapse rounded-box bg-error/10">
+					<summary class="collapse-title p-2 font-semibold text-error">
+						<CircleX class="inline h-4 w-4" />
+						{rejectingLeaves.length} Rejecting Path{rejectingLeaves.length > 1 ? 's' : ''}
+					</summary>
+					<div class="collapse-content">
+						<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
+							<Info class="inline h-3 w-3" />
+							Click on a path to run a simulation of only the path itself.
+						</p>
+						<PathList
+							leaves={rejectingLeaves}
+							tree={controller.tree!}
+							onClick={startPathSimulation}
+						/>
+					</div>
+				</details>
+
 				<!-- Overlay to cover outdated results -->
 				{#if controller.fsaHasChangedSince(app.fsaGraph)}
 					<div

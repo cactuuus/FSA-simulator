@@ -156,7 +156,7 @@
 		{/snippet}
 	</DrawingBoard>
 
-	{#if app.isSimulating() && app.simulationController}
+	{#if app.isSimulating()}
 		<SimulationScene fsa={app.fsaGraph} controller={app.simulationController} />
 	{/if}
 
@@ -167,14 +167,21 @@
 
 	<!-- Top-center controls -->
 	<div class="controls-container top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2">
-		<!-- Toolbar -->
-		<StatesToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
-
-		{#if app.isSimulating() && app.simulationController}
-			<SimulationControls
-				onExit={() => app.exitSimulation()}
-				controller={app.simulationController}
-			/>
+		{#if app.isSimulating()}
+			<!-- Toolbar + simulation controls -->
+			<!-- For some reason, if we get rid of the else block and simply place the StatesToolbar outside
+			 (since it is always rendered) it breaks reactivity and StatesToolbar doesn't render in specific
+			 instances when exiting and re-entering the simulation. This only happens in a production build,
+			 not in dev, which makes it even harder to track/fix.
+			 No idea what causes it, possibly some bug during compilation. Weird thing is: logs inside the
+			 component still print in the console, like everything is fine, but the element doesn't show up
+			 in the DOM (???).
+			-->
+			<StatesToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
+			<SimulationControls controller={app.simulationController} />
+		{:else}
+			<!-- Toolbar -->
+			<StatesToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
 		{/if}
 	</div>
 
