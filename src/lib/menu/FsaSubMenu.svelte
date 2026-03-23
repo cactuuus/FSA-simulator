@@ -110,7 +110,7 @@
 	}
 </script>
 
-<h2 class="menu-title">{fsa.type} Operations</h2>
+<h2 class="menu-title">FSA Operations ({fsa.type})</h2>
 <ul>
 	<li>
 		<button onclick={() => openTogglePdaModal()}>
@@ -129,6 +129,12 @@
 				<Regex class="h-4 w-4" /> To Regex
 			</button>
 		</li>
+	{:else}
+		<li title="Not yet supported, stay tuned for updates!">
+			<button disabled class="cursor-not-allowed opacity-50">
+				<Regex class="h-4 w-4" /> To CFG
+			</button>
+		</li>
 	{/if}
 	{#if fsa.type === FSAType.NFA}
 		<li>
@@ -140,6 +146,18 @@
 		<li>
 			<button onclick={() => toMinimizedDfa()}>
 				<Combine class="h-4 w-4" /> Minimize DFA
+			</button>
+		</li>
+	{:else if fsa.type === FSAType.PDA}
+		<li title="Not yet supported, stay tuned for updates!">
+			<button disabled class="cursor-not-allowed opacity-50">
+				<Combine class="h-4 w-4" /> Convert to DPDA
+			</button>
+		</li>
+	{:else if fsa.type === FSAType.DPDA}
+		<li title="Not yet supported, stay tuned for updates!">
+			<button disabled class="cursor-not-allowed opacity-50">
+				<Combine class="h-4 w-4" /> Minimize DPDA
 			</button>
 		</li>
 	{/if}
