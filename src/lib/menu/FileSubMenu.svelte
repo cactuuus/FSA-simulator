@@ -33,9 +33,9 @@
 	let availableExamples = $state<Example[]>([]);
 	let fetchingExamples = $state(true);
 
-	let tikzModal: HTMLDialogElement;
-	let tikzContent = $state('');
-	let tikzCopied = $state(false);
+	let latexModal: HTMLDialogElement;
+	let latexContent = $state('');
+	let latexCopied = $state(false);
 
 	function openFileDialog() {
 		const input = document.createElement('input');
@@ -115,23 +115,23 @@
 		}
 	}
 
-	async function copyTikz() {
-		await navigator.clipboard.writeText(tikzContent);
-		tikzCopied = true;
-		setTimeout(() => (tikzCopied = false), 2000);
+	async function copyLatex() {
+		await navigator.clipboard.writeText(latexContent);
+		latexCopied = true;
+		setTimeout(() => (latexCopied = false), 2000);
 	}
 
-	function exportAsTikz() {
+	function exportAsLatex() {
 		if (app.fsaGraph.isEmpty) {
 			notifyWarning('The graph is empty, nothing to export.');
 			return;
 		}
 		try {
-			tikzContent = graphToTikz(app.fsaGraph);
-			tikzModal.show();
+			latexContent = graphToTikz(app.fsaGraph);
+			latexModal.show();
 		} catch (err) {
 			console.error(err);
-			notifyError('Failed to export TikZ.');
+			notifyError('Failed to export LaTeX.');
 		}
 	}
 
@@ -178,8 +178,8 @@
 		</button>
 	</li>
 	<li>
-		<button onclick={exportAsTikz}>
-			<FileBraces class="h-4 w-4" /> Export LaTeX (TikZ)
+		<button onclick={exportAsLatex}>
+			<FileBraces class="h-4 w-4" /> Export LaTeX
 		</button>
 	</li>
 </ul>
@@ -201,9 +201,9 @@
 				}}
 			>
 				<div class="flex gap-3">
-					<button type="button" class="btn btn-sm" onclick={() => clearFsaModal.close()}
-						>Cancel</button
-					>
+					<button type="button" class="btn btn-sm" onclick={() => clearFsaModal.close()}>
+						Cancel
+					</button>
 					<button type="submit" class="btn btn-sm btn-error">Clear</button>
 				</div>
 			</form>
@@ -253,14 +253,14 @@
 	</div>
 </dialog>
 
-<dialog bind:this={tikzModal} class="modal" use:portal>
+<dialog bind:this={latexModal} class="modal" use:portal>
 	<div class="modal-box max-w-4xl">
 		<div class="flex items-start justify-between">
 			<div>
-				<h3 class="text-lg font-bold">LaTeX (TikZ) Export</h3>
+				<h3 class="text-lg font-bold">LaTeX Export</h3>
 			</div>
-			<button class="btn btn-sm {tikzCopied ? 'btn-success' : 'btn-ghost'}" onclick={copyTikz}>
-				{#if tikzCopied}
+			<button class="btn btn-sm {latexCopied ? 'btn-success' : 'btn-ghost'}" onclick={copyLatex}>
+				{#if latexCopied}
 					<Check class="h-4 w-4" /> Copied!
 				{:else}
 					<Copy class="h-4 w-4" /> Copy
@@ -268,9 +268,9 @@
 			</button>
 		</div>
 		<pre
-			class="mt-4 max-h-[70vh] overflow-auto rounded-md bg-base-200 p-4 font-mono text-sm">{tikzContent}</pre>
+			class="mt-4 max-h-[70vh] overflow-auto rounded-md bg-base-200 p-4 font-mono text-sm">{latexContent}</pre>
 		<div class="modal-action mt-4">
-			<button class="btn" onclick={() => tikzModal.close()}>Close</button>
+			<button class="btn" onclick={() => latexModal.close()}>Close</button>
 		</div>
 	</div>
 </dialog>
