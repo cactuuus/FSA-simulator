@@ -54,7 +54,7 @@
 		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand, title: 'Pan (1)' },
 		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' },
 		{ stateName: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline, title: 'Draw Edge (3)' },
-		{ stateName: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus, title: 'Add Node (4)' }
+		{ stateName: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus, title: 'Add State (4)' }
 	];
 
 	function handleEditorKeyDown(e: KeyboardEvent) {
