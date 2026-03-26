@@ -59,6 +59,16 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		});
 		return adjMap;
 	});
+	isComplete: boolean | null = $derived.by(() => {
+		if (this.type !== FSAType.DFA) return null; // we only consider DFAs, the rest is not applicable
+		const alphabet = this.alphabet();
+		for (const node of this.nodes) {
+			const transitions = this.adjacencyMap.get(node) ?? [];
+			const outgoingSymbols = new SvelteSet(transitions.map(([transition]) => transition.consume));
+			if (outgoingSymbols.size !== alphabet.size) return false;
+		}
+		return true;
+	});
 
 	/**
 	 * Adds a new node to the FSA at the specified position.
