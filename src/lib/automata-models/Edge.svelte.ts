@@ -1,4 +1,4 @@
-import { SvelteMap } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { type Point, midPoint, vectorBetween } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
 import type { BaseEdge, FSAItem } from './types';
@@ -36,6 +36,21 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		this._controlPointOffset.x === Edge.DEFAULT_CONTROL_OFFSET.x &&
 			this._controlPointOffset.y === Edge.DEFAULT_CONTROL_OFFSET.y
 	);
+	duplicateTransitionIds: Set<string> = $derived.by(() => {
+		const groupedIds = new SvelteMap<string, string[]>();
+		for (const transition of this.transitions) {
+			const key = transition.toString();
+			if (!groupedIds.has(key)) {
+				groupedIds.set(key, []);
+			}
+			groupedIds.get(key)?.push(transition.id);
+		}
+		return new SvelteSet(
+			Array.from(groupedIds.values())
+				.filter((ids) => ids.length > 1)
+				.flat()
+		);
+	});
 
 	/**
 	 * The control point is used to determine the curvature of the edge when rendered.

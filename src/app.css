@@ -70,6 +70,10 @@ input[type='text'] {
 	filter: brightness(120%);
 }
 
+.transition.duplicate {
+	fill: var(--invalid-color);
+}
+
 .edge .select-area {
 	stroke-width: 30px;
 	opacity: 0; /* invisible, used purely for easier selection */

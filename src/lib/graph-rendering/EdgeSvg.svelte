@@ -2,11 +2,12 @@
 	import { Edge } from '$lib/automata-models';
 	import { getRegularEdgePath, getEdgeLabelPosition } from '$lib/utils/edgeUtils';
 	import { GRAPH_GEOMETRY } from '$lib/utils/graphStyle';
+	import { type Point } from '$lib/utils/geometry';
 	import ArrowMarkerSvg from './ArrowMarkerSvg.svelte';
 
 	const { edge }: { edge: Edge } = $props();
-	const shape = $derived(getRegularEdgePath(edge));
-	const labelPosition = $derived(getEdgeLabelPosition(edge));
+	const shape: string = $derived(getRegularEdgePath(edge));
+	const labelPosition: Point = $derived(getEdgeLabelPosition(edge));
 </script>
 
 <g data-id={edge.id} data-fsa-item="edge" class="edge selectable">
@@ -38,6 +39,7 @@
 			<tspan
 				data-id={transition.id}
 				class="transition"
+				class:duplicate={edge.duplicateTransitionIds.has(transition.id)}
 				x={labelPosition.x}
 				dy={index === 0 ? 0 : GRAPH_GEOMETRY.labelLineHeight}
 				dominant-baseline="middle"

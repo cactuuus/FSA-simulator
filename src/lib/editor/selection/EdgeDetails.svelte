@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X, Plus, CircleQuestionMark, Redo2 } from '@lucide/svelte';
+	import { X, Plus, Redo2, TriangleAlert } from '@lucide/svelte';
 	import { Edge, Transition, FSAGraph } from '$lib/automata-models';
 	import {
 		CommandHistory,
@@ -71,80 +71,99 @@
 </script>
 
 <div class="flex w-full flex-col gap-3">
+	<!-- Transitions section -->
 	<div class="flex flex-col gap-2">
 		<div class="flex items-center justify-between">
 			<h2>Transitions</h2>
-			<div
-				class="badge flex cursor-help items-center badge-soft badge-sm badge-info"
-				title="PDA mode allows to use stack operations (pop & push) in transitions. You can toggle it in 'Menu -> FSA -> Enable/Disable stack'"
+			<button
+				class="btn gap-1 btn-ghost btn-sm btn-success"
+				onclick={addTransition}
+				title="Add new transition"
 			>
-				<span>PDA {fsaGraph.hasStackOps ? 'enabled' : 'disabled'}</span>
-				<CircleQuestionMark class="h-4 w-4 pb-0.5" />
-			</div>
+				<Plus class="h-3 w-3" />
+				Add
+			</button>
 		</div>
-		<div class="flex max-h-80 flex-col gap-2 overflow-y-scroll">
-			{#each edge.transitions as transition, index (index)}
-				<fieldset class="fieldset flex items-end gap-2 rounded-box bg-base-300 p-2">
-					<legend class="fieldset-legend w-full py-0">
-						<span class="badge border-0 bg-base-300 badge-sm">
-							{transition.toString()}
-						</span>
-						<button
-							class="btn float-right btn-xs btn-error"
-							onclick={() => removeTransition(transition.id)}
-							title="Remove this transition"
-							disabled={!canDeleteTransition}
-						>
-							<X class="h-4 w-4" /> Remove
-						</button>
-					</legend>
-					<label for="consume-{transition.id}" class="flex-1">
-						Consume
+
+		{#if edge.duplicateTransitionIds.size > 0}
+			<div class="alert flex w-full justify-center alert-soft px-2 py-1 font-semibold alert-error">
+				<TriangleAlert class="h-4 w-4" />
+				Duplicates detected!
+			</div>
+		{/if}
+
+		<div class="flex max-h-80 flex-col gap-1 overflow-y-auto">
+			{#each edge.transitions as transition (transition.id)}
+				{@const isDuplicate = edge.duplicateTransitionIds.has(transition.id)}
+				<div
+					class="flex items-center gap-1 rounded-md px-2 py-1 {isDuplicate
+						? 'bg-error/10'
+						: 'bg-base-content/10'}"
+				>
+					<!-- FSA: single input. PDA: three inputs with inline separators -->
+					{#if fsaGraph.hasStackOps}
 						<input
-							id="consume-{transition.id}"
 							type="text"
-							class="input-bordered input mt-1 w-full"
+							class="input-bordered input"
+							class:input-error={isDuplicate}
 							bind:value={transition.consumeRawValue}
 							placeholder={Transition.EPSILON}
 							onblur={() => updateTransition(transition)}
 							onfocus={() => setTransitionInitialValues(transition)}
+							title="Symbol read"
 						/>
-					</label>
-					{#if fsaGraph.hasStackOps}
-						<label for="pop-{transition.id}" class="flex-1">
-							Pop (PDA)
-							<input
-								id="pop-{transition.id}"
-								type="text"
-								class="input-bordered input mt-1 w-full"
-								bind:value={transition.popRawValue}
-								placeholder={Transition.EPSILON}
-								onblur={() => updateTransition(transition)}
-								onfocus={() => setTransitionInitialValues(transition)}
-							/>
-						</label>
-						<label for="push-{transition.id}" class="flex-1">
-							Push (PDA)
-							<input
-								id="push-{transition.id}"
-								type="text"
-								class="input-bordered input mt-1 w-full"
-								bind:value={transition.pushRawValue}
-								placeholder={Transition.EPSILON}
-								onblur={() => updateTransition(transition)}
-								onfocus={() => setTransitionInitialValues(transition)}
-							/>
-						</label>
+						<span>,</span>
+						<input
+							type="text"
+							class="input-bordered input"
+							class:input-error={isDuplicate}
+							bind:value={transition.popRawValue}
+							placeholder={Transition.EPSILON}
+							onblur={() => updateTransition(transition)}
+							onfocus={() => setTransitionInitialValues(transition)}
+							title="Symbol popped (PDA only)"
+						/>
+						<span>⟶</span>
+						<input
+							type="text"
+							class="input-bordered input"
+							class:input-error={isDuplicate}
+							bind:value={transition.pushRawValue}
+							placeholder={Transition.EPSILON}
+							onblur={() => updateTransition(transition)}
+							onfocus={() => setTransitionInitialValues(transition)}
+							title="Symbol pushed (PDA only)"
+						/>
+					{:else}
+						<input
+							type="text"
+							class="input-bordered input"
+							class:input-error={isDuplicate}
+							bind:value={transition.consumeRawValue}
+							placeholder={Transition.EPSILON}
+							onblur={() => updateTransition(transition)}
+							onfocus={() => setTransitionInitialValues(transition)}
+							title="Symbol read"
+						/>
 					{/if}
-				</fieldset>
+
+					<!-- Remove button -->
+					<button
+						class="btn btn-square btn-ghost btn-sm btn-error"
+						onclick={() => removeTransition(transition.id)}
+						title="Remove transition"
+						disabled={!canDeleteTransition}
+					>
+						<X class="h-3 w-3" />
+					</button>
+				</div>
 			{/each}
 		</div>
 	</div>
-	<button class="btn btn-sm btn-success" onclick={addTransition}>
-		<Plus class="h-4 w-4" /> Add transition
-	</button>
 
 	<hr class="border-base-content/30" />
+
+	<!-- Edge shape section -->
 	{#if !edge.isLoopback}
 		<label for="toggle-symmetric-edge" class="flex items-center justify-between gap-2">
 			Is Symmetric
