@@ -26,6 +26,8 @@ export class DrawEdgeState extends State {
 				this.addAndSelectEdge(ctx.node.id, ctx.node.id);
 			}
 		}
+		// clear selection and any draft edge when clicking anywhere else
+		this.editorCtx.selection.clear();
 		this.editorCtx.draftEdge.clear();
 	}
 
