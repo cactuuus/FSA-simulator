@@ -33,16 +33,16 @@
 	</div>
 {/snippet}
 
-{#if app.windows.isOpen(WINDOWS_ID.GraphInfo)}
+{#if app.windows.isOpen(WINDOWS_ID.AutomatonInfo)}
 	<FloatingWindow
-		id={WINDOWS_ID.GraphInfo}
-		windowState={app.windows.open(WINDOWS_ID.GraphInfo)}
-		onClose={() => app.windows.close(WINDOWS_ID.GraphInfo)}
-		onFocus={() => app.windows.bringToFront(WINDOWS_ID.GraphInfo)}
+		id={WINDOWS_ID.AutomatonInfo}
+		windowState={app.windows.open(WINDOWS_ID.AutomatonInfo)}
+		onClose={() => app.windows.close(WINDOWS_ID.AutomatonInfo)}
+		onFocus={() => app.windows.bringToFront(WINDOWS_ID.AutomatonInfo)}
 		defaultWidth={300}
 	>
 		{#snippet header()}
-			<span>Graph Info</span>
+			<span>Automaton Info</span>
 		{/snippet}
 
 		{#snippet content()}

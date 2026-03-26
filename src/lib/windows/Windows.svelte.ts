@@ -8,7 +8,7 @@ import { SvelteMap } from 'svelte/reactivity';
 export const WINDOWS_ID = {
 	TransitionTable: 'transition-table-window',
 	ComputeInput: 'compute-input-window',
-	GraphInfo: 'graph-info-window'
+	AutomatonInfo: 'automaton-info-window'
 } as const;
 
 /**
