@@ -74,12 +74,11 @@ describe('Edge - loopback', () => {
 // --- Serialization
 
 describe('Edge - serialization', () => {
-	it('save/restore preserves transitions, control point offset, and isSymmetric', () => {
+	it('save/restore preserves transitions, control point offset', () => {
 		withReactivity(() => {
 			const { edge, q0, q1 } = makeEdge();
 			edge.addTransitions(new Transition('a', null, null, 't0'));
 			edge.updateControlPoint({ x: 60, y: 80 });
-			edge.isSymmetric = true;
 			const nodesMap = new Map([
 				[q0.id, q0],
 				[q1.id, q1]
@@ -88,7 +87,6 @@ describe('Edge - serialization', () => {
 			expect(restored.transitions).toHaveLength(1);
 			expect(restored.transitions[0].consume).toBe('a');
 			expect(restored.hasDefaultControlPoint).toBe(false);
-			expect(restored.isSymmetric).toBe(true);
 		});
 	});
 

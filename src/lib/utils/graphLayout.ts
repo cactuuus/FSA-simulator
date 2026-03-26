@@ -32,7 +32,6 @@ export function fixBidirectionalEdges(fsa: FSAGraph): void {
 	for (const edge of fsa.edges) {
 		// reset the edge for consistency
 		edge.resetControlPoint();
-		edge.isSymmetric = false;
 
 		if (edge.isLoopback) continue; // skip if loopback (they have no reverse)
 		// skip if we already fixed this pair of if there is no reverse edge
@@ -51,13 +50,11 @@ export function fixBidirectionalEdges(fsa: FSAGraph): void {
 			y: edgeVector.x / edgeVector.magnitude
 		};
 
-		edge.isSymmetric = true;
 		edge.updateControlPoint({
 			x: middle.x + perpendicular.x * CURVATURE,
 			y: middle.y + perpendicular.y * CURVATURE
 		});
 
-		reverse.isSymmetric = true;
 		reverse.updateControlPoint({
 			x: middle.x - perpendicular.x * CURVATURE,
 			y: middle.y - perpendicular.y * CURVATURE
