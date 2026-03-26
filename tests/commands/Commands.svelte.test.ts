@@ -248,22 +248,6 @@ describe('AdjustEdgeShapeCommand', () => {
 	});
 });
 
-// --- ToggleEdgeSymmetricCommand
-
-describe('ToggleEdgeSymmetricCommand', () => {
-	it('execute toggles isSymmetric, undo reverts it', () => {
-		withReactivity(() => {
-			const { fsa, edge } = makeFSA();
-			expect(edge.isSymmetric).toBe(false);
-			const cmd = new ToggleEdgeSymmetricCommand(edge.id, true);
-			cmd.execute(fsa);
-			expect(edge.isSymmetric).toBe(true);
-			cmd.undo(fsa);
-			expect(edge.isSymmetric).toBe(false);
-		});
-	});
-});
-
 // --- EnableStackOpsCommand
 
 describe('EnableStackOpsCommand', () => {

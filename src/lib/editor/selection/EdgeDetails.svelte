@@ -6,7 +6,6 @@
 		AddTransitionCommand,
 		DeleteTransitionsCommand,
 		AdjustEdgeShapeCommand,
-		ToggleEdgeSymmetricCommand,
 		UpdateTransitionCommand,
 		type UpdateTransitionData
 	} from '../commands';
@@ -39,11 +38,6 @@
 		edge.resetControlPoint();
 		const command = new AdjustEdgeShapeCommand(edge.id, previousControlPoint, edge.controlPoint);
 		commandHistory.push(command);
-	}
-
-	function toggleSymmetry() {
-		const command = new ToggleEdgeSymmetricCommand(edge.id, !edge.isSymmetric);
-		commandHistory.pushAndExecute(command);
 	}
 
 	function setTransitionInitialValues(transition: Transition) {
@@ -164,18 +158,6 @@
 	<hr class="border-base-content/30" />
 
 	<!-- Edge shape section -->
-	{#if !edge.isLoopback}
-		<label for="toggle-symmetric-edge" class="flex items-center justify-between gap-2">
-			Is Symmetric
-			<input
-				id="toggle-symmetric-edge"
-				type="checkbox"
-				class="checkbox checkbox-sm checkbox-success"
-				onchange={toggleSymmetry}
-				checked={edge.isSymmetric}
-			/>
-		</label>
-	{/if}
 	<button class="btn btn-sm" onclick={resetShape} disabled={edge.hasDefaultControlPoint}>
 		<Redo2 class="h-4 w-4" />
 		{edge.isLoopback ? 'Reset Rotation' : 'Reset Shape'}
