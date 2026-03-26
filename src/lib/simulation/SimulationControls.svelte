@@ -1,5 +1,15 @@
 <script lang="ts">
-	import { Play, Pause, X, Settings, RefreshCcw, Square } from '@lucide/svelte';
+	import {
+		Play,
+		Pause,
+		X,
+		Settings,
+		RefreshCcw,
+		SkipBack,
+		SkipForward,
+		ChevronRight,
+		ChevronLeft
+	} from '@lucide/svelte';
 	import { type SimulationController } from './SimulationController.svelte';
 	import { portal } from '$lib/utils/portal';
 
@@ -46,6 +56,26 @@
 
 	<div class="divider m-0 divider-horizontal"></div>
 
+	<!-- Step to start -->
+	<button
+		onclick={() => controller.toStart()}
+		class="btn btn-square btn-soft btn-sm"
+		title="To start"
+		disabled={!controller.canStop}
+	>
+		<SkipBack class="h-4 w-4" />
+	</button>
+
+	<!-- Step backward -->
+	<button
+		onclick={() => controller.stepBackward()}
+		class="btn btn-square btn-soft btn-sm"
+		title="Step back"
+		disabled={!controller.canStop}
+	>
+		<ChevronLeft class="h-4 w-4" />
+	</button>
+
 	<!-- Play / Pause -->
 	{#if controller.isPlaying}
 		<button
@@ -65,13 +95,25 @@
 			<Play class="h-4 w-4" />
 		</button>
 	{/if}
+
+	<!-- Step forward -->
 	<button
-		onclick={() => controller.stop()}
-		class="btn btn-square btn-sm btn-error"
-		title="Stop"
-		disabled={!controller.canStop}
+		onclick={() => controller.stepForward()}
+		class="btn btn-square btn-soft btn-sm"
+		title="Step forward"
+		disabled={!controller.canPlay}
 	>
-		<Square class="h-4 w-4" />
+		<ChevronRight class="h-4 w-4" />
+	</button>
+
+	<!-- Step to end -->
+	<button
+		onclick={() => controller.toEnd()}
+		class="btn btn-square btn-soft btn-sm"
+		title="To end"
+		disabled={!controller.canPlay}
+	>
+		<SkipForward class="h-4 w-4" />
 	</button>
 
 	<!-- Scrub bar -->

@@ -40,6 +40,7 @@ export class SimulationController {
 
 	// Playback state
 	private _timeline = $state<Timeline | null>(null);
+	private _stepTimestamps = $state<number[]>([]);
 	private _isPlaying = $state(false);
 	currentTime = $state(0);
 	currentGroup = $state<number | null>(null);
@@ -76,23 +77,25 @@ export class SimulationController {
 
 	startSimulation(leaf: PathLeaf): void {
 		if (!this._tree) return;
-		this.stop();
+		this.toStart();
 		this._timeline = null;
 		this._selectedPath = this._tree.getFullPath(leaf);
 		this._active = true;
 	}
 
 	endSimulation(): void {
-		this.stop();
+		this.toStart();
 		this._selectedPath = null;
 		this._timeline = null;
+		this._stepTimestamps = [];
 		this._active = false;
 	}
 
 	// Playback methods
 
-	registerTimeline(tl: Timeline): void {
-		this._timeline = tl;
+	registerTimeline(timeline: Timeline, stepTimestamps: number[]): void {
+		this._timeline = timeline;
+		this._stepTimestamps = stepTimestamps;
 	}
 
 	play(): void {
@@ -107,12 +110,34 @@ export class SimulationController {
 		this._timeline.pause();
 	}
 
-	stop(): void {
+	stepForward(): void {
+		if (!this._timeline) return;
+		const next = this._stepTimestamps.find((timestamp) => timestamp > this.currentTime);
+		this.scrubTo(next ?? this.totalDuration);
+	}
+
+	stepBackward(wiggleMs: number = 1000): void {
+		if (!this._timeline) return;
+		const effectiveTime = this.currentTime - wiggleMs;
+		const prev = [...this._stepTimestamps].reverse().find((timestamp) => timestamp < effectiveTime);
+		console.log('Step backward to', prev);
+		console.log(this.currentTime.toString(), effectiveTime, prev, this._stepTimestamps);
+		this.scrubTo(prev ?? 0);
+	}
+
+	toStart(): void {
+		if (!this._timeline) return;
+		this._timeline.seek(0);
+		this.currentTime = 0;
+		this.currentGroup = null;
+	}
+
+	toEnd(): void {
 		if (!this._timeline) return;
 		this._isPlaying = false;
 		this._timeline.cancel();
-		this._timeline.seek(0);
-		this.currentTime = 0;
+		this._timeline.seek(this.totalDuration);
+		this.currentTime = this.totalDuration;
 		this.currentGroup = null;
 	}
 
