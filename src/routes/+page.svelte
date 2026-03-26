@@ -96,12 +96,13 @@
 	const activeMode = $derived(app.isEditing() ? editorConfig : simulationConfig);
 
 	function handleKeyDown(e: KeyboardEvent) {
-		// global shortcuts that work regardless of the current mode
-		if (isTyping(e)) return;
+		// escape clears always clear selection
 		if (e.key === 'Escape') {
 			e.preventDefault();
 			editorCtx.selection.clear();
-		} else {
+		}
+		// ignore other keys if user is engaging with other fields
+		if (!isTyping(e)) {
 			// delegate to active mode's specific keydown handler
 			activeMode.keydownHandler(e);
 		}
