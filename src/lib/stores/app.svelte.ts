@@ -37,14 +37,6 @@ export class AppManager {
 	}
 
 	/**
-	 * Checks if the app is currently in editor mode.
-	 * @returns True if in editor mode, false otherwise.
-	 */
-	isEditing(): boolean {
-		return !this.simulationController.isSimulating;
-	}
-
-	/**
 	 * Checks if the app is currently in simulation mode.
 	 * @returns True if in simulation mode, false otherwise.
 	 */
