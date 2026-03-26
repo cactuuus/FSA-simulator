@@ -1,10 +1,15 @@
 <script lang="ts">
-	import { Check, X, ChevronRight, CircleQuestionMark } from '@lucide/svelte';
+	import { Check, X, CircleQuestionMark } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { FloatingWindow, WINDOWS_ID } from '$lib/windows';
-	import { FSAType } from '$lib/automata-models';
+	import { FSAGraph, FSAType } from '$lib/automata-models';
 
-	const fsa = $derived(app.fsaGraph);
+	const fsa: FSAGraph = $derived(app.fsaGraph);
+	const prettyAlphabet: string = $derived.by(() => {
+		const sortedAlphabet = [...fsa.alphabet(true)].sort();
+		if (sortedAlphabet.length === 0) return '∅';
+		return `{ ${sortedAlphabet.join(', ')} }`;
+	});
 
 	function typeToFullLabel(type: FSAType): string {
 		switch (type) {
@@ -23,7 +28,7 @@
 </script>
 
 {#snippet statusRow(label: string, value: boolean)}
-	<div class="flex items-center gap-2">
+	<div class="ml-2 flex items-center gap-2">
 		{#if value}
 			<Check class="h-3.5 w-3.5 shrink-0 text-success" />
 		{:else}
@@ -64,13 +69,24 @@
 				<!-- Type -->
 				<div class="flex flex-col gap-1">
 					<h3 class="font-semibold">Type</h3>
-					<div>
+					<div class="ml-2">
 						<span class="font-semibold text-info">
-							<ChevronRight class="inline h-3 w-3 " />
 							{fsa.type}
 						</span>
 						<span class=" text-base-content/70">
 							({typeToFullLabel(fsa.type)})
+						</span>
+					</div>
+				</div>
+
+				<hr class="border-base-content/30" />
+
+				<!-- Alphabet -->
+				<div class="flex flex-col gap-1">
+					<h3 class="font-semibold">Alphabet</h3>
+					<div class="ml-2">
+						<span class="font-semibold text-info">
+							{prettyAlphabet}
 						</span>
 					</div>
 				</div>
@@ -84,6 +100,7 @@
 					{@render statusRow('Has accepting state', fsa.hasAcceptingNodes)}
 					{@render statusRow('Is deterministic', fsa.isDeterministic)}
 					{@render statusRow('Has stack', fsa.hasStackOps)}
+					<!-- add is_complete check -->
 				</div>
 
 				<hr class="border-base-content/30" />
@@ -91,18 +108,12 @@
 				<!-- Less useful properties -->
 				<div class="flex flex-col gap-1">
 					<h3 class="font-semibold">Other info</h3>
-					<div>
-						<span class="text-base-content/70">
-							<ChevronRight class="inline h-3 w-3 " />
-							States count:
-						</span>
+					<div class="ml-2">
+						<span class="text-base-content/70"> States count: </span>
 						<span class="font-bold">{fsa.nodes.length}</span>
 					</div>
-					<div>
-						<span class="text-base-content/70">
-							<ChevronRight class="inline h-3 w-3 " />
-							Transitions count:
-						</span>
+					<div class="ml-2">
+						<span class="text-base-content/70"> Transitions count: </span>
 						<span class="font-bold">{fsa.transitions.length}</span>
 					</div>
 				</div>
