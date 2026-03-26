@@ -24,7 +24,7 @@
 	import { isTyping } from '$lib/utils/keyboard';
 	import { toggleInSelectionArea, toggleSelected } from '$lib/utils/graphEffects';
 	import MainMenu from '$lib/menu/MainMenu.svelte';
-	import { GraphInfoWindow } from '$lib/graph-info';
+	import { AutomatonInfoWindow } from '$lib/automaton-info';
 
 	const editorCtx: EditorContext = {
 		fsaGraph: app.fsaGraph,
@@ -207,8 +207,8 @@
 		{#if app.isEditing()}
 			<SelectionPanel editor={editorCtx} />
 		{/if}
-		{#if app.windows.isOpen(WINDOWS_ID.GraphInfo)}
-			<GraphInfoWindow />
+		{#if app.windows.isOpen(WINDOWS_ID.AutomatonInfo)}
+			<AutomatonInfoWindow />
 		{/if}
 	{/if}
 </section>
