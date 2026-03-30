@@ -24,7 +24,8 @@ const DEFAULT_APPEARANCE = {
 	strokeWidth: 2,
 	textWeight: 'bold',
 	haloThickness: 5,
-	haloOpacity: 0.8
+	haloOpacity: 0.8,
+	edgeStrokeOpacity: 0.5
 };
 
 export type GraphAppearance = typeof DEFAULT_APPEARANCE;
@@ -79,6 +80,7 @@ export function getGraphCSS(
 		color: ${colors.drawColor};
 		stroke: ${colors.drawColor};
 		stroke-width: ${style.strokeWidth}px;
+		stroke-opacity: ${style.edgeStrokeOpacity};
     }
     .node .accepting-circle {
 		fill: none;
