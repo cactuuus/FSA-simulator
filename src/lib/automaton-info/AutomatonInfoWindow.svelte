@@ -6,7 +6,7 @@
 
 	const fsa: FSAGraph = $derived(app.fsaGraph);
 	const prettyAlphabet: string = $derived.by(() => {
-		const sortedAlphabet = [...fsa.alphabet(true)].sort();
+		const sortedAlphabet = [...fsa.alphabet(false)].sort();
 		if (sortedAlphabet.length === 0) return '∅';
 		return `{ ${sortedAlphabet.join(', ')} }`;
 	});
@@ -100,6 +100,7 @@
 					<h3 class="font-semibold">Properties</h3>
 					{@render statusRow('Has start state', fsa.hasStart)}
 					{@render statusRow('Has accepting state(s)', fsa.hasAcceptingNodes)}
+
 					{@render statusRow('Is complete (DFAs only)', fsa.isComplete)}
 					{@render statusRow('Is deterministic', fsa.isDeterministic)}
 					{@render statusRow('Has stack', fsa.hasStackOps)}
