@@ -38,15 +38,18 @@ export type GraphAppearance = typeof DEFAULT_APPEARANCE;
 const COLOR_MODES = {
 	themed: {
 		bgColor: 'var(--board-bg-color)',
-		drawColor: 'var(--draw-color)'
+		drawColor: 'var(--draw-color)',
+		edgeColor: 'var(--edge-color)'
 	},
 	light: {
 		bgColor: 'white',
-		drawColor: 'black'
+		drawColor: 'black',
+		edgeColor: 'gray'
 	},
 	dark: {
 		bgColor: 'black',
-		drawColor: 'white'
+		drawColor: 'white',
+		edgeColor: 'gray'
 	}
 } as const;
 
@@ -78,9 +81,8 @@ export function getGraphCSS(
     .edge {
 		fill: none;
 		color: ${colors.drawColor};
-		stroke: ${colors.drawColor};
+		stroke: ${colors.edgeColor};
 		stroke-width: ${style.strokeWidth}px;
-		stroke-opacity: ${style.edgeStrokeOpacity};
     }
     .node .accepting-circle {
 		fill: none;
