@@ -60,11 +60,12 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 		return adjMap;
 	});
 	isComplete: boolean | null = $derived.by(() => {
-		if (this.type !== FSAType.DFA) return null; // we only consider DFAs, the rest is not applicable
-		const alphabet = this.alphabet();
+		if (this.type !== FSAType.DFA && this.type !== FSAType.NFA) return null; // we only consider DFAs and NFAs
+		const alphabet = this.alphabet(false);
 		for (const node of this.nodes) {
 			const transitions = this.adjacencyMap.get(node) ?? [];
 			const outgoingSymbols = new SvelteSet(transitions.map(([transition]) => transition.consume));
+			outgoingSymbols.delete(Transition.EPSILON); // ignore epsilon transitions
 			if (outgoingSymbols.size !== alphabet.size) return false;
 		}
 		return true;
