@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Check, X, Minus, CircleQuestionMark } from '@lucide/svelte';
+	import { Check, X, CircleQuestionMark } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { FloatingWindow, WINDOWS_ID } from '$lib/windows';
 	import { FSAGraph, FSAType } from '$lib/automata-models';
@@ -27,11 +27,9 @@
 	}
 </script>
 
-{#snippet statusRow(label: string, value: boolean | null)}
+{#snippet statusRow(label: string, value: boolean)}
 	<div class="ml-2 flex items-center gap-2">
-		{#if value === null}
-			<Minus class="h-3.5 w-3.5 shrink-0 text-warning" />
-		{:else if value}
+		{#if value}
 			<Check class="h-3.5 w-3.5 shrink-0 text-success" />
 		{:else}
 			<X class="h-3.5 w-3.5 shrink-0 text-error" />
@@ -100,8 +98,9 @@
 					<h3 class="font-semibold">Properties</h3>
 					{@render statusRow('Has start state', fsa.hasStart)}
 					{@render statusRow('Has accepting state(s)', fsa.hasAcceptingNodes)}
-
-					{@render statusRow('Is complete (DFAs only)', fsa.isComplete)}
+					{#if fsa.type === FSAType.DFA || fsa.type === FSAType.NFA}
+						{@render statusRow('Is complete (DFAs and NFAs only)', fsa.isComplete!)}
+					{/if}
 					{@render statusRow('Is deterministic', fsa.isDeterministic)}
 					{@render statusRow('Has stack', fsa.hasStackOps)}
 				</div>
