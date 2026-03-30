@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ListPlus, ListX, Copy, Check, Regex, Combine } from '@lucide/svelte';
+	import { ListPlus, ListX, Copy, Check, Regex, Combine, FunnelPlus } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import {
 		EnableStackOpsCommand,
@@ -7,7 +7,7 @@
 		LoadGraphCommand
 	} from '$lib/editor/commands';
 	import { notifySuccess, notifyError, notifyWarning } from '$lib/utils/notifications';
-	import { NfaToDfa, minimizeDfa, toRegex } from '$lib/fsa-operations';
+	import { NfaToDfa, minimizeDfa, toRegex, toComplete } from '$lib/fsa-operations';
 	import { portal } from '$lib/utils/portal';
 	import { FSAType } from '$lib/automata-models';
 
@@ -108,10 +108,31 @@
 			notifyError('Conversion failed, check the console for details.');
 		}
 	}
+
+	function convertToComplete() {
+		if (fsa.type !== FSAType.DFA && fsa.type !== FSAType.NFA) {
+			notifyError('Only DFAs and NFAs can be made complete.');
+			return;
+		}
+		try {
+			const complete = toComplete(fsa);
+			if (complete === null) {
+				notifySuccess('The FSA is already complete, no changes were made.');
+				return;
+			} else {
+				app.commandHistory.pushAndExecute(new LoadGraphCommand(complete));
+				notifySuccess('FSA turned complete successfully.');
+			}
+		} catch (error) {
+			console.error('Error making FSA complete:', error);
+			notifyError('Failed to make FSA complete, check the console for details.');
+		}
+	}
 </script>
 
 <h2 class="menu-title">FSA Operations ({fsa.type})</h2>
 <ul>
+	<!-- Conversion to/from pushdown -->
 	<li>
 		<button onclick={() => openTogglePdaModal()}>
 			{#if fsa.hasStackOps}
@@ -123,6 +144,8 @@
 			{/if}
 		</button>
 	</li>
+
+	<!-- Conversion to regex/CFG (depending on type) -->
 	{#if !fsa.hasStackOps}
 		<li>
 			<button onclick={() => convertToRegex()}>
@@ -136,6 +159,13 @@
 			</button>
 		</li>
 	{/if}
+
+	<!-- Type specific conversions
+		NFA -> DFA
+		DFA -> Minimized DFA
+		PDA -> DPDA (not implemented yet)
+		DPDA -> Minimized DPDA (not implemented yet)
+	 -->
 	{#if fsa.type === FSAType.NFA}
 		<li>
 			<button onclick={() => convertToDfa()}>
@@ -158,6 +188,15 @@
 		<li title="Not yet supported, stay tuned for updates!">
 			<button disabled class="cursor-not-allowed opacity-50">
 				<Combine class="h-4 w-4" /> Minimize DPDA
+			</button>
+		</li>
+	{/if}
+
+	<!-- Make Complete (DFA and NFA only) -->
+	{#if fsa.type === FSAType.DFA || fsa.type === FSAType.NFA}
+		<li>
+			<button onclick={() => convertToComplete()}>
+				<FunnelPlus class="h-4 w-4" /> Add sink state
 			</button>
 		</li>
 	{/if}
