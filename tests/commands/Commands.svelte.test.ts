@@ -13,8 +13,7 @@ import {
 	UpdateTransitionCommand,
 	EnableStackOpsCommand,
 	DisableStackOpsCommand,
-	AdjustEdgeShapeCommand,
-	ToggleEdgeSymmetricCommand
+	AdjustEdgeShapeCommand
 } from '$lib/editor/commands';
 import { withReactivity } from '../helpers.svelte';
 
