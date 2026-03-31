@@ -7,8 +7,6 @@ import { WindowManager, type SerializedWindowsState } from '$lib/windows';
 import { SelectionHandler } from '$lib/editor/selection';
 import { SimulationController } from '$lib/simulation';
 
-type AppMode = 'editing' | 'simulating';
-
 /**
  * Main application manager, holding references to core components such as the FSA graph, viewport, editor and simulation manager. This is basically the representation of the whole application state.
  * It also manages application-wide operations such as session management and FSA import/export.
@@ -20,7 +18,6 @@ export class AppManager {
 	static readonly STORAGE_KEY_DESIRED_ALPHABET = 'desired-alphabet';
 	static readonly STORAGE_KEY_COMMAND_HISTORY = 'command-history';
 
-	private _mode = $state<AppMode>('editing');
 	readonly simulationController: SimulationController;
 	readonly desiredAlphabet: DesiredAlphabet;
 	readonly commandHistory: CommandHistory;
@@ -40,28 +37,11 @@ export class AppManager {
 	}
 
 	/**
-	 * Checks if the app is currently in editor mode.
-	 * @returns True if in editor mode, false otherwise.
-	 */
-	isEditing(): boolean {
-		return this._mode === 'editing';
-	}
-
-	/**
 	 * Checks if the app is currently in simulation mode.
 	 * @returns True if in simulation mode, false otherwise.
 	 */
 	isSimulating(): boolean {
-		return this._mode === 'simulating';
-	}
-
-	exitSimulation(): void {
-		this._mode = 'editing';
-		this.simulationController.clearSelection();
-	}
-
-	enterSimulation(): void {
-		this._mode = 'simulating';
+		return this.simulationController.isSimulating;
 	}
 
 	/**

@@ -28,6 +28,7 @@
 	/* come colors are controlled by daisy UI theme */
 	--board-bg-color: var(--color-base-200);
 	--draw-color: var(--color-base-content);
+	--edge-color: var(--color-neutral-500);
 	--selected-color: var(--color-info);
 	--draft-edge-color: var(--color-warning);
 	--invalid-color: var(--color-red-500);
@@ -68,6 +69,10 @@ input[type='text'] {
 .node:active .node-path,
 .edge:active .edge-path {
 	filter: brightness(120%);
+}
+
+.transition.duplicate {
+	fill: var(--invalid-color);
 }
 
 .edge .select-area {

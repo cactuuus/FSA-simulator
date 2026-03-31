@@ -91,6 +91,25 @@ export function getControlPointFromLabelPos(edge: Edge, labelPos: Point): Point 
 }
 
 /**
+ * Helper function for aligning the control point to be perpendicular to the edge direction.
+ * @param from The starting point of the edge.
+ * @param to The ending point of the edge.
+ * @param offset The original control point offset.
+ * @returns The adjusted control point offset, perpendicular to the edge direction.
+ */
+export function projectToPerpendicular(from: Point, to: Point, offset: Point): Point {
+	const edgeVector = vectorBetween(from, to);
+	// return zero vector to avoid division by zero
+	if (edgeVector.magnitude === 0) return { x: 0, y: 0 };
+	const perpVector = {
+		x: -edgeVector.y / edgeVector.magnitude,
+		y: edgeVector.x / edgeVector.magnitude
+	};
+	const distance = offset.x * perpVector.x + offset.y * perpVector.y;
+	return { x: distance * perpVector.x, y: distance * perpVector.y };
+}
+
+/**
  * Calculates the SVG path for a loopback edge.
  * @param sourcePoint The center of the node from which the loopback edge originates.
  * @param startOffset The offset to apply to the starting point.

@@ -1,5 +1,5 @@
-import { SvelteMap } from 'svelte/reactivity';
-import { type Point, midPoint, vectorBetween } from '$lib/utils/geometry';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+import { type Point, midPoint } from '$lib/utils/geometry';
 import type { Serializable } from '$lib/utils/serialization';
 import type { BaseEdge, FSAItem } from './types';
 import { Node } from './Node.svelte';
@@ -13,7 +13,6 @@ export interface SerializedEdge {
 	toNodeId: string;
 	transitions: SerializedTransition[];
 	controlPointOffset: Point;
-	isSymmetric: boolean;
 }
 
 /**
@@ -30,25 +29,34 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	private _referencePoint = $derived<Point>(midPoint(this.sourcePoint, this.targetPoint));
 	private _transitionsMap = new SvelteMap<string, Transition>();
 	private _controlPointOffset = $state<Point>(Edge.DEFAULT_CONTROL_OFFSET);
-	isSymmetric = $state<boolean>(false);
 	transitions = $derived<Transition[]>(Array.from(this._transitionsMap.values()));
 	hasDefaultControlPoint = $derived<boolean>(
 		this._controlPointOffset.x === Edge.DEFAULT_CONTROL_OFFSET.x &&
 			this._controlPointOffset.y === Edge.DEFAULT_CONTROL_OFFSET.y
 	);
+	duplicateTransitionIds: Set<string> = $derived.by(() => {
+		const groupedIds = new SvelteMap<string, string[]>();
+		for (const transition of this.transitions) {
+			const key = transition.toString();
+			if (!groupedIds.has(key)) {
+				groupedIds.set(key, []);
+			}
+			groupedIds.get(key)?.push(transition.id);
+		}
+		return new SvelteSet(
+			Array.from(groupedIds.values())
+				.filter((ids) => ids.length > 1)
+				.flat()
+		);
+	});
 
 	/**
 	 * The control point is used to determine the curvature of the edge when rendered.
 	 * It stays relative to the edge's reference point, which is the midpoint between source and target nodes, so that it moves accordingly when nodes are moved.
 	 */
-	controlPoint = $derived.by<Point>(() => {
-		const offset = this.isSymmetric
-			? this.projectToPerpendicular(this._controlPointOffset)
-			: this._controlPointOffset;
-		return {
-			x: this._referencePoint.x + offset.x,
-			y: this._referencePoint.y + offset.y
-		};
+	controlPoint = $derived<Point>({
+		x: this._referencePoint.x + this._controlPointOffset.x,
+		y: this._referencePoint.y + this._controlPointOffset.y
 	});
 
 	constructor(from: Node, to: Node, id?: string) {
@@ -87,32 +95,14 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 	}
 
 	/**
-	 * Helper function for aligning the control point to be perpendicular to the edge direction.
-	 * @param offset The original control point offset to project to the perpendicular direction.
-	 * @returns The adjusted control point offset, perpendicular to the edge direction.
-	 */
-	private projectToPerpendicular(offset: Point): Point {
-		const edgeVector = vectorBetween(this.sourcePoint, this.targetPoint);
-		if (edgeVector.magnitude === 0) {
-			// return default offset to avoid division by zero
-			return Edge.DEFAULT_CONTROL_OFFSET;
-		}
-		const perpVector = {
-			x: -edgeVector.y / edgeVector.magnitude,
-			y: edgeVector.x / edgeVector.magnitude
-		};
-		const distance = offset.x * perpVector.x + offset.y * perpVector.y;
-		return { x: distance * perpVector.x, y: distance * perpVector.y };
-	}
-
-	/**
 	 * Adds a new transition symbol to the edge, with or without stack operations.
 	 * @param withStackOps True to create the transition symbol with stack operations, false otherwise.
 	 * @param id Optional ID for the new transition symbol.
 	 */
-	addEmptyTransition(withStackOps: boolean = false, id: string): void {
+	addEmptyTransition(withStackOps: boolean = false, id: string): Transition {
 		const newTransition = Transition.createEmpty(withStackOps, id);
 		this._transitionsMap.set(newTransition.id, newTransition);
+		return newTransition;
 	}
 
 	/**
@@ -166,8 +156,7 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 			fromNodeId: this.from.id,
 			toNodeId: this.to.id,
 			transitions: this.transitions.map((ts) => ts.toJSON()),
-			controlPointOffset: this._controlPointOffset,
-			isSymmetric: this.isSymmetric
+			controlPointOffset: this._controlPointOffset
 		};
 	}
 
@@ -184,7 +173,6 @@ export class Edge implements BaseEdge, FSAItem, Serializable<SerializedEdge> {
 		edge._transitionsMap = new SvelteMap();
 		edge.addTransitions(...json.transitions.map((t) => Transition.fromJSON(t)));
 		edge._controlPointOffset = json.controlPointOffset ?? { x: 0, y: 0 };
-		edge.isSymmetric = json.isSymmetric ?? false;
 		return edge;
 	}
 }

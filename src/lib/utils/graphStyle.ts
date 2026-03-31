@@ -10,7 +10,7 @@ export const GRAPH_GEOMETRY = {
 	labelLineHeight: 20,
 	bezierLabelDistanceBias: 0.3, // value between 0 and 1
 	loopbackDefaultAngle: Math.PI / 2, // default angle of loopback edges
-	loopbackLabelOffset: 30, // distance from the arc apex to the label for loopback edges
+	loopbackLabelOffset: 12, // distance from the arc apex to the label for loopback edges
 	edgeStartOffset: 34, // accounting for node radius
 	edgeEndOffset: 36, // accounting for node radius + arrow offset
 	arrowSize: 4
@@ -24,7 +24,8 @@ const DEFAULT_APPEARANCE = {
 	strokeWidth: 2,
 	textWeight: 'bold',
 	haloThickness: 5,
-	haloOpacity: 0.8
+	haloOpacity: 0.8,
+	edgeStrokeOpacity: 0.5
 };
 
 export type GraphAppearance = typeof DEFAULT_APPEARANCE;
@@ -37,15 +38,18 @@ export type GraphAppearance = typeof DEFAULT_APPEARANCE;
 const COLOR_MODES = {
 	themed: {
 		bgColor: 'var(--board-bg-color)',
-		drawColor: 'var(--draw-color)'
+		drawColor: 'var(--draw-color)',
+		edgeColor: 'var(--edge-color)'
 	},
 	light: {
 		bgColor: 'white',
-		drawColor: 'black'
+		drawColor: 'black',
+		edgeColor: 'gray'
 	},
 	dark: {
 		bgColor: 'black',
-		drawColor: 'white'
+		drawColor: 'white',
+		edgeColor: 'gray'
 	}
 } as const;
 
@@ -77,7 +81,7 @@ export function getGraphCSS(
     .edge {
 		fill: none;
 		color: ${colors.drawColor};
-		stroke: ${colors.drawColor};
+		stroke: ${colors.edgeColor};
 		stroke-width: ${style.strokeWidth}px;
     }
     .node .accepting-circle {

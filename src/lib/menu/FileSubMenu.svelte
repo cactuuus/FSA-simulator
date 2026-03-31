@@ -5,13 +5,16 @@
 		FolderOpenDot,
 		Download,
 		ImageDown,
-		FileBraces
+		FileBraces,
+		Check,
+		Copy
 	} from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import type { SerializedFSAGraph } from '$lib/automata-models';
 	import { notifyError, notifySuccess, notifyWarning } from '$lib/utils/notifications';
 	import { cleanAndSerializeSvgGraph, graphToTikz } from '$lib/exporting';
+	import { LoadGraphCommand } from '$lib/editor/commands';
 	import { portal } from '$lib/utils/portal';
 
 	/**
@@ -25,9 +28,14 @@
 	}
 
 	let clearFsaModal: HTMLDialogElement;
+
 	let loadExampleModal: HTMLDialogElement;
 	let availableExamples = $state<Example[]>([]);
 	let fetchingExamples = $state(true);
+
+	let latexModal: HTMLDialogElement;
+	let latexContent = $state('');
+	let latexCopied = $state(false);
 
 	function openFileDialog() {
 		const input = document.createElement('input');
@@ -54,10 +62,10 @@
 		const backup = app.fsaGraph.toJSON();
 		try {
 			app.desiredAlphabet.reset();
-			app.commandHistory.reset();
-			app.fsaGraph.loadFromJSON(json);
+			app.commandHistory.pushAndExecute(new LoadGraphCommand(json));
 			notifySuccess('Graph loaded successfully.');
 		} catch (err) {
+			// restore grpah directly, without pushing to command history, to avoid messing up the undo stack
 			app.fsaGraph.loadFromJSON(backup);
 			console.error(err);
 			notifyError('Failed to load graph. The file may be corrupted.');
@@ -66,7 +74,7 @@
 
 	async function downloadGraph() {
 		if (app.fsaGraph.isEmpty) {
-			notifyWarning('The graph is empty.');
+			notifyWarning('The graph is empty, nothing to download.');
 			return;
 		}
 		try {
@@ -87,7 +95,7 @@
 
 	async function exportAsSvg() {
 		if (app.fsaGraph.isEmpty) {
-			notifyWarning('The graph is empty.');
+			notifyWarning('The graph is empty, nothing to export.');
 			return;
 		}
 		try {
@@ -107,17 +115,23 @@
 		}
 	}
 
-	function exportAsTikz() {
+	async function copyLatex() {
+		await navigator.clipboard.writeText(latexContent);
+		latexCopied = true;
+		setTimeout(() => (latexCopied = false), 2000);
+	}
+
+	function exportAsLatex() {
 		if (app.fsaGraph.isEmpty) {
-			notifyWarning('The graph is empty.');
+			notifyWarning('The graph is empty, nothing to export.');
 			return;
 		}
 		try {
-			navigator.clipboard.writeText(graphToTikz(app.fsaGraph));
-			notifySuccess('TikZ code copied to clipboard.');
+			latexContent = graphToTikz(app.fsaGraph);
+			latexModal.show();
 		} catch (err) {
 			console.error(err);
-			notifyError('Failed to export TikZ.');
+			notifyError('Failed to export LaTeX.');
 		}
 	}
 
@@ -164,8 +178,8 @@
 		</button>
 	</li>
 	<li>
-		<button onclick={exportAsTikz}>
-			<FileBraces class="h-4 w-4" /> Export LaTeX (TikZ)
+		<button onclick={exportAsLatex}>
+			<FileBraces class="h-4 w-4" /> Export LaTeX
 		</button>
 	</li>
 </ul>
@@ -187,9 +201,9 @@
 				}}
 			>
 				<div class="flex gap-3">
-					<button type="button" class="btn btn-sm" onclick={() => clearFsaModal.close()}
-						>Cancel</button
-					>
+					<button type="button" class="btn btn-sm" onclick={() => clearFsaModal.close()}>
+						Cancel
+					</button>
 					<button type="submit" class="btn btn-sm btn-error">Clear</button>
 				</div>
 			</form>
@@ -235,6 +249,28 @@
 		{/if}
 		<div class="modal-action mt-4">
 			<button class="btn btn-sm" onclick={() => loadExampleModal.close()}>Close</button>
+		</div>
+	</div>
+</dialog>
+
+<dialog bind:this={latexModal} class="modal" use:portal>
+	<div class="modal-box max-w-4xl">
+		<div class="flex items-start justify-between">
+			<div>
+				<h3 class="text-lg font-bold">LaTeX Export</h3>
+			</div>
+			<button class="btn btn-sm {latexCopied ? 'btn-success' : 'btn-ghost'}" onclick={copyLatex}>
+				{#if latexCopied}
+					<Check class="h-4 w-4" /> Copied!
+				{:else}
+					<Copy class="h-4 w-4" /> Copy
+				{/if}
+			</button>
+		</div>
+		<pre
+			class="mt-4 max-h-[70vh] overflow-auto rounded-md bg-base-200 p-4 font-mono text-sm">{latexContent}</pre>
+		<div class="modal-action mt-4">
+			<button class="btn" onclick={() => latexModal.close()}>Close</button>
 		</div>
 	</div>
 </dialog>

@@ -1,4 +1,4 @@
-import type { Point } from '$lib/utils/geometry';
+import { midPoint, type Point } from '$lib/utils/geometry';
 import { Node, Edge } from '$lib/automata-models';
 import { State, type EventContext } from '../State';
 import { type EditorContext } from '../../EditorContext';
@@ -7,7 +7,7 @@ import {
 	MoveNodesCommand,
 	AdjustEdgeShapeCommand
 } from '../../commands';
-import { getControlPointFromLabelPos } from '$lib/utils/edgeUtils';
+import { getControlPointFromLabelPos, projectToPerpendicular } from '$lib/utils/edgeUtils';
 
 /**
  * Base class for actions that involve dragging in the editor. Useful here since drag actions in this state can be quite complicated.
@@ -86,7 +86,18 @@ class AdjustEdgeShapeAction extends DragAction {
 	}
 
 	handleMove(eventCtx: EventContext, _editorCtx: EditorContext): void {
-		const controlPoint = getControlPointFromLabelPos(this._edge, eventCtx.pointerPos);
+		let controlPoint = getControlPointFromLabelPos(this._edge, eventCtx.pointerPos);
+		// when SHIFT is held, snap the control point to the perpendicular bisector of the line between source and target nodes, to create perfectly curved edges
+		if (eventCtx.event.shiftKey && !this._edge.isLoopback) {
+			const referencePoint = midPoint(this._edge.sourcePoint, this._edge.targetPoint);
+			const offset = { x: controlPoint.x - referencePoint.x, y: controlPoint.y - referencePoint.y };
+			const snapped = projectToPerpendicular(
+				this._edge.sourcePoint,
+				this._edge.targetPoint,
+				offset
+			);
+			controlPoint = { x: referencePoint.x + snapped.x, y: referencePoint.y + snapped.y };
+		}
 		this._edge.updateControlPoint(controlPoint);
 	}
 

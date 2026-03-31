@@ -4,7 +4,7 @@
 	import { WINDOWS_ID } from '$lib/windows';
 
 	const WINDOW_ITEMS = [
-		{ id: WINDOWS_ID.GraphInfo, label: 'Graph info', icon: Info },
+		{ id: WINDOWS_ID.AutomatonInfo, label: 'Automaton info', icon: Info },
 		{ id: WINDOWS_ID.TransitionTable, label: 'Transition table', icon: Table2 },
 		{ id: WINDOWS_ID.ComputeInput, label: 'Compute input', icon: MonitorCog }
 	] as const;

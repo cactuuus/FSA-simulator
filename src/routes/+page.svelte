@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { CirclePlus, Spline, Hand, MousePointer } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { TransitionTableWindow } from '$lib/transition-table';
@@ -24,7 +24,7 @@
 	import { isTyping } from '$lib/utils/keyboard';
 	import { toggleInSelectionArea, toggleSelected } from '$lib/utils/graphEffects';
 	import MainMenu from '$lib/menu/MainMenu.svelte';
-	import { GraphInfoWindow } from '$lib/graph-info';
+	import { AutomatonInfoWindow } from '$lib/automaton-info';
 
 	const editorCtx: EditorContext = {
 		fsaGraph: app.fsaGraph,
@@ -33,14 +33,13 @@
 		selection: app.selectionHandler,
 		draftEdge: new DraftEdgeHandler(app.fsaGraph)
 	};
-
-	interface ModeConfig {
-		stateMachine: StateMachine<State>;
-		tools: Tool[];
-		keydownHandler: (_e: KeyboardEvent) => void;
-	}
-
-	const editorStateMachine = new StateMachine(
+	const tools: Tool[] = [
+		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand, title: 'Pan (1)' },
+		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' },
+		{ stateName: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline, title: 'Draw Edge (3)' },
+		{ stateName: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus, title: 'Add State (4)' }
+	];
+	const stateMachine = new StateMachine(
 		[
 			new PanningState(editorCtx),
 			new SelectState(editorCtx),
@@ -50,77 +49,58 @@
 		SelectState.NAME
 	);
 
-	const editorTools: Tool[] = [
-		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand, title: 'Pan (1)' },
-		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' },
-		{ stateName: DrawEdgeState.NAME, kbShortcut: '3', icon: Spline, title: 'Draw Edge (3)' },
-		{ stateName: AddNodeState.NAME, kbShortcut: '4', icon: CirclePlus, title: 'Add Node (4)' }
-	];
-
-	function handleEditorKeyDown(e: KeyboardEvent) {
-		if (e.key === 'Delete') {
-			e.preventDefault();
-			const toDelete = editorCtx.selection.items.map((item) => item.id);
-			if (toDelete.length === 0) return;
-			const command = new DeleteFSAItemsCommand(...toDelete);
-			editorCtx.commandHistory.pushAndExecute(command);
-		}
-	}
-
-	const simulationStateMachine = new StateMachine(
-		[new PanningState(editorCtx), new SelectState(editorCtx)],
-		SelectState.NAME
-	);
-
-	const simulationTools: Tool[] = [
-		{ stateName: PanningState.NAME, kbShortcut: '1', icon: Hand, title: 'Pan (1)' },
-		{ stateName: SelectState.NAME, kbShortcut: '2', icon: MousePointer, title: 'Select (2)' }
-	];
-
-	function handleSimulationKeyDown(_e: KeyboardEvent) {
-		// nothing here yet
-	}
-
-	const editorConfig: ModeConfig = {
-		stateMachine: editorStateMachine,
-		tools: editorTools,
-		keydownHandler: handleEditorKeyDown
-	};
-
-	const simulationConfig: ModeConfig = {
-		stateMachine: simulationStateMachine,
-		tools: simulationTools,
-		keydownHandler: handleSimulationKeyDown
-	};
-
-	const activeMode = $derived(app.isEditing() ? editorConfig : simulationConfig);
-
 	function handleKeyDown(e: KeyboardEvent) {
-		// global shortcuts that work regardless of the current mode
-		if (isTyping(e)) return;
+		// escape always clears selection
 		if (e.key === 'Escape') {
 			e.preventDefault();
 			editorCtx.selection.clear();
-		} else {
-			// delegate to active mode's specific keydown handler
-			activeMode.keydownHandler(e);
+		}
+		// ignore other keys if user is engaging with other fields
+		if (!isTyping(e) && !app.isSimulating()) {
+			if (e.key === 'Delete') {
+				e.preventDefault();
+				const toDelete = editorCtx.selection.items.map((item) => item.id);
+				if (toDelete.length === 0) return;
+				const command = new DeleteFSAItemsCommand(...toDelete);
+				editorCtx.commandHistory.pushAndExecute(command);
+			}
 		}
 	}
 
+	let previousState = $state<State>(stateMachine.currentState);
+	// Switches to panning state when simulation starts, and back to previous state when it ends
+	$effect(() => {
+		if (app.isSimulating()) {
+			untrack(() => {
+				previousState = stateMachine.currentState;
+				stateMachine.transitionTo(PanningState.NAME);
+				editorCtx.selection.clear();
+			});
+		} else {
+			untrack(() => {
+				stateMachine.transitionTo(previousState.name);
+			});
+		}
+	});
+
 	// Highlights items selected
 	$effect(() => {
-		app.fsaGraph.nodes.forEach((node) => {
-			const isSelected = editorCtx.selection.isSelected(node.id);
-			toggleSelected(isSelected, node.id);
-		});
-		app.fsaGraph.edges.forEach((edge) => {
-			const isSelected = editorCtx.selection.isSelected(edge.id);
-			toggleSelected(isSelected, edge.id);
+		void editorCtx.selection.items; // track changes in selection
+		untrack(() => {
+			app.fsaGraph.nodes.forEach((node) => {
+				const isSelected = editorCtx.selection.isSelected(node.id);
+				toggleSelected(isSelected, node.id);
+			});
+			app.fsaGraph.edges.forEach((edge) => {
+				const isSelected = editorCtx.selection.isSelected(edge.id);
+				toggleSelected(isSelected, edge.id);
+			});
 		});
 	});
 
 	// Highlights items in the selection area
 	$effect(() => {
+		void editorCtx.selection.itemsInArea; // track changes in selection area
 		app.fsaGraph.nodes.forEach((node) => {
 			const isInSelectionArea = editorCtx.selection.isInArea(node.id);
 			toggleInSelectionArea(isInSelectionArea, node.id);
@@ -141,22 +121,22 @@
 	<DrawingBoard
 		fsa={editorCtx.fsaGraph}
 		viewport={editorCtx.viewport}
-		currentState={activeMode.stateMachine?.currentState}
+		currentState={stateMachine.currentState}
 	>
 		{#snippet overlay()}
-			{#if app.isEditing()}
+			{#if !app.isSimulating()}
 				{#if editorCtx.draftEdge.get}
 					<DraftEdgeSvg draftEdge={editorCtx.draftEdge.get} />
 				{/if}
-			{/if}
-			{#if editorCtx.selection.area}
-				{@const { start, end } = editorCtx.selection.area}
-				<SelectionArea {start} {end} />
+				{#if editorCtx.selection.area}
+					{@const { start, end } = editorCtx.selection.area}
+					<SelectionArea {start} {end} />
+				{/if}
 			{/if}
 		{/snippet}
 	</DrawingBoard>
 
-	{#if app.isSimulating() && app.simulationController}
+	{#if app.isSimulating()}
 		<SimulationScene fsa={app.fsaGraph} controller={app.simulationController} />
 	{/if}
 
@@ -167,20 +147,25 @@
 
 	<!-- Top-center controls -->
 	<div class="controls-container top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2">
-		<!-- Toolbar -->
-		<StatesToolbar tools={activeMode.tools} stateMachine={activeMode.stateMachine} />
-
-		{#if app.isSimulating() && app.simulationController}
-			<SimulationControls
-				onExit={() => app.exitSimulation()}
-				controller={app.simulationController}
-			/>
+		{#if app.isSimulating()}
+			<!-- Simulation controls -->
+			<SimulationControls controller={app.simulationController} />
+			<!-- fixes a production build reactivity bug, do not remove -->
+			{void app.isSimulating()}
+			<!-- No idea what causes it, but without that line (or any line that triggers reactivity)
+			 the simulation controls don't render when switching from simulation to editing and back to
+			 simulation. Weird thing is: logs inside the component still print in the console, like
+			 everything is fine, but the element doesn't show up in the DOM (???).
+			-->
+		{:else}
+			<!-- Toolbar -->
+			<StatesToolbar {tools} {stateMachine} />
 		{/if}
 	</div>
 
 	<div class="controls-container top-2 right-2">
 		<!-- Undo/Redo controls -->
-		{#if app.isEditing()}
+		{#if !app.isSimulating()}
 			<UndoRedoControls commandHistory={editorCtx.commandHistory} />
 		{/if}
 	</div>
@@ -190,18 +175,16 @@
 		<ZoomControls viewport={editorCtx.viewport} />
 	</div>
 
-	{#if app.isEditing()}
+	{#if !app.isSimulating()}
 		{#if app.windows.isOpen(WINDOWS_ID.TransitionTable)}
 			<TransitionTableWindow />
 		{/if}
 		{#if app.windows.isOpen(WINDOWS_ID.ComputeInput)}
 			<ComputeInputWindow />
 		{/if}
-		{#if app.isEditing()}
-			<SelectionPanel editor={editorCtx} />
-		{/if}
-		{#if app.windows.isOpen(WINDOWS_ID.GraphInfo)}
-			<GraphInfoWindow />
+		<SelectionPanel editor={editorCtx} />
+		{#if app.windows.isOpen(WINDOWS_ID.AutomatonInfo)}
+			<AutomatonInfoWindow />
 		{/if}
 	{/if}
 </section>

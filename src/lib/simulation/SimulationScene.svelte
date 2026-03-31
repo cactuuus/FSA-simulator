@@ -49,12 +49,15 @@
 			onUpdate: (self) => controller.setCurrentTime(self.currentTime),
 			onComplete: () => controller.onPlaybackEnded()
 		});
+		const stepTimestamps: number[] = [];
 
 		let time = 0;
 		let sourceEl: SVGElement | null = null;
 		let stackPointer = -1;
 
 		path.nodes.forEach((node) => {
+			stepTimestamps.push(time);
+
 			const parent = node.parent;
 			const transition = parent?.via ?? null;
 			const edgeId = parent
@@ -214,11 +217,11 @@
 				}
 			});
 		}
-		controller.registerTimeline(tl);
+		controller.registerTimeline(tl, stepTimestamps);
 
 		return () => {
 			// cleanup -- stop the timeline and reset all styles
-			controller.stop();
+			tl.cancel();
 			path.nodes.forEach((node) => {
 				const parent = node.parent;
 				const edgeId = parent

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { FSAGraph, FSAType, Transition } from '$lib/automata-models';
-import { DFA, NFA, DPDA, PDA } from '../fsa-examples';
+import { dfaExamples, nfaExamples, pdaExamples, dpdaExamples } from '../fsa-examples';
 import { withReactivity } from '../helpers.svelte';
 
 // --- Node management
@@ -123,7 +123,9 @@ describe('FSAGraph - stack ops', () => {
 			const fsa = new FSAGraph();
 			const q0 = fsa.createNewNode({ x: 0, y: 0 }, 'node-0');
 			const q1 = fsa.createNewNode({ x: 100, y: 0 }, 'node-1');
-			fsa.createNewEdge(q0, q1);
+			const edge = fsa.createNewEdge(q0, q1);
+			edge.addEmptyTransition(fsa.hasStackOps, 't0');
+			edge.addEmptyTransition(fsa.hasStackOps, 't1');
 			fsa.hasStackOps = true;
 			expect(fsa.transitions.every((t) => t.hasStackOps())).toBe(true);
 		});
@@ -134,10 +136,12 @@ describe('FSAGraph - stack ops', () => {
 			const fsa = new FSAGraph();
 			const q0 = fsa.createNewNode({ x: 0, y: 0 }, 'node-0');
 			const q1 = fsa.createNewNode({ x: 100, y: 0 }, 'node-1');
-			fsa.createNewEdge(q0, q1);
+			const edge = fsa.createNewEdge(q0, q1);
+			edge.addEmptyTransition(fsa.hasStackOps, 't0');
+			edge.addEmptyTransition(fsa.hasStackOps, 't1');
 			fsa.hasStackOps = true;
 			fsa.hasStackOps = false;
-			expect(fsa.transitions.every((t) => !t.hasStackOps())).toBe(true);
+			expect(fsa.transitions.every((t) => !t.hasStackOps())).toBe(false);
 		});
 	});
 
@@ -148,6 +152,8 @@ describe('FSAGraph - stack ops', () => {
 			const q0 = fsa.createNewNode({ x: 0, y: 0 }, 'node-0');
 			const q1 = fsa.createNewNode({ x: 100, y: 0 }, 'node-1');
 			const edge = fsa.createNewEdge(q0, q1);
+			edge.addEmptyTransition(fsa.hasStackOps, 't0');
+			edge.addEmptyTransition(fsa.hasStackOps, 't1');
 			expect(edge.transitions[0].hasStackOps()).toBe(true);
 		});
 	});
@@ -156,39 +162,47 @@ describe('FSAGraph - stack ops', () => {
 // --- Types & Determinism
 
 describe('FSAGraph - types and determinism', () => {
-	it('DFA example is correctly identified as a DFA', () => {
+	it('DFA examples are correctly identified as DFAs', () => {
 		withReactivity(() => {
-			const fsa = new FSAGraph();
-			fsa.loadFromJSON(DFA);
-			expect(fsa.type).toBe(FSAType.DFA);
-			expect(fsa.isDeterministic).toBe(true);
+			for (const example of dfaExamples) {
+				const fsa = new FSAGraph();
+				fsa.loadFromJSON(example.fsa);
+				expect(fsa.type, `[${example.language}]`).toBe(FSAType.DFA);
+				expect(fsa.isDeterministic, `[${example.language}]`).toBe(true);
+			}
 		});
 	});
 
-	it('NFA example is correctly identified as an NFA', () => {
+	it('NFA examples are correctly identified as NFAs', () => {
 		withReactivity(() => {
-			const fsa = new FSAGraph();
-			fsa.loadFromJSON(NFA);
-			expect(fsa.type).toBe(FSAType.NFA);
-			expect(fsa.isDeterministic).toBe(false);
+			for (const example of nfaExamples) {
+				const fsa = new FSAGraph();
+				fsa.loadFromJSON(example.fsa);
+				expect(fsa.type, `[${example.language}]`).toBe(FSAType.NFA);
+				expect(fsa.isDeterministic, `[${example.language}]`).toBe(false);
+			}
 		});
 	});
 
-	it('DPDA example is correctly identified as a DPDA', () => {
+	it('DPDA examples are correctly identified as DPDAs', () => {
 		withReactivity(() => {
-			const fsa = new FSAGraph();
-			fsa.loadFromJSON(DPDA);
-			expect(fsa.type).toBe(FSAType.DPDA);
-			expect(fsa.isDeterministic).toBe(true);
+			for (const example of dpdaExamples) {
+				const fsa = new FSAGraph();
+				fsa.loadFromJSON(example.fsa);
+				expect(fsa.type, `[${example.language}]`).toBe(FSAType.DPDA);
+				expect(fsa.isDeterministic, `[${example.language}]`).toBe(true);
+			}
 		});
 	});
 
-	it('PDA example is correctly identified as a PDA', () => {
+	it('PDA examples are correctly identified as PDAs', () => {
 		withReactivity(() => {
-			const fsa = new FSAGraph();
-			fsa.loadFromJSON(PDA);
-			expect(fsa.type).toBe(FSAType.PDA);
-			expect(fsa.isDeterministic).toBe(false);
+			for (const example of pdaExamples) {
+				const fsa = new FSAGraph();
+				fsa.loadFromJSON(example.fsa);
+				expect(fsa.type, `[${example.language}]`).toBe(FSAType.PDA);
+				expect(fsa.isDeterministic, `[${example.language}]`).toBe(false);
+			}
 		});
 	});
 });
@@ -245,7 +259,7 @@ describe('FSAGraph - serialization', () => {
 	it('save/restore preserves node count, edge count, and start node', () => {
 		withReactivity(() => {
 			const fsa = new FSAGraph();
-			fsa.loadFromJSON(DFA);
+			fsa.loadFromJSON(dfaExamples[0].fsa);
 			const restored = new FSAGraph();
 			restored.loadFromJSON(fsa.toJSON());
 			expect(restored.nodes).toHaveLength(fsa.nodes.length);
@@ -257,7 +271,7 @@ describe('FSAGraph - serialization', () => {
 	it('save/restore preserves node labels and accepting states', () => {
 		withReactivity(() => {
 			const fsa = new FSAGraph();
-			fsa.loadFromJSON(DFA);
+			fsa.loadFromJSON(dfaExamples[0].fsa);
 			const restored = new FSAGraph();
 			restored.loadFromJSON(fsa.toJSON());
 			fsa.nodes.forEach((node) => {
@@ -271,7 +285,7 @@ describe('FSAGraph - serialization', () => {
 	it('save/restore of a PDA preserves stack ops on all transitions', () => {
 		withReactivity(() => {
 			const fsa = new FSAGraph();
-			fsa.loadFromJSON(PDA);
+			fsa.loadFromJSON(pdaExamples[0].fsa);
 			const restored = new FSAGraph();
 			restored.loadFromJSON(fsa.toJSON());
 			expect(restored.transitions.every((t) => t.hasStackOps())).toBe(true);
