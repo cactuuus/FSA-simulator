@@ -31,7 +31,7 @@
 <!-- Playback -->
 <section id={MANUAL_SECTIONS.SIMULATION_PLAYBACK.id} data-section class="subsection">
 	<h3>{MANUAL_SECTIONS.SIMULATION_PLAYBACK.title}</h3>
-	<img src="/manual/simulation-playback.avif" alt="Simulation playback" />
+	<img src="/manual/simulation-playback.avif" alt="Simulation playback" loading="lazy" />
 	<p class="text-normal bottom-spaced">
 		Once you have selected a path to simulate, the simulation playback will open. This will hide all
 		editing controls and display a simulation panel at the top of the screen.
