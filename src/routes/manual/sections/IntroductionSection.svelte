@@ -12,44 +12,94 @@
 	<p class="text-normal bottom-spaced">
 		A <strong>Finite State Automaton</strong> (FSA) (also called a <em>Finite State Machine</em>) is
 		a mathematical model of computation. It reads an input string one symbol at a time and decides,
-		at the end, whether to <strong>accept</strong> or <strong>reject</strong> it. FSAs are commonly used
-		in computer science to represent and manipulate regular languages, and they have applications in areas
-		like text processing, compiler design, and digital circuit design.
+		at the end, whether to <strong>accept</strong> or <strong>reject</strong> it.
+		<br />
+		Put simply, an FSA can be broken down into this components:
 	</p>
-	<p class="text-normal bottom-spaced">
-		Formally, an FSA is defined as a 5-tuple <strong>(Q, Σ, δ, q₀, F)</strong>:
-	</p>
-	<ul class="formal-definition-list">
+	<ul class="panel-list">
 		<li>
-			<p class="text-normal bottom-spaced">
-				<span class="term"> Q </span> — A finite, non-empty set of states.
-			</p>
+			<div class="item-header font-bold">States</div>
+			<div class="flex flex-col items-center gap-4 lg:flex-row lg:items-start">
+				<p class="text-normal">
+					Each state represents a different configuration that the automaton can be in. In the
+					grapical representation, these are represented as circles, with the name of the state
+					written inside.
+					<br />
+					<strong>Note:</strong> there are special types of states covered later in the list:
+					<em>start</em> and <em>accepting</em> states. A state could be start, accepting, both, or neither.
+				</p>
+				<img
+					src="/manual/state.avif"
+					alt="FSA state example"
+					class="m-0! max-h-40 max-w-60!"
+					loading="lazy"
+				/>
+			</div>
 		</li>
 		<li>
-			<p class="text-normal bottom-spaced">
-				<span class="term"> Σ </span>
-				— The input alphabet, which is a finite set of symbols the machine can read.
-			</p>
+			<div class="item-header font-bold">Transitions</div>
+			<div class="flex flex-col items-center gap-4 lg:flex-row lg:items-start">
+				<p class="text-normal">
+					The rules that define how the machine moves between states. They are represented as arrows
+					connecting states, where their labels indicate the input needed to perform the transition
+					to the state they point to.
+					<br />
+					<strong>Note:</strong> a transition can also point to the same state it starts from, which
+					is called a <em>loop transition</em>.
+				</p>
+				<img
+					src="/manual/transition.avif"
+					alt="FSA transition example"
+					class="m-0! max-h-40 max-w-60!"
+					loading="lazy"
+				/>
+			</div>
 		</li>
 		<li>
-			<p class="text-normal bottom-spaced">
-				<span class="term"> δ: Q × Σ → Q </span>
-				— The transition function. It defines how the machine moves between states given a current state
-				and an input symbol.
-			</p>
+			<div class="item-header font-bold">Alphabet</div>
+			<div class="flex flex-col items-center gap-4 lg:flex-row lg:items-start">
+				<p class="text-normal">
+					The set of symbols that the machine can read as input. These are the same symbols used in
+					the transitions' labels, therefore you can infer it from the transitions themselves, but
+					it is often explicitly represented as a list of symbols for clarity.
+				</p>
+				<img
+					src="/manual/alphabet.avif"
+					alt="FSA alphabet example"
+					class="m-0! max-h-40 max-w-60!"
+					loading="lazy"
+				/>
+			</div>
 		</li>
 		<li>
-			<p class="text-normal bottom-spaced">
-				<span class="term"> q<sub>0</sub> ∈ Q </span>
-				— The start state, where the machine begins before reading any input.
-			</p>
+			<div class="item-header font-bold">Start State</div>
+			<div class="flex flex-col items-center gap-4 lg:flex-row lg:items-start">
+				<p class="text-normal">
+					The initial state of the automaton, which is the configuration the machine is in before it
+					starts processing any input. This is marked by an incoming arrow with no origin nor label.
+				</p>
+				<img
+					src="/manual/start-state.avif"
+					alt="FSA start state example"
+					class="m-0! max-h-40 max-w-60!"
+					loading="lazy"
+				/>
+			</div>
 		</li>
 		<li>
-			<p class="text-normal bottom-spaced">
-				<span class="term"> F ⊆ Q </span>
-				— The set of accepting states. If the machine halts in one of these states after processing the
-				input, then the input is accepted, otherwise it is rejected.
-			</p>
+			<div class="item-header font-bold">Accepting States</div>
+			<div class="flex flex-col items-center gap-4 lg:flex-row lg:items-start">
+				<p class="text-normal">
+					A set of states in which the automaton, when done processing the given input, accepts it.
+					These are represented as double circles.
+				</p>
+				<img
+					src="/manual/accepting-state.avif"
+					alt="FSA accepting state example"
+					class="m-0! max-h-40 max-w-60!"
+					loading="lazy"
+				/>
+			</div>
 		</li>
 	</ul>
 </section>
