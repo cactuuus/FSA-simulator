@@ -35,6 +35,7 @@ export class DrawEdgeState extends State {
 	handleDragStart(ctx: EventContext): void {
 		if (ctx.node && !this.editorCtx.draftEdge.get) {
 			this.editorCtx.draftEdge.new(ctx.node);
+			this.editorCtx.selection.clear();
 		}
 	}
 
