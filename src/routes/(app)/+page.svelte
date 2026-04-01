@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
-	import { CirclePlus, Spline, Hand, MousePointer } from '@lucide/svelte';
+	import { CirclePlus, Spline, Hand, MousePointer, BookOpen } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { TransitionTableWindow } from '$lib/transition-table';
 	import { SelectionArea, SelectionPanel } from '$lib/editor/selection';
@@ -25,6 +25,7 @@
 	import { toggleInSelectionArea, toggleSelected } from '$lib/utils/graphEffects';
 	import MainMenu from '$lib/menu/MainMenu.svelte';
 	import { AutomatonInfoWindow } from '$lib/automaton-info';
+	import { manualHref } from '$lib/utils/manual';
 
 	const editorCtx: EditorContext = {
 		fsaGraph: app.fsaGraph,
@@ -140,9 +141,14 @@
 		<SimulationScene fsa={app.fsaGraph} controller={app.simulationController} />
 	{/if}
 
-	<!-- Top-left menu -->
-	<div class="controls-container top-2 left-2">
+	<!-- Top-left -->
+	<div class="controls-container top-2 left-2 flex items-center gap-2">
+		<!-- Main menu -->
 		<MainMenu simulationActive={app.isSimulating()} />
+		<!-- Undo/redo controls -->
+		{#if !app.isSimulating()}
+			<UndoRedoControls commandHistory={editorCtx.commandHistory} />
+		{/if}
 	</div>
 
 	<!-- Top-center controls -->
@@ -163,14 +169,19 @@
 		{/if}
 	</div>
 
-	<div class="controls-container top-2 right-2">
-		<!-- Undo/Redo controls -->
-		{#if !app.isSimulating()}
-			<UndoRedoControls commandHistory={editorCtx.commandHistory} />
-		{/if}
-	</div>
+	<!-- Top-right manual button -->
+	<a
+		href={manualHref()}
+		target="_blank"
+		class="controls-container controls top-2 right-2"
+		title="Open manual"
+	>
+		<div class="btn btn-square h-10 gap-2 rounded-box text-primary btn-ghost hover:text-secondary">
+			<BookOpen class="h-4 w-4" />
+		</div>
+	</a>
 
-	<!-- Zoom controls -->
+	<!-- Bottom-right zoom controls -->
 	<div class="controls-container right-2 bottom-2">
 		<ZoomControls viewport={editorCtx.viewport} />
 	</div>

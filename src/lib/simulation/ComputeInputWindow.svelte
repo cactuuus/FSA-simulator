@@ -1,12 +1,13 @@
 <script lang="ts">
 	// TODO: remove dependency on app
 	import { app } from '$lib/stores/app.svelte';
-	import { Info, TriangleAlert, Check, RefreshCcw, CircleX } from '@lucide/svelte';
+	import { Info, TriangleAlert, Check, RefreshCcw, CircleX, BookOpen } from '@lucide/svelte';
 	import { WINDOWS_ID, FloatingWindow } from '$lib/windows';
 	import { notifyWarning, notifyError } from '$lib/utils/notifications';
 	import { FSAType } from '$lib/automata-models';
 	import PathList from './PathList.svelte';
 	import { type PathLeaf } from './computationTree';
+	import { MANUAL_SECTIONS, manualHref } from '$lib/utils/manual';
 	import { onMount } from 'svelte';
 
 	const controller = $derived(app.simulationController);
@@ -86,7 +87,18 @@
 	defaultWidth={500}
 >
 	{#snippet header()}
-		<span>Compute Input</span>
+		<span class="flex items-center gap-2">
+			Compute Input
+			<a
+				href={manualHref(MANUAL_SECTIONS.SIMULATION)}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="text-primary hover:text-secondary"
+				title="Open manual section about simulation"
+			>
+				<BookOpen class="h-4 w-4" />
+			</a>
+		</span>
 	{/snippet}
 	{#snippet content()}
 		<div class="mb-2 flex flex-col gap-2 rounded-box bg-base-300 p-3">
@@ -105,10 +117,16 @@
 					placeholder={alphabetIsSingleChar ? 'e.g. aabbab' : 'e.g. symbol1, symbol2'}
 					class="input input-sm w-full max-w-xs"
 					bind:value={inputToProcess}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') {
+							e.preventDefault();
+							runInputComputation(cleanedInput);
+						}
+					}}
 				/>
 				<div class="flex justify-end gap-2">
 					<button class="btn btn-sm btn-success" onclick={() => runInputComputation(cleanedInput)}>
-						Compute Input
+						Compute
 					</button>
 				</div>
 			</div>

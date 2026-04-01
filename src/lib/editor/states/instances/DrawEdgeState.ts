@@ -25,15 +25,17 @@ export class DrawEdgeState extends State {
 			if (!this.editorCtx.draftEdge.isDuplicate) {
 				this.addAndSelectEdge(ctx.node.id, ctx.node.id);
 			}
+		} else {
+			// clear selection clicking anywhere else
+			this.editorCtx.selection.clear();
 		}
-		// clear selection and any draft edge when clicking anywhere else
-		this.editorCtx.selection.clear();
 		this.editorCtx.draftEdge.clear();
 	}
 
 	handleDragStart(ctx: EventContext): void {
 		if (ctx.node && !this.editorCtx.draftEdge.get) {
 			this.editorCtx.draftEdge.new(ctx.node);
+			this.editorCtx.selection.clear();
 		}
 	}
 

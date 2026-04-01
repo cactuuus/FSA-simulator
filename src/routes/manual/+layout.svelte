@@ -1,12 +1,11 @@
 <script lang="ts">
-	import favicon from '$lib/assets/favicon.svg';
+	import '../../manual.css';
 
 	let { children } = $props();
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
-	<title>FSA Toolkit</title>
+	<title>FSA Toolkit — Manual</title>
 </svelte:head>
 
 {@render children()}

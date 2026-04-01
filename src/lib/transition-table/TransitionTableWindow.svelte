@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { CircleQuestionMark } from '@lucide/svelte';
+	import { BookOpen } from '@lucide/svelte';
 	import { WINDOWS_ID } from '$lib/windows/Windows.svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import FloatingWindow from '$lib/windows/FloatingWindow.svelte';
 	import TransitionTable from './TransitionTable.svelte';
 	import DesiredAlphabet from './DesiredAlphabet.svelte';
+	import { MANUAL_SECTIONS, manualHref } from '$lib/utils/manual';
 </script>
 
 <FloatingWindow
@@ -15,7 +16,18 @@
 	defaultWidth={600}
 >
 	{#snippet header()}
-		<span>Transition Table</span>
+		<span class="flex items-center gap-2">
+			Transition Table
+			<a
+				href={manualHref(MANUAL_SECTIONS.TRANSITION_TABLE)}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="text-primary hover:text-secondary"
+				title="Open manual section about transition tables"
+			>
+				<BookOpen class="h-4 w-4" />
+			</a>
+		</span>
 	{/snippet}
 	{#snippet content()}
 		<div class="flex flex-col gap-2">
@@ -27,39 +39,13 @@
 					type="input"
 				/>
 				{#if app.fsaGraph.hasStackOps}
+					<hr class="my-2 border-base-content/30" />
 					<DesiredAlphabet
 						desired={app.desiredAlphabet.stack}
 						actual={app.fsaGraph.stackAlphabet(true)}
 						type="stack"
 					/>
 				{/if}
-			</div>
-			<div class="collapse-arrow collapse">
-				<label
-					class="collapse-title flex items-center gap-2 p-0 font-semibold btn-link"
-					for="transition-table-how-to-read"
-				>
-					<CircleQuestionMark class="h-4 w-4 cursor-help" />
-					<span>How do I read this?</span>
-				</label>
-				<input
-					type="checkbox"
-					name="transition-table-how-to-read"
-					id="transition-table-how-to-read"
-				/>
-				<div class="collapse-content text-sm text-base-content/70">
-					<ol class="ml-6 list-outside list-decimal">
-						<li>On the left are the states of the FSA.</li>
-						<li>
-							Each column represents an input symbol needed for the transition. For PDAs, these also
-							include the symbol at the top of the stack.
-						</li>
-						<li>
-							Each cell shows the states reachable from the source state (row) when the input symbol
-							(column) is read, as a result of the transition.
-						</li>
-					</ol>
-				</div>
 			</div>
 		</div>
 	{/snippet}

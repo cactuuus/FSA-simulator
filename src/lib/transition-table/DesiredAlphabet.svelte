@@ -59,7 +59,7 @@
 	}
 </script>
 
-<div class="my-2 flex flex-col border-b border-base-content/20">
+<div class="my-2 flex flex-col">
 	<button
 		class="flex cursor-pointer items-center gap-1 hover:text-secondary"
 		onclick={openModal}
