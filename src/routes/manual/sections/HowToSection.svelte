@@ -12,8 +12,8 @@
 	<h3>{MANUAL_SECTIONS.HOW_TO_ADD_STATE.title}</h3>
 	<p class="text-normal">
 		Select the <span class="toolbar-item"><CirclePlus class="h-4 w-4" />Add State</span> tool from the
-		toolbar, then click anywhere on the canvas. A new state will be created at that location. If this
-		is the first state in the FSA, it will automatically be set as the start state.
+		toolbar, then click anywhere on the canvas. A new state will be created at that location. If the FSA
+		is currently empty, the newly added state will automatically be set as the start state.
 	</p>
 	<img
 		src="/manual/how-to-add-state.avif"
@@ -50,7 +50,8 @@
 		<br />
 		Select the <span class="toolbar-item"><MousePointer class="h-4 w-4" />Select</span>
 		tool and then click on the desired state. In the context panel that appears, check the
-		<strong>Is Accepting</strong> checkbox.
+		<strong>Is Accepting</strong> checkbox. You can also do so by simply double-clicking the state while
+		the select tool is active.
 	</p>
 	<img
 		src="/manual/how-to-toggle-accepting-state.avif"
@@ -89,6 +90,7 @@
 		click an edge to open its context panel. From there you can add new transitions, edit existing
 		ones, or remove them individually. Each transition defines the input symbol consumed (and, for
 		PDAs, the stack operations).
+		<br />
 		<strong>Note:</strong> if you want to remove the last transition on an edge, you need to delete the
 		edge itself, as edges must always have at least one transition.
 	</p>
@@ -106,14 +108,17 @@
 	<p class="text-normal bottom-spaced">
 		Select the <span class="toolbar-item"><MousePointer class="h-4 w-4" />Select</span> tool.
 		<br />
-		<strong>Moving states:</strong> Clicking and dragging states moves them freely on the canvas,
-		adjusting the connected edges accordingly. If multiple items (states and/or edges) are selected,
-		they will be moved together.
+		<strong>Moving states:</strong>
 		<br />
-		<strong>Adjusting edges:</strong> Clicking and dragging an edge to adjust its curvature. By
-		default, the curve is adjusted freely, but holding <kbd>Shift</kbd> while dragging, the curve will
-		snap to a symmetric arc centered between the two source and target states. Note that self-loops shape
-		cannot be adjusted, but you can use the same dragging action to rotate them around the state.
+		Clicking and dragging states moves them freely on the canvas, adjusting the connected edges accordingly.
+		If multiple items (states and/or edges) are selected, they will be moved together.
+		<br />
+		<strong>Adjusting edges:</strong>
+		<br />
+		Clicking and dragging an edge to adjust its curvature. By default, the curve is adjusted freely, but
+		holding <kbd>Shift</kbd> while dragging will snap it to a symmetric arc centered between the two source
+		and target states. Note that self-loops shape cannot be adjusted, but you can use the same dragging
+		action to rotate them around the state.
 	</p>
 	<img
 		src="/manual/how-to-adjust-shape.avif"

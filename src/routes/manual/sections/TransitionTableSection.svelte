@@ -16,8 +16,9 @@
 		of the stack, for pushdown automata). The cell at the intersection of a row and column lists the target
 		states for the transition defined by that state and input symbol.
 		<br />
-		For <strong>non-deterministic</strong> automata, if multiple states can be reached by consuming the
-		same input symbol, they are all listed in the cell, separated by commas.
+		<strong>Note:</strong> for <strong>non-deterministic</strong> automata, a single cell might contain
+		multiple target states, since there can be multiple transitions for the same state and input symbol
+		combination.
 	</p>
 </section>
 

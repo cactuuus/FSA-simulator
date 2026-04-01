@@ -18,14 +18,17 @@
 		that the automaton can take to process the input, separated between accepting and rejecting paths.
 		You can click on any of the listed paths to start a step-by-step simulation of that path.
 	</p>
-	<p class="alert block alert-soft alert-warning">
+	<span class="my-2 alert block alert-soft p-2 alert-info">
 		<strong>Note:</strong> For pushdown automata, you can also adjust the
-		<em>Max loops iterations</em> parameter, which will stop the simulation if an infinite loop is detected,
-		after the specified number of iterations. This is because pushdown automata can have a specific type
-		of infinite loop, where the stack content grows infinitely. This is particularly problematic because
-		in some situations, a valid input might only be accepted after a long sequence of loops, meaning we
-		can't simply ignore them.
-	</p>
+		<em>Max loops iterations</em>
+		parameter, which will stop the simulation if an infinite loop is detected, after the specified number
+		of iterations.
+		<br />
+		This is because pushdown automata can have a specific type of infinite loop where the stack content
+		grows infinitely. This is particularly problematic because in some situations, a valid input might
+		only be accepted after a long sequence of loops, meaning we can't simply completely ignore these infinite
+		loops.
+	</span>
 </section>
 
 <!-- Playback -->

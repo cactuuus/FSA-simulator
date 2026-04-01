@@ -12,9 +12,15 @@
 	<p class="text-normal bottom-spaced">
 		A <strong>Finite State Automaton</strong> (FSA) (also called a <em>Finite State Machine</em>) is
 		a mathematical model of computation. It reads an input string one symbol at a time and decides,
-		at the end, whether to <strong>accept</strong> or <strong>reject</strong> it.
-		<br />
-		Put simply, an FSA can be broken down into this components:
+		at the end, whether to <strong>accept</strong> or <strong>reject</strong> it. If an input is
+		accepted, we say that the automaton "recognises" it, and that the input belongs to the
+		<strong>language</strong> recognised by the automaton (a simple example of a language could be
+		the set of all inputs that start with <em>"a"</em>).
+		<span class="my-2 alert block alert-soft p-2 alert-info">
+			<strong>In other words:</strong> an FSA is a machine that takes a string as input and decides whether
+			it belongs to a specific set of strings (the language).
+		</span>
+		Put simply, an FSA can be broken down into these five components:
 	</p>
 	<ul class="panel-list">
 		<li>
@@ -76,7 +82,8 @@
 			<div class="flex flex-col items-center gap-4 lg:flex-row lg:items-start">
 				<p class="text-normal">
 					The initial state of the automaton, which is the configuration the machine is in before it
-					starts processing any input. This is marked by an incoming arrow with no origin nor label.
+					starts processing any input. This is marked by an incoming unlabelled arrow with no
+					origin.
 				</p>
 				<img
 					src="/manual/start-state.avif"
@@ -118,14 +125,19 @@
 				<span class="text-subtle">— Deterministic Finite Automaton</span>
 			</div>
 			<p class="text-normal">
-				The simplest and most constrained type. From any state, each input symbol leads to at most
-				one next state. DFAs are straightforward to simulate and minimise, and every NFA can be
-				converted to an equivalent DFA.
+				The simplest and most constrained type. As the name suggests, they are <strong
+					>deterministic</strong
+				>, which means that from any state, each input symbol leads to at most one state.
 				<br />
-				<strong>Note:</strong> the formal definition of a DFA requires that every state has exactly one
-				transition for every symbol in the alphabet (this is the definition of a "complete" DFA). However,
-				in practice we often allow incomplete DFAs where missing transitions implicitly reject the input.
-				This application uses the latter, more flexible definition.
+				This <em>deterministic</em> behaviour makes them easy to understand and reason about, but
+				can result in more complex automata compared to their non-deterministic counterparts (for
+				the same recognised language).
+				<br />
+				<br />
+				<strong>Note:</strong> the formal definition of a DFA requires that every state has exactly
+				one transition for every symbol in the alphabet (this is the definition of a
+				<strong>complete</strong> DFA). However, in practice we often allow incomplete DFAs where missing
+				transitions implicitly reject the input. This application uses the latter, more flexible definition.
 			</p>
 		</li>
 		<li>
@@ -134,10 +146,11 @@
 				<span class="text-subtle">— Non-deterministic Finite Automaton</span>
 			</div>
 			<p class="text-normal">
-				Like a DFA, but from any state a symbol may lead to zero, one, or many next states
-				simultaneously. NFAs also allow ε-transitions (epsilon-transitions, which change state
-				without consuming any input). Despite the added freedom, NFAs and DFAs recognise exactly the
-				same class of language (regular expressions), and can be converted to each other.
+				Like a DFA, but from any state a symbol may lead to more than one state simultaneously. NFAs
+				also allow <strong>ε-transitions</strong> (read as "epsilon-transitions"), which are special transitions
+				that allow the automaton to change state without consuming any input. Despite the added freedom,
+				NFAs and DFAs recognise exactly the same class of language (regular expressions), and can be converted
+				to each other.
 			</p>
 		</li>
 		<li>
@@ -146,7 +159,7 @@
 				<span class="text-subtle">— Push-down Automaton</span>
 			</div>
 			<p class="text-normal">
-				An NFA extended with an infinite stack. Each transition can push or pop symbols from the
+				An NFA extended with an infinite stack, allowing transitions to push or pop symbols from the
 				stack, giving the machine a form of unbounded memory. This extension allows PDAs to
 				recognize context-free languages, a strictly larger class than the regular languages.
 				<br />
@@ -159,9 +172,9 @@
 				<span class="text-subtle">— Deterministic Push-down Automaton</span>
 			</div>
 			<p class="text-normal">
-				A deterministic variant of the PDA, meaning that for each state and input symbol, there is
-				at most one possible next state. DPDAs are strictly less powerful than general PDAs, as
-				there exist context-free languages that no DPDA can recognise.
+				A <em>deterministic</em> variant of the PDA, meaning that for each state, input symbol, and stack
+				symbol to pop, there is at most one possible next state. DPDAs are strictly less powerful than
+				general PDAs, as there exist context-free languages that no DPDA can recognise.
 			</p>
 		</li>
 	</ul>
