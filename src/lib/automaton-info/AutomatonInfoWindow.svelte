@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { Check, X, CircleQuestionMark } from '@lucide/svelte';
+	import { BookOpen, Check, X } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { FloatingWindow, WINDOWS_ID } from '$lib/windows';
 	import { FSAGraph, FSAType } from '$lib/automata-models';
+	import { MANUAL_SECTIONS, manualHref } from '$lib/utils/manual';
 
 	const fsa: FSAGraph = $derived(app.fsaGraph);
 	const prettyAlphabet: string = $derived.by(() => {
@@ -47,20 +48,28 @@
 		defaultWidth={300}
 	>
 		{#snippet header()}
-			<span>Automaton Info</span>
+			<span class="flex items-center gap-2">
+				Automaton Info
+				<a
+					href={manualHref(MANUAL_SECTIONS.INTRODUCTION)}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-primary hover:text-secondary"
+					title="Open manual section about automata"
+				>
+					<BookOpen class="h-4 w-4" />
+				</a>
+			</span>
 		{/snippet}
 
 		{#snippet content()}
 			<div class="flex flex-col gap-3">
 				<!-- Title -->
 				<div class="flex flex-col gap-1">
-					<div
-						class="flex items-baseline gap-1 hover:cursor-help"
-						title="This is purely cosmetic, to help you identify your FSA when importing/exporting."
-					>
-						<label for="fsa-title" class="font-semibold">Title</label>
-						<CircleQuestionMark class="h-3 w-3" />
-					</div>
+					<label for="fsa-title" class="font-semibold"> Title </label>
+					<span class="text-sm text-base-content/70">
+						This is purely cosmetic, to help identification when importing/exporting.
+					</span>
 					<input id="fsa-title" type="text" class="input w-full max-w-xs" bind:value={fsa.title} />
 				</div>
 

@@ -1,0 +1,112 @@
+@import './app.css';
+
+#manual {
+	.section-header {
+		@apply mb-8 bg-base-300 py-1;
+	}
+
+	.subsection {
+		@apply mb-8 ml-2;
+	}
+
+	h1 {
+		@apply text-3xl font-bold;
+	}
+
+	h2 {
+		@apply ml-2 text-2xl font-bold before:mr-2 before:content-['#'];
+	}
+
+	h3 {
+		@apply mb-2 text-xl font-bold before:mr-2 before:content-['##'];
+	}
+
+	h4 {
+		@apply mb-2 font-bold;
+	}
+
+	.bottom-spaced {
+		@apply my-4;
+	}
+
+	.text-normal {
+		@apply leading-relaxed text-base-content/80;
+	}
+
+	.text-subtle {
+		@apply text-sm text-base-content/60;
+	}
+
+	.link {
+		@apply text-primary underline hover:text-secondary;
+	}
+
+	.toolbar-item {
+		@apply badge badge-soft font-bold text-secondary;
+	}
+
+	img {
+		@apply mx-auto my-4 aspect-16/10 w-full max-w-2xl border-2 border-base-300 bg-base-200 object-cover;
+	}
+
+	figure {
+		@apply mx-auto my-4 w-full max-w-2xl border-2 border-base-300 bg-base-200;
+
+		img {
+			@apply m-0 border-0 border-b-2 border-base-300;
+		}
+
+		figcaption {
+			@apply p-2 text-center text-sm text-base-content/60;
+		}
+	}
+
+	kbd {
+		@apply kbd;
+	}
+
+	ul.panel-list {
+		@apply space-y-4;
+		li {
+			@apply rounded-box bg-base-200 p-4;
+			.item-header {
+				@apply mb-3 flex items-center gap-2;
+			}
+		}
+	}
+
+	.menu {
+		.active-section {
+			@apply bg-base-200 font-bold text-secondary;
+		}
+		.active-subsection {
+			@apply font-bold text-secondary;
+		}
+	}
+
+	ul.formal-definition-list {
+		@apply mt-3 space-y-2;
+		li {
+			.term {
+				@apply badge inline-block badge-soft pt-0.5 text-sm font-bold;
+			}
+		}
+	}
+
+	ul.simple-list {
+		@apply mt-2 ml-4 flex list-disc flex-col space-y-1;
+		li {
+			@apply ml-2 p-0! leading-relaxed text-base-content/80;
+		}
+	}
+
+	table.shortcuts-table {
+		@apply mx-auto my-4 w-full max-w-2xl border-collapse text-sm;
+		th {
+			@apply border border-base-300 bg-base-200 px-6 py-2;
+		}
+		td {
+			@apply border border-base-300 px-6 py-2 text-base-content/80;
+		}
+	}
+}
