@@ -53,7 +53,7 @@
 	onMount(() => {
 		// Open the drawer by default on larger screens
 		const drawer = document.getElementById('manual-drawer') as HTMLInputElement;
-		if (drawer && window.innerWidth >= 1024) drawer.checked = true;
+		if (drawer && window.innerWidth < 1024) drawer.checked = false;
 
 		// Set active section based on URL hash and update on scroll
 		const hash = window.location.hash.slice(1) as ManualAnchor;
