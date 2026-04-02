@@ -81,10 +81,10 @@
 	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
 
 	<!-- Page content -->
-	<div class="drawer-content overflow-auto pt-12">
+	<div class="drawer-content flex h-full flex-col overflow-hidden">
 		<!-- Top bar -->
 		<header
-			class="fixed top-0 z-10 flex h-12 w-full items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
+			class="flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
 		>
 			<!-- Drawer toggle for mobile -->
 			<label
@@ -98,12 +98,14 @@
 			<span class="font-bold">FSA Toolkit — Manual</span>
 		</header>
 
-		<main class="mx-auto max-w-7xl px-2 py-4 md:px-10 md:py-12">
-			<IntroductionSection />
-			<InterfaceSection />
-			<HowToSection />
-			<TransitionTableSection />
-			<SimulationSection />
+		<main class="flex-1 overflow-auto px-2 py-4 md:px-10 md:py-12">
+			<div class="mx-auto max-w-7xl">
+				<IntroductionSection />
+				<InterfaceSection />
+				<HowToSection />
+				<TransitionTableSection />
+				<SimulationSection />
+			</div>
 		</main>
 	</div>
 
