@@ -12,7 +12,9 @@
 	type Section = { id: ManualAnchor; title: string; subsections?: Subsection[] };
 
 	const NAV_BAR_SCREEN_THRESHOLD = 1024;
-	let activeId = $state<ManualAnchor>();
+	const TOP_PADDING = 60; // accounting for header height plus some extra spacing
+	let activeSection = $state<ManualAnchor>();
+	let mainElement: HTMLElement;
 
 	const sections: Section[] = [
 		{
@@ -52,9 +54,26 @@
 		}
 	];
 
+	function scrollToHash(hash: string) {
+		const section = document.getElementById(hash);
+		if (!mainElement || !section) return;
+		mainElement.scrollTo({ top: section.offsetTop - TOP_PADDING, behavior: 'instant' });
+		activeSection = hash as ManualAnchor;
+	}
+
+	function handleNavClick(e: MouseEvent, id: string) {
+		e.preventDefault();
+		scrollToHash(id);
+		// Close drawer on mobile after navigating
+		if (window.innerWidth < NAV_BAR_SCREEN_THRESHOLD) {
+			const drawer = document.getElementById('manual-drawer') as HTMLInputElement;
+			if (drawer) drawer.checked = false;
+		}
+	}
+
 	function isParentActive(section: Section): boolean {
-		if (activeId === section.id) return true;
-		return section.subsections?.some((sub) => sub.id === activeId) ?? false;
+		if (activeSection === section.id) return true;
+		return section.subsections?.some((sub) => sub.id === activeSection) ?? false;
 	}
 
 	onMount(() => {
@@ -62,17 +81,32 @@
 		const drawer = document.getElementById('manual-drawer') as HTMLInputElement;
 		if (drawer && window.innerWidth < NAV_BAR_SCREEN_THRESHOLD) drawer.checked = false;
 
+		// Handle initial hash
+		const hash = window.location.hash.slice(1);
+		if (hash) scrollToHash(hash);
+
+		// Handle browser back/forward
+		function onHashChange(e: HashChangeEvent) {
+			const hash = new URL(e.newURL).hash.slice(1);
+			scrollToHash(hash);
+		}
+		window.addEventListener('hashchange', onHashChange);
+
 		// Update active section on scroll
 		const observer = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
-					if (entry.isIntersecting) activeId = entry.target.id as ManualAnchor;
+					if (entry.isIntersecting) activeSection = entry.target.id as ManualAnchor;
 				}
 			},
-			{ rootMargin: '-10% 0px -75% 0px', threshold: 0 }
+			{ rootMargin: '-20% 0px -80% 0px', threshold: 0 }
 		);
 		document.querySelectorAll('[data-section]').forEach((el) => observer.observe(el));
-		return () => observer.disconnect();
+
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('hashchange', onHashChange);
+		};
 	});
 </script>
 
@@ -80,7 +114,7 @@
 	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
 
 	<!-- Page content -->
-	<div class="drawer-content flex flex-col overflow-hidden md:pt-12">
+	<div class="drawer-content flex flex-col overflow-hidden pt-12 md:pt-0">
 		<!-- Top bar -->
 		<header
 			class="fixed top-0 flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:static md:px-4"
@@ -96,7 +130,7 @@
 			<span class="font-bold">FSA Toolkit — Manual</span>
 		</header>
 
-		<main class="flex-1 overflow-y-auto">
+		<main bind:this={mainElement} class="flex-1 overflow-y-auto">
 			<div class="mx-auto max-w-7xl px-2 py-4 md:px-10 md:py-12">
 				<IntroductionSection />
 				<InterfaceSection />
@@ -141,14 +175,22 @@
 				<ul class="menu w-full gap-0.5 p-0">
 					{#each sections as section, index (index)}
 						<li>
-							<a href="#{section.id}" class:active-section={isParentActive(section)}>
+							<a
+								href="#{section.id}"
+								class:active-section={isParentActive(section)}
+								onclick={(e) => handleNavClick(e, section.id)}
+							>
 								{section.title}
 							</a>
 							{#if section.subsections}
 								<ul>
 									{#each section.subsections as sub, subIndex (subIndex)}
 										<li>
-											<a href="#{sub.id}" class:active-subsection={activeId === sub.id}>
+											<a
+												href="#{sub.id}"
+												class:active-subsection={activeSection === sub.id}
+												onclick={(e) => handleNavClick(e, sub.id)}
+											>
 												{sub.title}
 											</a>
 										</li>
@@ -159,7 +201,6 @@
 					{/each}
 				</ul>
 			</nav>
-
 			<!-- Back to editor -->
 			<div
 				class="flex items-center justify-center border-t-2 border-base-300 px-2 py-1 is-drawer-close:hidden"
