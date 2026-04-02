@@ -145,6 +145,10 @@
 	<div class="controls-container top-2 left-2 flex items-center gap-2">
 		<!-- Main menu -->
 		<MainMenu simulationActive={app.isSimulating()} />
+	</div>
+
+	<!-- Bottom-left -->
+	<div class="controls-container bottom-2 left-2 flex items-center gap-2">
 		<!-- Undo/redo controls -->
 		{#if !app.isSimulating()}
 			<UndoRedoControls commandHistory={editorCtx.commandHistory} />

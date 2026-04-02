@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-	<title>FSA Toolkit — Manual</title>
+	<title>Manual — FSA Toolkit</title>
 </svelte:head>
 
 {@render children()}

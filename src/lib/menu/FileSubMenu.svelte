@@ -189,7 +189,7 @@
 <dialog bind:this={clearFsaModal} class="modal" use:portal>
 	<div class="modal-box">
 		<h3 class="text-lg font-bold text-error">Clear graph?</h3>
-		<p class="pt-3 text-sm">
+		<p class="pt-3 text-sm text-base-content/80">
 			This will clear the current graph. Save to disk first if you don't want to lose your work.
 		</p>
 		<div class="modal-action">
