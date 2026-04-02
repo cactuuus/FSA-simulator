@@ -81,7 +81,7 @@
 	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
 
 	<!-- Page content -->
-	<div class="drawer-content overflow-auto">
+	<div class="drawer-content overflow-auto pt-12">
 		<!-- Top bar -->
 		<header
 			class="fixed top-0 z-10 flex h-12 w-full items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
