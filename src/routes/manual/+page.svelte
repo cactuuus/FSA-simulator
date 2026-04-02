@@ -12,7 +12,11 @@
 	type Section = { id: ManualAnchor; title: string; subsections?: Subsection[] };
 
 	const NAV_BAR_SCREEN_THRESHOLD = 1024; // pixels
+	const TOP_PADDING = 60; // accounting for header height plus some extra spacing
+
 	let activeId = $state<ManualAnchor>();
+	let mainEl = $state<HTMLElement>();
+
 	const sections: Section[] = [
 		{
 			...MANUAL_SECTIONS.INTRODUCTION,
@@ -51,14 +55,38 @@
 		}
 	];
 
+	function scrollToHash(hash: string) {
+		const el = document.getElementById(hash);
+		if (!mainEl || !el) return;
+		mainEl.scrollTo({ top: el.offsetTop - TOP_PADDING, behavior: 'smooth' });
+		activeId = hash as ManualAnchor;
+	}
+
+	function handleNavClick(e: MouseEvent, id: string) {
+		e.preventDefault();
+		scrollToHash(id);
+		// Close drawer on mobile after navigating
+		if (window.innerWidth < NAV_BAR_SCREEN_THRESHOLD) {
+			const drawer = document.getElementById('manual-drawer') as HTMLInputElement;
+			if (drawer) drawer.checked = false;
+		}
+	}
+
+	function isParentActive(section: Section): boolean {
+		if (activeId === section.id) return true;
+		return section.subsections?.some((sub) => sub.id === activeId) ?? false;
+	}
+
 	onMount(() => {
 		// Open the drawer by default on larger screens
 		const drawer = document.getElementById('manual-drawer') as HTMLInputElement;
 		if (drawer && window.innerWidth < NAV_BAR_SCREEN_THRESHOLD) drawer.checked = false;
 
-		// Set active section based on URL hash and update on scroll
-		const hash = window.location.hash.slice(1) as ManualAnchor;
-		if (hash) activeId = hash;
+		// Handle initial hash
+		const hash = window.location.hash.slice(1);
+		if (hash) scrollToHash(hash);
+
+		// Update active section on scroll
 		const observer = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
@@ -70,94 +98,30 @@
 		document.querySelectorAll('[data-section]').forEach((el) => observer.observe(el));
 		return () => observer.disconnect();
 	});
-
-	function isParentActive(section: Section): boolean {
-		if (activeId === section.id) return true;
-		return section.subsections?.some((sub) => sub.id === activeId) ?? false;
-	}
 </script>
 
-<div class="flex h-dvh flex-col bg-base-100 text-base-content">
-	<!-- Header -->
-	<header
-		class="flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
-	>
-		<label
-			for="manual-drawer"
-			class="flex h-12 w-12 items-center justify-center border-r-2 border-base-300 p-0! md:hidden"
-			aria-label="Open navigation"
+<div id="manual" class="drawer h-dvh w-full bg-base-100 text-base-content md:drawer-open">
+	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
+
+	<!-- Page content -->
+	<div class="drawer-content flex flex-col overflow-hidden">
+		<!-- Top bar -->
+		<header
+			class="flex h-12 shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
 		>
-			<PanelLeftOpen class="h-5 w-5" />
-		</label>
-		<BookOpen class="h-5 w-5 shrink-0 text-primary" />
-		<span class="font-bold">FSA Toolkit — Manual</span>
-	</header>
-
-	<div id="manual" class="drawer min-h-0 flex-1 md:drawer-open">
-		<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
-
-		<!-- Sidebar -->
-		<div class="drawer-side z-40 h-full">
-			<label for="manual-drawer" aria-label="Close navigation" class="drawer-overlay md:hidden"
-			></label>
-			<aside
-				class="flex h-full flex-col border-r-2 border-base-300 bg-base-200 transition-[width] duration-300 md:is-drawer-close:w-12 md:is-drawer-open:w-64"
+			<label
+				for="manual-drawer"
+				class="flex h-12 w-12 items-center justify-center self-start border-r-2 border-base-300 p-0! md:hidden"
+				aria-label="Open navigation"
 			>
-				<div class="flex h-12 shrink-0 items-center justify-center border-b-2 border-base-300">
-					<div class="flex-1 items-center gap-2 px-2 is-drawer-close:hidden is-drawer-open:flex">
-						<span class="flex-1 font-bold">Navigation</span>
-						<label
-							for="manual-drawer"
-							class="btn btn-square btn-ghost"
-							aria-label="Collapse navigation"
-						>
-							<PanelLeftClose class="h-5 w-5" />
-						</label>
-					</div>
-					<label
-						for="manual-drawer"
-						class="btn btn-square btn-ghost is-drawer-open:hidden"
-						aria-label="Expand navigation"
-					>
-						<PanelLeftOpen class="h-5 w-5" />
-					</label>
-				</div>
-				<nav class="flex-1 overflow-y-auto px-2 py-3 is-drawer-close:hidden">
-					<ul class="menu w-full gap-0.5 p-0">
-						{#each sections as section, index (index)}
-							<li>
-								<a href="#{section.id}" class:active-section={isParentActive(section)}
-									>{section.title}</a
-								>
-								{#if section.subsections}
-									<ul>
-										{#each section.subsections as sub, subIndex (subIndex)}
-											<li>
-												<a href="#{sub.id}" class:active-subsection={activeId === sub.id}
-													>{sub.title}</a
-												>
-											</li>
-										{/each}
-									</ul>
-								{/if}
-							</li>
-						{/each}
-					</ul>
-				</nav>
-				<div
-					class="flex items-center justify-center border-t-2 border-base-300 px-2 py-1 is-drawer-close:hidden"
-				>
-					<a href="/" class="btn w-full justify-start btn-link" title="Go to editor">
-						<ArrowLeft class="h-5 w-5" />
-						<span>Back to editor</span>
-					</a>
-				</div>
-			</aside>
-		</div>
+				<PanelLeftOpen class="h-5 w-5" />
+			</label>
+			<BookOpen class="h-5 w-5 shrink-0 text-primary" />
+			<span class="font-bold">FSA Toolkit — Manual</span>
+		</header>
 
-		<!-- Main content -->
-		<main class="drawer-content overflow-y-auto px-2 py-4 md:px-10 md:py-12">
-			<div class="mx-auto max-w-7xl">
+		<main bind:this={mainEl} class="flex-1 overflow-y-auto">
+			<div class="mx-auto max-w-7xl px-2 py-4 md:px-10 md:py-12">
 				<IntroductionSection />
 				<InterfaceSection />
 				<HowToSection />
@@ -165,5 +129,78 @@
 				<SimulationSection />
 			</div>
 		</main>
+	</div>
+
+	<!-- Sidebar -->
+	<div class="drawer-side z-40 h-full">
+		<label for="manual-drawer" aria-label="Close navigation" class="drawer-overlay md:hidden"
+		></label>
+
+		<aside
+			class="flex h-full flex-col border-r-2 border-base-300 bg-base-200 transition-[width] duration-300 md:is-drawer-close:w-12 md:is-drawer-open:w-64"
+		>
+			<!-- Sidebar header -->
+			<div class="flex h-12 shrink-0 items-center justify-center border-b-2 border-base-300">
+				<div class="flex-1 items-center gap-2 px-2 is-drawer-close:hidden is-drawer-open:flex">
+					<span class="flex-1 font-bold">Navigation</span>
+					<label
+						for="manual-drawer"
+						class="btn btn-square btn-ghost"
+						aria-label="Collapse navigation"
+					>
+						<PanelLeftClose class="h-5 w-5" />
+					</label>
+				</div>
+				<label
+					for="manual-drawer"
+					class="btn btn-square btn-ghost is-drawer-open:hidden"
+					aria-label="Expand navigation"
+				>
+					<PanelLeftOpen class="h-5 w-5" />
+				</label>
+			</div>
+
+			<!-- Navigation -->
+			<nav class="flex-1 overflow-y-auto px-2 py-3 is-drawer-close:hidden">
+				<ul class="menu w-full gap-0.5 p-0">
+					{#each sections as section, index (index)}
+						<li>
+							<a
+								href="#{section.id}"
+								class:active-section={isParentActive(section)}
+								onclick={(e) => handleNavClick(e, section.id)}
+							>
+								{section.title}
+							</a>
+							{#if section.subsections}
+								<ul>
+									{#each section.subsections as sub, subIndex (subIndex)}
+										<li>
+											<a
+												href="#{sub.id}"
+												class:active-subsection={activeId === sub.id}
+												onclick={(e) => handleNavClick(e, sub.id)}
+											>
+												{sub.title}
+											</a>
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			</nav>
+
+			<!-- Back to editor -->
+			<div
+				class="flex items-center justify-center border-t-2 border-base-300 px-2 py-1 is-drawer-close:hidden"
+			>
+				<a href="/" class="btn w-full justify-start btn-link" title="Go to editor">
+					<ArrowLeft class="h-5 w-5" />
+					<span>Back to editor</span>
+				</a>
+			</div>
+		</aside>
 	</div>
 </div>
