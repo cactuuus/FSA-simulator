@@ -80,7 +80,7 @@
 	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
 
 	<!-- Page content -->
-	<div class="drawer-content flex flex-col overflow-hidden">
+	<div class="drawer-content flex flex-col overflow-hidden md:pt-12">
 		<!-- Top bar -->
 		<header
 			class="fixed top-0 flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:static md:px-4"
