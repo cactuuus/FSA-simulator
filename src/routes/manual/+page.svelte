@@ -81,10 +81,10 @@
 	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
 
 	<!-- Page content -->
-	<div class="drawer-content flex flex-col overflow-hidden">
+	<div class="drawer-content flex flex-col">
 		<!-- Top bar -->
 		<header
-			class="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
+			class="flex h-12 shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
 		>
 			<!-- Drawer toggle for mobile -->
 			<label
