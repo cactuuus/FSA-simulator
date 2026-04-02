@@ -7,12 +7,16 @@
 	import HowToSection from './sections/HowToSection.svelte';
 	import TransitionTableSection from './sections/TransitionTableSection.svelte';
 	import SimulationSection from './sections/SimulationSection.svelte';
+	import { replaceState } from '$app/navigation';
 
 	type Subsection = { id: ManualAnchor; title: string };
 	type Section = { id: ManualAnchor; title: string; subsections?: Subsection[] };
 
-	const NAV_BAR_SCREEN_THRESHOLD = 1024; // pixels
-	let activeId = $state<ManualAnchor>();
+	const NAV_BAR_SCREEN_THRESHOLD = 1024;
+	const TOP_PADDING = 60; // accounting for header height plus some extra spacing
+	let activeSection = $state<ManualAnchor>();
+	let mainElement: HTMLElement;
+
 	const sections: Section[] = [
 		{
 			...MANUAL_SECTIONS.INTRODUCTION,
@@ -51,42 +55,63 @@
 		}
 	];
 
+	function scrollToHash(hash: string) {
+		const section = document.getElementById(hash);
+		if (!mainElement || !section) return;
+		mainElement.scrollTo({ top: section.offsetTop - TOP_PADDING, behavior: 'instant' });
+		activeSection = hash as ManualAnchor;
+		// Update URL hash without triggering another scroll
+		replaceState('', `#${activeSection}`);
+	}
+
+	function handleNavClick(e: MouseEvent, id: string) {
+		e.preventDefault();
+		scrollToHash(id);
+		// Close drawer on mobile after navigating
+		if (window.innerWidth < NAV_BAR_SCREEN_THRESHOLD) {
+			const drawer = document.getElementById('manual-drawer') as HTMLInputElement;
+			if (drawer) drawer.checked = false;
+		}
+	}
+
+	function isParentActive(section: Section): boolean {
+		if (activeSection === section.id) return true;
+		return section.subsections?.some((sub) => sub.id === activeSection) ?? false;
+	}
+
 	onMount(() => {
 		// Open the drawer by default on larger screens
 		const drawer = document.getElementById('manual-drawer') as HTMLInputElement;
 		if (drawer && window.innerWidth < NAV_BAR_SCREEN_THRESHOLD) drawer.checked = false;
 
-		// Set active section based on URL hash and update on scroll
-		const hash = window.location.hash.slice(1) as ManualAnchor;
-		if (hash) activeId = hash;
+		// Handle initial hash
+		const hash = window.location.hash.slice(1);
+		if (hash) scrollToHash(hash);
+
+		// Update active section on scroll
 		const observer = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
-					if (entry.isIntersecting) activeId = entry.target.id as ManualAnchor;
+					if (entry.isIntersecting) activeSection = entry.target.id as ManualAnchor;
 				}
 			},
-			{ rootMargin: '-10% 0px -75% 0px', threshold: 0 }
+			{ rootMargin: '-20% 0px -80% 0px', threshold: 0 }
 		);
 		document.querySelectorAll('[data-section]').forEach((el) => observer.observe(el));
+
 		return () => observer.disconnect();
 	});
-
-	function isParentActive(section: Section): boolean {
-		if (activeId === section.id) return true;
-		return section.subsections?.some((sub) => sub.id === activeId) ?? false;
-	}
 </script>
 
 <div id="manual" class="drawer h-dvh w-full bg-base-100 text-base-content md:drawer-open">
 	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
 
 	<!-- Page content -->
-	<div class="drawer-content flex flex-col overflow-hidden">
+	<div class="drawer-content flex flex-col overflow-hidden pt-12 md:pt-0">
 		<!-- Top bar -->
 		<header
-			class="flex h-12 shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
+			class="fixed top-0 flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:static md:px-4"
 		>
-			<!-- Drawer toggle for mobile -->
 			<label
 				for="manual-drawer"
 				class="flex h-12 w-12 items-center justify-center self-start border-r-2 border-base-300 p-0! md:hidden"
@@ -98,7 +123,7 @@
 			<span class="font-bold">FSA Toolkit — Manual</span>
 		</header>
 
-		<main class="flex-1 overflow-y-auto">
+		<main bind:this={mainElement} class="flex-1 overflow-y-auto">
 			<div class="mx-auto max-w-7xl px-2 py-4 md:px-10 md:py-12">
 				<IntroductionSection />
 				<InterfaceSection />
@@ -111,18 +136,14 @@
 
 	<!-- Sidebar -->
 	<div class="drawer-side z-40 h-full">
-		<!-- Overlay backdrop (mobile only) -->
 		<label for="manual-drawer" aria-label="Close navigation" class="drawer-overlay md:hidden"
 		></label>
 
 		<aside
-			class="
-			flex h-full flex-col border-r-2 border-base-300 bg-base-200 transition-[width] duration-300 md:is-drawer-close:w-12 md:is-drawer-open:w-64
-		"
+			class="flex h-full flex-col border-r-2 border-base-300 bg-base-200 transition-[width] duration-300 md:is-drawer-close:w-12 md:is-drawer-open:w-64"
 		>
 			<!-- Sidebar header -->
 			<div class="flex h-12 shrink-0 items-center justify-center border-b-2 border-base-300">
-				<!-- Open state -->
 				<div class="flex-1 items-center gap-2 px-2 is-drawer-close:hidden is-drawer-open:flex">
 					<span class="flex-1 font-bold">Navigation</span>
 					<label
@@ -133,7 +154,6 @@
 						<PanelLeftClose class="h-5 w-5" />
 					</label>
 				</div>
-				<!-- Closed state (desktop only) -->
 				<label
 					for="manual-drawer"
 					class="btn btn-square btn-ghost is-drawer-open:hidden"
@@ -148,14 +168,22 @@
 				<ul class="menu w-full gap-0.5 p-0">
 					{#each sections as section, index (index)}
 						<li>
-							<a href="#{section.id}" class:active-section={isParentActive(section)}>
+							<a
+								href="#{section.id}"
+								class:active-section={isParentActive(section)}
+								onclick={(e) => handleNavClick(e, section.id)}
+							>
 								{section.title}
 							</a>
 							{#if section.subsections}
 								<ul>
 									{#each section.subsections as sub, subIndex (subIndex)}
 										<li>
-											<a href="#{sub.id}" class:active-subsection={activeId === sub.id}>
+											<a
+												href="#{sub.id}"
+												class:active-subsection={activeSection === sub.id}
+												onclick={(e) => handleNavClick(e, sub.id)}
+											>
 												{sub.title}
 											</a>
 										</li>
@@ -166,7 +194,6 @@
 					{/each}
 				</ul>
 			</nav>
-
 			<!-- Back to editor -->
 			<div
 				class="flex items-center justify-center border-t-2 border-base-300 px-2 py-1 is-drawer-close:hidden"
