@@ -81,7 +81,7 @@
 	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
 
 	<!-- Page content -->
-	<div class="drawer-content flex flex-col">
+	<div class="drawer-content flex h-full flex-col">
 		<!-- Top bar -->
 		<header
 			class="flex h-12 shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
