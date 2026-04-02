@@ -77,37 +77,24 @@
 	}
 </script>
 
+<!-- Top bar -->
+<header
+	class="flex h-12 w-full items-center gap-3 border-b-2 border-base-300 bg-base-200 md:justify-center md:px-4"
+>
+	<!-- Drawer toggle for mobile -->
+	<label
+		for="manual-drawer"
+		class="flex h-12 w-12 items-center justify-center self-start border-r-2 border-base-300 p-0! md:hidden"
+		aria-label="Open navigation"
+	>
+		<PanelLeftOpen class="h-5 w-5" />
+	</label>
+	<BookOpen class="h-5 w-5 shrink-0 text-primary" />
+	<span class="font-bold">FSA Toolkit — Manual</span>
+</header>
+
 <div id="manual" class="drawer h-dvh w-full bg-base-100 text-base-content md:drawer-open">
 	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
-
-	<!-- Page content -->
-	<div class="drawer-content flex h-full flex-col overflow-hidden">
-		<!-- Top bar -->
-		<header
-			class="sticky top-0 flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
-		>
-			<!-- Drawer toggle for mobile -->
-			<label
-				for="manual-drawer"
-				class="flex h-12 w-12 items-center justify-center self-start border-r-2 border-base-300 p-0! md:hidden"
-				aria-label="Open navigation"
-			>
-				<PanelLeftOpen class="h-5 w-5" />
-			</label>
-			<BookOpen class="h-5 w-5 shrink-0 text-primary" />
-			<span class="font-bold">FSA Toolkit — Manual</span>
-		</header>
-
-		<main class="flex-1 overflow-auto px-2 py-4 md:px-10 md:py-12">
-			<div class="mx-auto max-w-7xl">
-				<IntroductionSection />
-				<InterfaceSection />
-				<HowToSection />
-				<TransitionTableSection />
-				<SimulationSection />
-			</div>
-		</main>
-	</div>
 
 	<!-- Sidebar -->
 	<div class="drawer-side z-40 h-full">
@@ -178,4 +165,15 @@
 			</div>
 		</aside>
 	</div>
+
+	<!-- Page content -->
+	<main class="drawer-content overflow-y-scroll px-2 py-4 md:px-10 md:py-12">
+		<div class="mx-auto max-w-7xl">
+			<IntroductionSection />
+			<InterfaceSection />
+			<HowToSection />
+			<TransitionTableSection />
+			<SimulationSection />
+		</div>
+	</main>
 </div>
