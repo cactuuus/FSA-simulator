@@ -77,103 +77,93 @@
 	}
 </script>
 
-<!-- Top bar -->
-<header
-	class="flex h-12 w-full items-center gap-3 border-b-2 border-base-300 bg-base-200 md:justify-center md:px-4"
->
-	<!-- Drawer toggle for mobile -->
-	<label
-		for="manual-drawer"
-		class="flex h-12 w-12 items-center justify-center self-start border-r-2 border-base-300 p-0! md:hidden"
-		aria-label="Open navigation"
+<div class="flex h-dvh flex-col bg-base-100 text-base-content">
+	<!-- Header -->
+	<header
+		class="flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
 	>
-		<PanelLeftOpen class="h-5 w-5" />
-	</label>
-	<BookOpen class="h-5 w-5 shrink-0 text-primary" />
-	<span class="font-bold">FSA Toolkit — Manual</span>
-</header>
-
-<div id="manual" class="drawer h-dvh w-full bg-base-100 text-base-content md:drawer-open">
-	<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
-
-	<!-- Sidebar -->
-	<div class="drawer-side z-40 h-full">
-		<!-- Overlay backdrop (mobile only) -->
-		<label for="manual-drawer" aria-label="Close navigation" class="drawer-overlay md:hidden"
-		></label>
-
-		<aside
-			class="
-			flex h-full flex-col border-r-2 border-base-300 bg-base-200 transition-[width] duration-300 md:is-drawer-close:w-12 md:is-drawer-open:w-64
-		"
+		<label
+			for="manual-drawer"
+			class="flex h-12 w-12 items-center justify-center border-r-2 border-base-300 p-0! md:hidden"
+			aria-label="Open navigation"
 		>
-			<!-- Sidebar header -->
-			<div class="flex h-12 shrink-0 items-center justify-center border-b-2 border-base-300">
-				<!-- Open state -->
-				<div class="flex-1 items-center gap-2 px-2 is-drawer-close:hidden is-drawer-open:flex">
-					<span class="flex-1 font-bold">Navigation</span>
+			<PanelLeftOpen class="h-5 w-5" />
+		</label>
+		<BookOpen class="h-5 w-5 shrink-0 text-primary" />
+		<span class="font-bold">FSA Toolkit — Manual</span>
+	</header>
+
+	<div id="manual" class="drawer min-h-0 flex-1 md:drawer-open">
+		<input id="manual-drawer" type="checkbox" class="drawer-toggle" checked />
+
+		<!-- Sidebar -->
+		<div class="drawer-side z-40 h-full">
+			<label for="manual-drawer" aria-label="Close navigation" class="drawer-overlay md:hidden"
+			></label>
+			<aside
+				class="flex h-full flex-col border-r-2 border-base-300 bg-base-200 transition-[width] duration-300 md:is-drawer-close:w-12 md:is-drawer-open:w-64"
+			>
+				<div class="flex h-12 shrink-0 items-center justify-center border-b-2 border-base-300">
+					<div class="flex-1 items-center gap-2 px-2 is-drawer-close:hidden is-drawer-open:flex">
+						<span class="flex-1 font-bold">Navigation</span>
+						<label
+							for="manual-drawer"
+							class="btn btn-square btn-ghost"
+							aria-label="Collapse navigation"
+						>
+							<PanelLeftClose class="h-5 w-5" />
+						</label>
+					</div>
 					<label
 						for="manual-drawer"
-						class="btn btn-square btn-ghost"
-						aria-label="Collapse navigation"
+						class="btn btn-square btn-ghost is-drawer-open:hidden"
+						aria-label="Expand navigation"
 					>
-						<PanelLeftClose class="h-5 w-5" />
+						<PanelLeftOpen class="h-5 w-5" />
 					</label>
 				</div>
-				<!-- Closed state (desktop only) -->
-				<label
-					for="manual-drawer"
-					class="btn btn-square btn-ghost is-drawer-open:hidden"
-					aria-label="Expand navigation"
+				<nav class="flex-1 overflow-y-auto px-2 py-3 is-drawer-close:hidden">
+					<ul class="menu w-full gap-0.5 p-0">
+						{#each sections as section, index (index)}
+							<li>
+								<a href="#{section.id}" class:active-section={isParentActive(section)}
+									>{section.title}</a
+								>
+								{#if section.subsections}
+									<ul>
+										{#each section.subsections as sub, subIndex (subIndex)}
+											<li>
+												<a href="#{sub.id}" class:active-subsection={activeId === sub.id}
+													>{sub.title}</a
+												>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				</nav>
+				<div
+					class="flex items-center justify-center border-t-2 border-base-300 px-2 py-1 is-drawer-close:hidden"
 				>
-					<PanelLeftOpen class="h-5 w-5" />
-				</label>
-			</div>
-
-			<!-- Navigation -->
-			<nav class="flex-1 overflow-y-auto px-2 py-3 is-drawer-close:hidden">
-				<ul class="menu w-full gap-0.5 p-0">
-					{#each sections as section, index (index)}
-						<li>
-							<a href="#{section.id}" class:active-section={isParentActive(section)}>
-								{section.title}
-							</a>
-							{#if section.subsections}
-								<ul>
-									{#each section.subsections as sub, subIndex (subIndex)}
-										<li>
-											<a href="#{sub.id}" class:active-subsection={activeId === sub.id}>
-												{sub.title}
-											</a>
-										</li>
-									{/each}
-								</ul>
-							{/if}
-						</li>
-					{/each}
-				</ul>
-			</nav>
-
-			<!-- Back to editor -->
-			<div
-				class="flex items-center justify-center border-t-2 border-base-300 px-2 py-1 is-drawer-close:hidden"
-			>
-				<a href="/" class="btn w-full justify-start btn-link" title="Go to editor">
-					<ArrowLeft class="h-5 w-5" />
-					<span>Back to editor</span>
-				</a>
-			</div>
-		</aside>
-	</div>
-
-	<!-- Page content -->
-	<main class="drawer-content overflow-y-scroll px-2 py-4 md:px-10 md:py-12">
-		<div class="mx-auto max-w-7xl">
-			<IntroductionSection />
-			<InterfaceSection />
-			<HowToSection />
-			<TransitionTableSection />
-			<SimulationSection />
+					<a href="/" class="btn w-full justify-start btn-link" title="Go to editor">
+						<ArrowLeft class="h-5 w-5" />
+						<span>Back to editor</span>
+					</a>
+				</div>
+			</aside>
 		</div>
-	</main>
+
+		<!-- Main content -->
+		<main class="drawer-content overflow-y-auto px-2 py-4 md:px-10 md:py-12">
+			<div class="mx-auto max-w-7xl">
+				<IntroductionSection />
+				<InterfaceSection />
+				<HowToSection />
+				<TransitionTableSection />
+				<SimulationSection />
+			</div>
+		</main>
+	</div>
 </div>
