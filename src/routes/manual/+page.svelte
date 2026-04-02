@@ -12,10 +12,7 @@
 	type Section = { id: ManualAnchor; title: string; subsections?: Subsection[] };
 
 	const NAV_BAR_SCREEN_THRESHOLD = 1024;
-	const TOP_PADDING = 60; // accounting for header height plus some extra spacing
-
 	let activeId = $state<ManualAnchor>();
-	let mainEl = $state<HTMLElement>();
 
 	const sections: Section[] = [
 		{
@@ -55,24 +52,6 @@
 		}
 	];
 
-	function scrollToHash(hash: string) {
-		const el = document.getElementById(hash);
-		if (!hash || !mainEl || !el) return;
-		mainEl.scrollTo({ top: el.offsetTop - TOP_PADDING, behavior: 'instant' });
-		activeId = hash as ManualAnchor;
-		history.pushState(null, '', `#${hash}`);
-	}
-
-	function handleNavClick(e: MouseEvent, id: string) {
-		e.preventDefault();
-		scrollToHash(id);
-		// Close drawer on mobile after navigating
-		if (window.innerWidth < NAV_BAR_SCREEN_THRESHOLD) {
-			const drawer = document.getElementById('manual-drawer') as HTMLInputElement;
-			if (drawer) drawer.checked = false;
-		}
-	}
-
 	function isParentActive(section: Section): boolean {
 		if (activeId === section.id) return true;
 		return section.subsections?.some((sub) => sub.id === activeId) ?? false;
@@ -82,17 +61,6 @@
 		// Open the drawer by default on larger screens
 		const drawer = document.getElementById('manual-drawer') as HTMLInputElement;
 		if (drawer && window.innerWidth < NAV_BAR_SCREEN_THRESHOLD) drawer.checked = false;
-
-		// Handle initial hash
-		const hash = window.location.hash.slice(1);
-		if (hash) scrollToHash(hash);
-
-		// Handle browser back/forward
-		function onHashChange(e: HashChangeEvent) {
-			const hash = new URL(e.newURL).hash.slice(1);
-			scrollToHash(hash);
-		}
-		window.addEventListener('hashchange', onHashChange);
 
 		// Update active section on scroll
 		const observer = new IntersectionObserver(
@@ -104,11 +72,7 @@
 			{ rootMargin: '-10% 0px -75% 0px', threshold: 0 }
 		);
 		document.querySelectorAll('[data-section]').forEach((el) => observer.observe(el));
-
-		return () => {
-			observer.disconnect();
-			window.removeEventListener('hashchange', onHashChange);
-		};
+		return () => observer.disconnect();
 	});
 </script>
 
@@ -119,7 +83,7 @@
 	<div class="drawer-content flex flex-col overflow-hidden">
 		<!-- Top bar -->
 		<header
-			class="flex h-12 shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
+			class="fixed top-0 flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:static md:px-4"
 		>
 			<label
 				for="manual-drawer"
@@ -132,7 +96,7 @@
 			<span class="font-bold">FSA Toolkit — Manual</span>
 		</header>
 
-		<main bind:this={mainEl} class="flex-1 overflow-y-auto">
+		<main class="flex-1 overflow-y-auto">
 			<div class="mx-auto max-w-7xl px-2 py-4 md:px-10 md:py-12">
 				<IntroductionSection />
 				<InterfaceSection />
@@ -177,22 +141,14 @@
 				<ul class="menu w-full gap-0.5 p-0">
 					{#each sections as section, index (index)}
 						<li>
-							<a
-								href="#{section.id}"
-								class:active-section={isParentActive(section)}
-								onclick={(e) => handleNavClick(e, section.id)}
-							>
+							<a href="#{section.id}" class:active-section={isParentActive(section)}>
 								{section.title}
 							</a>
 							{#if section.subsections}
 								<ul>
 									{#each section.subsections as sub, subIndex (subIndex)}
 										<li>
-											<a
-												href="#{sub.id}"
-												class:active-subsection={activeId === sub.id}
-												onclick={(e) => handleNavClick(e, sub.id)}
-											>
+											<a href="#{sub.id}" class:active-subsection={activeId === sub.id}>
 												{sub.title}
 											</a>
 										</li>
