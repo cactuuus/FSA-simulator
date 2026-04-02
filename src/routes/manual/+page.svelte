@@ -84,7 +84,7 @@
 	<div class="drawer-content flex h-full flex-col overflow-hidden">
 		<!-- Top bar -->
 		<header
-			class="flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
+			class="sticky top-0 flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:px-4"
 		>
 			<!-- Drawer toggle for mobile -->
 			<label
