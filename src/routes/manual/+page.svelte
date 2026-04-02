@@ -86,7 +86,7 @@
 
 		// Handle initial hash
 		const hash = window.location.hash.slice(1);
-		if (hash) setTimeout(() => scrollToHash(hash), 50); // slight delay to ensure elements are rendered
+		if (hash) scrollToHash(hash);
 
 		// Update active section on scroll
 		const observer = new IntersectionObserver(
