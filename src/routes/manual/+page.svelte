@@ -7,6 +7,7 @@
 	import HowToSection from './sections/HowToSection.svelte';
 	import TransitionTableSection from './sections/TransitionTableSection.svelte';
 	import SimulationSection from './sections/SimulationSection.svelte';
+	import { replaceState } from '$app/navigation';
 
 	type Subsection = { id: ManualAnchor; title: string };
 	type Section = { id: ManualAnchor; title: string; subsections?: Subsection[] };
@@ -59,6 +60,8 @@
 		if (!mainElement || !section) return;
 		mainElement.scrollTo({ top: section.offsetTop - TOP_PADDING, behavior: 'instant' });
 		activeSection = hash as ManualAnchor;
+		// Update URL hash without triggering another scroll
+		replaceState('', `#${activeSection}`);
 	}
 
 	function handleNavClick(e: MouseEvent, id: string) {
@@ -83,14 +86,7 @@
 
 		// Handle initial hash
 		const hash = window.location.hash.slice(1);
-		if (hash) scrollToHash(hash);
-
-		// Handle browser back/forward
-		function onHashChange(e: HashChangeEvent) {
-			const hash = new URL(e.newURL).hash.slice(1);
-			scrollToHash(hash);
-		}
-		window.addEventListener('hashchange', onHashChange);
+		if (hash) setTimeout(() => scrollToHash(hash), 50); // slight delay to ensure elements are rendered
 
 		// Update active section on scroll
 		const observer = new IntersectionObserver(
@@ -103,10 +99,7 @@
 		);
 		document.querySelectorAll('[data-section]').forEach((el) => observer.observe(el));
 
-		return () => {
-			observer.disconnect();
-			window.removeEventListener('hashchange', onHashChange);
-		};
+		return () => observer.disconnect();
 	});
 </script>
 
