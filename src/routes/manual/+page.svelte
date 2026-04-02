@@ -11,7 +11,7 @@
 	type Subsection = { id: ManualAnchor; title: string };
 	type Section = { id: ManualAnchor; title: string; subsections?: Subsection[] };
 
-	const NAV_BAR_SCREEN_THRESHOLD = 1024; // pixels
+	const NAV_BAR_SCREEN_THRESHOLD = 1024;
 	const TOP_PADDING = 60; // accounting for header height plus some extra spacing
 
 	let activeId = $state<ManualAnchor>();
@@ -57,9 +57,10 @@
 
 	function scrollToHash(hash: string) {
 		const el = document.getElementById(hash);
-		if (!mainEl || !el) return;
-		mainEl.scrollTo({ top: el.offsetTop - TOP_PADDING, behavior: 'smooth' });
+		if (!hash || !mainEl || !el) return;
+		mainEl.scrollTo({ top: el.offsetTop - TOP_PADDING, behavior: 'instant' });
 		activeId = hash as ManualAnchor;
+		history.pushState(null, '', `#${hash}`);
 	}
 
 	function handleNavClick(e: MouseEvent, id: string) {
@@ -86,6 +87,13 @@
 		const hash = window.location.hash.slice(1);
 		if (hash) scrollToHash(hash);
 
+		// Handle browser back/forward
+		function onHashChange(e: HashChangeEvent) {
+			const hash = new URL(e.newURL).hash.slice(1);
+			scrollToHash(hash);
+		}
+		window.addEventListener('hashchange', onHashChange);
+
 		// Update active section on scroll
 		const observer = new IntersectionObserver(
 			(entries) => {
@@ -96,7 +104,11 @@
 			{ rootMargin: '-10% 0px -75% 0px', threshold: 0 }
 		);
 		document.querySelectorAll('[data-section]').forEach((el) => observer.observe(el));
-		return () => observer.disconnect();
+
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('hashchange', onHashChange);
+		};
 	});
 </script>
 
