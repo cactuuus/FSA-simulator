@@ -196,7 +196,7 @@
 	{#if fsa.type === FSAType.DFA || fsa.type === FSAType.NFA}
 		<li>
 			<button onclick={() => convertToComplete()}>
-				<FunnelPlus class="h-4 w-4" /> Add sink state
+				<FunnelPlus class="h-4 w-4" /> Make Complete
 			</button>
 		</li>
 	{/if}
