@@ -67,10 +67,25 @@
 				<!-- Title -->
 				<div class="flex flex-col gap-1">
 					<label for="fsa-title" class="font-semibold"> Title </label>
-					<span class="text-sm text-base-content/70">
-						This is purely cosmetic, to help identification when importing/exporting.
-					</span>
-					<input id="fsa-title" type="text" class="input w-full max-w-xs" bind:value={fsa.title} />
+					<input
+						id="fsa-title"
+						type="text"
+						class="input w-full max-w-xs"
+						bind:value={fsa.title}
+						placeholder="Untitled"
+					/>
+				</div>
+
+				<!-- Description -->
+				<div class="flex flex-col gap-1">
+					<label for="fsa-description" class="font-semibold"> Description </label>
+					<textarea
+						id="fsa-description"
+						class="textarea w-full"
+						rows={1}
+						bind:value={fsa.description}
+						placeholder="Enter notes or a description for this automaton"
+					></textarea>
 				</div>
 
 				<hr class="border-base-content/30" />

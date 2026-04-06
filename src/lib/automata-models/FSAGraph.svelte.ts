@@ -11,6 +11,7 @@ import { Transition } from './Transition.svelte';
  */
 export interface SerializedFSAGraph {
 	title: string;
+	description: string;
 	hasStackOps: boolean;
 	nodes: SerializedNode[];
 	edges: SerializedEdge[];
@@ -33,6 +34,7 @@ export enum FSAType {
  */
 export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	private _title = $state<string | null>();
+	description = $state<string>('');
 	private _hasStackOps = $state<boolean>(false);
 	readonly nodesMap = new SvelteMap<string, Node>();
 	readonly edgesMap = new SvelteMap<string, Edge>();
@@ -371,6 +373,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	toJSON(): SerializedFSAGraph {
 		return {
 			title: this.title,
+			description: this.description,
 			hasStackOps: this.hasStackOps,
 			nodes: this.nodes.map((node) => node.toJSON()),
 			edges: this.edges.map((edge) => edge.toJSON()),
@@ -380,6 +383,7 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 
 	loadFromJSON(json: SerializedFSAGraph): void {
 		this.title = json.title;
+		this.description = json.description ?? '';
 		this.hasStackOps = json.hasStackOps ?? false;
 		this.nodesMap.clear();
 		this.edgesMap.clear();
