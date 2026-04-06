@@ -45,7 +45,7 @@
 		windowState={app.windows.open(WINDOWS_ID.AutomatonInfo)}
 		onClose={() => app.windows.close(WINDOWS_ID.AutomatonInfo)}
 		onFocus={() => app.windows.bringToFront(WINDOWS_ID.AutomatonInfo)}
-		defaultWidth={300}
+		defaultWidth={550}
 	>
 		{#snippet header()}
 			<span class="flex items-center gap-2">
