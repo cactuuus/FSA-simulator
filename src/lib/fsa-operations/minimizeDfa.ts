@@ -61,6 +61,7 @@ function transitionTable(dfa: FSAGraph): Map<string, Map<string, string>> {
 function mergeIndistinguishableStates(dfa: FSAGraph): void {
 	const nodes = dfa.nodes;
 	const alphabet = [...dfa.alphabet()];
+	const startNodeId = dfa.startNode?.id ?? null;
 	const table = transitionTable(dfa); // nodeId : (symbol: targetId)
 	const DEAD_END = '__DEAD_END__'; // special marker for missing transitions (non-complete DFAs)
 
@@ -147,12 +148,10 @@ function mergeIndistinguishableStates(dfa: FSAGraph): void {
 		}
 	}
 
-	// update start node if merged
-	if (dfa.startNode) {
-		const rep = unionFind.find(dfa.startNode.id);
-		if (rep !== dfa.startNode.id) {
-			dfa.startNode = dfa.requireNode(rep);
-		}
+	// update start node (which could potentially have been merged and deleted)
+	if (startNodeId) {
+		const rep = unionFind.find(startNodeId);
+		dfa.startNode = dfa.requireNode(rep);
 	}
 }
 
