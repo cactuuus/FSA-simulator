@@ -9,6 +9,7 @@
 	import { type PathLeaf } from './computationTree';
 	import { MANUAL_SECTIONS, manualHref } from '$lib/utils/manual';
 	import { onMount } from 'svelte';
+	import { prettyInputAlphabet } from '$lib/utils/prettyAlphabet';
 
 	const controller = $derived(app.simulationController);
 	let inputToProcess = $state<string>('');
@@ -130,6 +131,12 @@
 					</button>
 				</div>
 			</div>
+
+			<!-- Alphabet reminder -->
+			<div class="text-sm text-base-content/70">
+				<p>Input alphabet: {prettyInputAlphabet(app.fsaGraph)}</p>
+			</div>
+
 			{#if canProcessInput.errors}
 				<ul class="flex list-inside flex-col gap-1">
 					{#each canProcessInput.errors as error, index (index)}

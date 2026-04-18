@@ -4,13 +4,9 @@
 	import { FloatingWindow, WINDOWS_ID } from '$lib/windows';
 	import { FSAGraph, FSAType } from '$lib/automata-models';
 	import { MANUAL_SECTIONS, manualHref } from '$lib/utils/manual';
+	import { prettyInputAlphabet, prettyStackAlphabet } from '$lib/utils/prettyAlphabet';
 
 	const fsa: FSAGraph = $derived(app.fsaGraph);
-	const prettyAlphabet: string = $derived.by(() => {
-		const sortedAlphabet = [...fsa.alphabet(false)].sort();
-		if (sortedAlphabet.length === 0) return '∅';
-		return `{ ${sortedAlphabet.join(', ')} }`;
-	});
 
 	function typeToFullLabel(type: FSAType): string {
 		switch (type) {
@@ -105,17 +101,30 @@
 
 				<hr class="border-base-content/30" />
 
-				<!-- Alphabet -->
+				<!-- Input alphabet -->
 				<div class="flex flex-col gap-1">
-					<h3 class="font-semibold">Alphabet</h3>
+					<h3 class="font-semibold">Input Alphabet</h3>
 					<div class="ml-2">
 						<span class="font-semibold text-info">
-							{prettyAlphabet}
+							{prettyInputAlphabet(fsa)}
 						</span>
 					</div>
 				</div>
 
 				<hr class="border-base-content/30" />
+
+				<!-- Stack alphabet -->
+				{#if fsa.hasStackOps}
+					<div class="flex flex-col gap-1">
+						<h3 class="font-semibold">Stack Alphabet</h3>
+						<div class="ml-2">
+							<span class="font-semibold text-info">
+								{prettyStackAlphabet(fsa)}
+							</span>
+						</div>
+					</div>
+					<hr class="border-base-content/30" />
+				{/if}
 
 				<!-- Useful properties -->
 				<div class="flex flex-col gap-1">

@@ -6,6 +6,7 @@
 	import TransitionTable from './TransitionTable.svelte';
 	import DesiredAlphabet from './DesiredAlphabet.svelte';
 	import { MANUAL_SECTIONS, manualHref } from '$lib/utils/manual';
+	import { prettyInputAlphabet, prettyStackAlphabet } from '$lib/utils/prettyAlphabet';
 </script>
 
 <FloatingWindow
@@ -33,6 +34,15 @@
 		<div class="flex flex-col gap-2">
 			<TransitionTable fsaGraph={app.fsaGraph} commandHistory={app.commandHistory} />
 			<div>
+				<!-- Alphabet reminder -->
+				<div class="text-sm text-base-content/70">
+					<p>Input alphabet: {prettyInputAlphabet(app.fsaGraph)}</p>
+					{#if app.fsaGraph.hasStackOps}
+						<p>Stack alphabet: {prettyStackAlphabet(app.fsaGraph)}</p>
+					{/if}
+				</div>
+
+				<!-- Desired alphabet -->
 				<DesiredAlphabet
 					desired={app.desiredAlphabet.input}
 					actual={app.fsaGraph.alphabet(true)}

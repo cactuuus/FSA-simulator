@@ -341,7 +341,13 @@ export class FSAGraph implements Serializable<SerializedFSAGraph> {
 	 */
 	stackAlphabet(includeEpsilon: boolean = false): Set<string> {
 		if (!this.hasStackOps) return new SvelteSet<string>();
-		const stackAlphabet = new SvelteSet<string>(this.transitions.map((t) => t.pop!));
+		const stackAlphabet = new SvelteSet<string>(
+			this.transitions
+				.map((t) => {
+					return [t.pop!, t.push!];
+				})
+				.flat()
+		);
 		if (!includeEpsilon) stackAlphabet.delete(Transition.EPSILON);
 		return stackAlphabet;
 	}
