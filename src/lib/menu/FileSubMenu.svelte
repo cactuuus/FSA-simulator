@@ -63,6 +63,7 @@
 		try {
 			app.desiredAlphabet.reset();
 			app.commandHistory.pushAndExecute(new LoadGraphCommand(json));
+			app.viewport.panTo(...app.fsaGraph.nodes.map((n) => n.pos));
 			notifySuccess('Graph loaded successfully.');
 		} catch (err) {
 			// restore grpah directly, without pushing to command history, to avoid messing up the undo stack

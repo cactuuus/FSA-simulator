@@ -36,9 +36,11 @@
 		e.preventDefault();
 		if (pendingPdaState) {
 			app.commandHistory.pushAndExecute(new EnableStackOpsCommand());
+			app.viewport.panTo(...app.fsaGraph.nodes.map((n) => n.pos));
 			notifySuccess('PDA mode enabled.');
 		} else {
 			app.commandHistory.pushAndExecute(new DisableStackOpsCommand());
+			app.viewport.panTo(...app.fsaGraph.nodes.map((n) => n.pos));
 			notifySuccess('PDA mode disabled.');
 		}
 		togglePdaModal.close();
@@ -56,6 +58,7 @@
 		try {
 			const dfa = NfaToDfa(fsa);
 			app.commandHistory.pushAndExecute(new LoadGraphCommand(dfa));
+			app.viewport.panTo(...dfa.nodes.map((n) => n.pos));
 			if (dfa.nodes.length > BIG_FSA_THRESHOLD) {
 				notifyWarning(
 					'The resulting DFA seems to have a large number of states, consider minimizing it!'
@@ -83,6 +86,7 @@
 				return;
 			} else {
 				app.commandHistory.pushAndExecute(new LoadGraphCommand(minimized));
+				app.viewport.panTo(...minimized.nodes.map((n) => n.pos));
 				notifySuccess('DFA minimized successfully.');
 			}
 		} catch (error) {
@@ -121,6 +125,7 @@
 				return;
 			} else {
 				app.commandHistory.pushAndExecute(new LoadGraphCommand(complete));
+				app.viewport.panTo(...complete.nodes.map((n) => n.pos));
 				notifySuccess('FSA turned complete successfully.');
 			}
 		} catch (error) {

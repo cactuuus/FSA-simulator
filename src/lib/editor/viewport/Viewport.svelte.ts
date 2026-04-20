@@ -59,6 +59,18 @@ export class Viewport implements Serializable<SerializedViewport> {
 	}
 
 	/**
+	 * Pans the canvas to center on the given point(s), adjusted for the current zoom level.
+	 * @param points The point(s) to center on.
+	 */
+	panTo(...points: Point[]): void {
+		if (points.length === 0) return;
+		const centerX = (Math.min(...points.map((p) => p.x)) + Math.max(...points.map((p) => p.x))) / 2;
+		const centerY = (Math.min(...points.map((p) => p.y)) + Math.max(...points.map((p) => p.y))) / 2;
+		this._panOffset.x = centerX - this.canvasSize.width / (2 * this._zoomLevel);
+		this._panOffset.y = centerY - this.canvasSize.height / (2 * this._zoomLevel);
+	}
+
+	/**
 	 * Zooms in on the canvas, optionally towards a specific point.
 	 * @param towardsPoint The point towards which to zoom in.
 	 */
@@ -67,7 +79,7 @@ export class Viewport implements Serializable<SerializedViewport> {
 	}
 
 	/**
-	 * Zooms in on the canvas, optionally towards a specific point.
+	 * Zooms out on the canvas, optionally towards a specific point.
 	 * @param towardsPoint The point towards which to zoom out.
 	 */
 	zoomOut(towardsPoint?: Point): void {

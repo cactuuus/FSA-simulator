@@ -189,7 +189,7 @@
 
 	<!-- Bottom-right zoom controls -->
 	<div class="controls-container right-2 bottom-2">
-		<ZoomControls viewport={editorCtx.viewport} />
+		<ZoomControls viewport={editorCtx.viewport} fsa={editorCtx.fsaGraph} />
 	</div>
 
 	{#if !app.isSimulating()}
