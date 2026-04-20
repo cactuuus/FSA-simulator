@@ -11,7 +11,10 @@
 		['Delete selected', ['Delete']],
 		['Undo', ['Ctrl', 'Z']],
 		['Redo', ['Ctrl', 'Y']],
-		['Zoom in/out', ['Ctrl', 'Scroll']],
+		['Center view on the automaton', ['Ctrl', '0']],
+		['Zoom in (relative to center of the screen)', ['Ctrl', '=']],
+		['Zoom out (relative to center of the screen)', ['Ctrl', '-']],
+		['Zoom in/out (relative to mouse position)', ['Ctrl', 'Scroll']],
 		['Pan vertically', ['Scroll']],
 		['Pan horizontally', ['Shift', 'Scroll']],
 		['Snap to symmetric curve (when adjusting an edge curve)', ['Shift']]
@@ -110,7 +113,16 @@
 				<span class="text-subtle">— keyboard shortcut:</span>
 				<kbd>4</kbd>
 			</div>
-			<p class="text-normal">Allows to add new states by simply clicking anywhere on the canvas.</p>
+			<p class="text-normal">
+				Allows to add new states by simply clicking anywhere on the canvas.
+				<br />
+				<br />
+				<strong>Note:</strong> for convenience, when clicking on a state or edge, the application
+				automatically switches to
+				<span class="toolbar-item"><MousePointer class="h-4 w-4" />Select</span>
+				and selects the clicked item, allowing you to immediately edit it without needing to manually
+				switch tools.
+			</p>
 		</li>
 	</ul>
 </section>
