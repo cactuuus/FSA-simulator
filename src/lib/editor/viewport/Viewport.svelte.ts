@@ -15,7 +15,7 @@ export type SerializedViewport = {
  */
 export class Viewport implements Serializable<SerializedViewport> {
 	readonly ZOOM_STEP: number = 0.1;
-	readonly MIN_ZOOM: number = 0.5;
+	readonly MIN_ZOOM: number = 0.1;
 	readonly MAX_ZOOM: number = 2;
 
 	private _panOffset = $state<Point>({ x: 0, y: 0 });
@@ -80,22 +80,23 @@ export class Viewport implements Serializable<SerializedViewport> {
 	 * @param towardsPoint The point towards which to adjust the zoom. If not provided, defaults to the center of the canvas.
 	 */
 	private adjustZoom(difference: number, towardsPoint?: Point): void {
+		const oldZoom = this._zoomLevel;
+		// Clamp between MIN and MAX values
+		this._zoomLevel = Math.min(Math.max(oldZoom + difference, this.MIN_ZOOM), this.MAX_ZOOM);
+
 		// Default to center of canvas if no towardsPoint provided
 		if (!towardsPoint) {
 			towardsPoint = {
-				x: this.canvasSize.width / this._zoomLevel / 2,
-				y: this.canvasSize.height / this._zoomLevel / 2
+				x: this._panOffset.x + this.canvasSize.width / (2 * oldZoom),
+				y: this._panOffset.y + this.canvasSize.height / (2 * oldZoom)
 			};
 		}
-		const oldZoom = this._zoomLevel;
-		this._zoomLevel = Math.min(
-			Math.max(this._zoomLevel + difference, this.MIN_ZOOM),
-			this.MAX_ZOOM
-		); // Clamp between MIN and MAX values
-		const xAdjustment = towardsPoint.x * (1 / oldZoom - 1 / this._zoomLevel);
-		const yAdjustment = towardsPoint.y * (1 / oldZoom - 1 / this._zoomLevel);
-		this._panOffset.x += xAdjustment;
-		this._panOffset.y += yAdjustment;
+
+		// Update panOffset to keep the towardsPoint stationary relative to the viewport
+		const screenX = (towardsPoint.x - this._panOffset.x) * oldZoom;
+		const screenY = (towardsPoint.y - this._panOffset.y) * oldZoom;
+		this._panOffset.x = towardsPoint.x - screenX / this._zoomLevel;
+		this._panOffset.y = towardsPoint.y - screenY / this._zoomLevel;
 	}
 
 	/**
