@@ -1,6 +1,7 @@
 import { Node } from '$lib/automata-models';
 import { AddNodeCommand } from '../../commands';
 import { State, type EventContext } from '../State';
+import { type EditorContext } from '../../EditorContext';
 
 /**
  * State for adding a new node to the FSA graph.
@@ -9,13 +10,26 @@ import { State, type EventContext } from '../State';
  */
 export class AddNodeState extends State {
 	static readonly NAME = 'add-node';
+	private _onNodeClickedCallback: () => void = () => {};
 	private _tempNode: Node | null = null;
+
+	constructor(editorContext: EditorContext, onNodeClickedCallback: () => void) {
+		super(editorContext);
+		this._onNodeClickedCallback = onNodeClickedCallback;
+	}
 
 	handleClick(ctx: EventContext): void {
 		if (ctx.isCanvas) {
 			const command = new AddNodeCommand(ctx.pointerPos);
 			this.editorCtx.commandHistory.pushAndExecute(command);
 			this.editorCtx.selection.select(command.data.nodeId);
+			return;
+		}
+
+		const item = ctx.node || ctx.edge;
+		if (item) {
+			this.editorCtx.selection.select(item.id);
+			this._onNodeClickedCallback();
 		}
 	}
 

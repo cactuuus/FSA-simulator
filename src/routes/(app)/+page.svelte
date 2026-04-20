@@ -45,7 +45,9 @@
 			new PanningState(editorCtx),
 			new SelectState(editorCtx),
 			new DrawEdgeState(editorCtx),
-			new AddNodeState(editorCtx)
+			new AddNodeState(editorCtx, () => {
+				stateMachine.transitionTo(SelectState.NAME);
+			})
 		],
 		SelectState.NAME
 	);
