@@ -33,6 +33,6 @@
         "filename": "PDA_path_explosion.fsa",
         "type": "PDA",
         "language": "L={∅}",
-        "description": "PDA recognizing the alphabeth {1} only, and doesn't accept any input. This example is solely meant to demonstrate how infinite loops (ones with ever growing stacks) are handled by the simulator, and specifically highlight the phenomenon of path explosion."
+        "description": "PDA recognizing the alphabet {1} only, and doesn't accept any input. This example is solely meant to demonstrate how infinite loops (ones with ever growing stacks) are handled by the simulator, and specifically highlight the phenomenon of path explosion."
     }
 ]
