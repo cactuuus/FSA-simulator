@@ -1,7 +1,7 @@
-import { FSAGraph, Node, Transition } from '$lib/automata-models';
+import { Edge, FSAGraph, Node, Transition } from '$lib/automata-models';
 
 /**
- * Represents a transition table for an FSA without stack operations (basically DFA & NFA).
+ * Represents a transition table for an FSA.
  * - states: list of state labels (rows).
  * - inputs: list of input symbols (representing the FSA state needed for the transition) (columns).
  * - content: 3D array where content[i][j] is a list of target state labels reachable from state i on input j.
@@ -16,7 +16,7 @@ export interface TransitionTable {
 
 /**
  * Represents uniques combinations of input symbols and pop stack operations. Used as the columns of the transition table. For non-PDAs, only the consume symbol is used.
- * It also provides a collection of	transition IDs that share the same input symbols.
+ * It also provides a collection of	transition IDs related to this input symbol.
  */
 export class InputSymbol {
 	readonly consume: string;
@@ -47,11 +47,12 @@ export class InputSymbol {
 }
 
 /**
- * Simple interface representing the output of a transition in the transition table (basically the content of each cell). Along with the target state label, the entire transition is passed, for simplicity.
+ * Simple interface representing the output of a transition in the transition table (basically the content of each cell). Along with the target state, it also includes the Edge and Transition objects related to it, for easy access.
  */
 export interface TransitionOutput {
 	transition: Transition;
 	targetState: Node;
+	viaEdge: Edge;
 }
 
 /**
@@ -72,7 +73,8 @@ export function getTransitionTable(fsa: FSAGraph): TransitionTable {
 		fsa.adjacencyMap.get(sourceState)?.forEach(([transition, targetState]) => {
 			const inputSymbol = new InputSymbol(transition);
 			const col = symbolIndex.get(inputSymbol.toString())!;
-			content[row][col].push({ transition, targetState });
+			const viaEdge = fsa.requireEdge(Edge.createId(sourceState.id, targetState.id));
+			content[row][col].push({ transition, targetState, viaEdge });
 		});
 	});
 	return { states, inputs, content };

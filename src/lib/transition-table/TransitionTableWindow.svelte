@@ -32,7 +32,11 @@
 	{/snippet}
 	{#snippet content()}
 		<div class="flex flex-col gap-2">
-			<TransitionTable fsaGraph={app.fsaGraph} commandHistory={app.commandHistory} />
+			<TransitionTable
+				fsaGraph={app.fsaGraph}
+				commandHistory={app.commandHistory}
+				selectionHandler={app.selectionHandler}
+			/>
 			<div>
 				<!-- Alphabet reminder -->
 				<div class="text-sm text-base-content/70">

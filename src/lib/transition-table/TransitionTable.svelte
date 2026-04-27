@@ -2,17 +2,22 @@
 	import { Trash2 } from '@lucide/svelte';
 	import { InputSymbol, getTransitionTable } from './transitionTable';
 	import { FSAGraph, Node, Transition } from '$lib/automata-models';
-	import { DeleteTransitionsCommand } from '$lib/editor/commands';
 	import {
 		CommandHistory,
+		DeleteTransitionsCommand,
 		UpdateTransitionCommand,
 		type UpdateTransitionData
 	} from '$lib/editor/commands';
+	import { SelectionHandler } from '$lib/editor/selection';
 	import { toggleHighlight } from '$lib/utils/graphEffects';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { portal } from '$lib/utils/portal';
 
-	const { fsaGraph, commandHistory }: { fsaGraph: FSAGraph; commandHistory: CommandHistory } =
+	const {
+		fsaGraph,
+		commandHistory,
+		selectionHandler
+	}: { fsaGraph: FSAGraph; commandHistory: CommandHistory; selectionHandler: SelectionHandler } =
 		$props();
 	let editModal: HTMLDialogElement;
 	let modalContext = $state<{
@@ -200,6 +205,7 @@
 						data-node-id={node.id}
 						onmouseenter={() => toggleHighlight(true, node.id)}
 						onmouseleave={() => toggleHighlight(false, node.id)}
+						onclick={() => selectionHandler.select(node.id)}
 					>
 						<!-- for the states, the label also indicates if it is starting and/or accepting -->
 						{#if node.id === fsaGraph.startNode?.id}
@@ -231,6 +237,7 @@
 											onmouseleave={() => {
 												toggleHighlight(false, output.transition.id);
 											}}
+											onclick={() => selectionHandler.select(output.viaEdge.id)}
 										>
 											{#if PdaMode}
 												{`(${output.transition.push}, ${stateLabel})`}
