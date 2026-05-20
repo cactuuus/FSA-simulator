@@ -4,7 +4,7 @@
 	import { Info, TriangleAlert, Check, RefreshCcw, CircleX, BookOpen } from '@lucide/svelte';
 	import { WINDOWS_ID, FloatingWindow } from '$lib/windows';
 	import { notifyWarning, notifyError } from '$lib/utils/notifications';
-	import { FSAType } from '$lib/automata-models';
+	import { FSAType, Transition } from '$lib/automata-models';
 	import PathList from './PathList.svelte';
 	import { type PathLeaf } from './computationTree';
 	import { MANUAL_SECTIONS, manualHref } from '$lib/utils/manual';
@@ -19,6 +19,8 @@
 		[...app.fsaGraph.alphabet()].every((s) => s.length === 1)
 	);
 	const cleanedInput = $derived.by<string[]>(() => {
+		// handle empty input case, which would otherwise return [''] for non-single-char alphabets
+		if (inputToProcess.trim() === '') return [];
 		const separator = alphabetIsSingleChar ? '' : ',';
 		return inputToProcess
 			.trim()
@@ -115,7 +117,7 @@
 				<input
 					type="text"
 					id="input-to-process"
-					placeholder={alphabetIsSingleChar ? 'e.g. aabbab' : 'e.g. symbol1, symbol2'}
+					placeholder={Transition.EPSILON}
 					class="input input-sm w-full max-w-xs"
 					bind:value={inputToProcess}
 					onkeydown={(e) => {
