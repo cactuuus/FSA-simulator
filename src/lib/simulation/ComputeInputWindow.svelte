@@ -44,6 +44,17 @@
 		}
 		return { result: errors.length === 0, errors };
 	});
+	const paths = $derived.by<{ computed: boolean; accepting: PathLeaf[]; rejecting: PathLeaf[] }>(
+		() => {
+			if (!controller.tree) return { computed: false, accepting: [], rejecting: [] };
+			const allPathsLeaves = controller.pathsLeaves;
+			return {
+				computed: true,
+				accepting: allPathsLeaves.filter((p) => p.isAccepting),
+				rejecting: allPathsLeaves.filter((p) => !p.isAccepting)
+			};
+		}
+	);
 
 	async function runInputComputation(cleanedInput: string[]): Promise<void> {
 		if (!canProcessInput.result) {
@@ -164,11 +175,19 @@
 		</div>
 
 		<div class="relative flex flex-col gap-2 rounded-box bg-base-300 p-3">
-			<h3 class="border-b border-base-content/30 font-semibold">Result</h3>
-			{#if controller.tree}
-				{@const allPathsLeaves = controller.pathsLeaves}
-				{@const acceptingLeaves = allPathsLeaves.filter((p) => p.isAccepting)}
-				{@const rejectingLeaves = allPathsLeaves.filter((p) => !p.isAccepting)}
+			<h3 class=" flex gap-2 border-b border-base-content/30 font-semibold">
+				Result:
+				{#if paths.computed}
+					{#if paths.accepting.length > 0}
+						<span class="text-success">Accepted!</span>
+					{:else if paths.rejecting.length > 0}
+						<span class="text-error">Rejected!</span>
+					{/if}
+				{:else}
+					<span class="text-base-content/70">—</span>
+				{/if}
+			</h3>
+			{#if paths.computed}
 				<!-- Warnings -->
 				{#if controller.warnings.length > 0}
 					<details class="collapse-arrow collapse rounded-box bg-warning/10 text-warning">
@@ -186,42 +205,46 @@
 					</details>
 				{/if}
 				<!-- Accepting paths -->
-				<details class="collapse-arrow collapse rounded-box bg-success/10 text-success">
-					<summary class="collapse-title p-2 font-semibold">
-						<Check class="inline h-4 w-4" />
-						{acceptingLeaves.length} Accepting Path{acceptingLeaves.length > 1 ? 's' : ''}
-					</summary>
-					<div class="collapse-content">
-						<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
-							<Info class="inline h-3 w-3" />
-							Click on a path to run a simulation of only the path itself.
-						</p>
-						<PathList
-							leaves={acceptingLeaves}
-							tree={controller.tree!}
-							onClick={startPathSimulation}
-						/>
-					</div>
-				</details>
+				{#if paths.accepting.length > 0}
+					<details class="collapse-arrow collapse rounded-box bg-success/10 text-success">
+						<summary class="collapse-title p-2 font-semibold">
+							<Check class="inline h-4 w-4" />
+							{paths.accepting.length} Accepting Path{paths.accepting.length > 1 ? 's' : ''}
+						</summary>
+						<div class="collapse-content">
+							<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
+								<Info class="inline h-3 w-3" />
+								Click on a path to run a simulation of only the path itself.
+							</p>
+							<PathList
+								leaves={paths.accepting}
+								tree={controller.tree!}
+								onClick={startPathSimulation}
+							/>
+						</div>
+					</details>
+				{/if}
 
 				<!-- Rejecting paths -->
-				<details class="collapse-arrow collapse rounded-box bg-error/10">
-					<summary class="collapse-title p-2 font-semibold text-error">
-						<CircleX class="inline h-4 w-4" />
-						{rejectingLeaves.length} Rejecting Path{rejectingLeaves.length > 1 ? 's' : ''}
-					</summary>
-					<div class="collapse-content">
-						<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
-							<Info class="inline h-3 w-3" />
-							Click on a path to run a simulation of only the path itself.
-						</p>
-						<PathList
-							leaves={rejectingLeaves}
-							tree={controller.tree!}
-							onClick={startPathSimulation}
-						/>
-					</div>
-				</details>
+				{#if paths.rejecting.length > 0}
+					<details class="collapse-arrow collapse rounded-box bg-error/10">
+						<summary class="collapse-title p-2 font-semibold text-error">
+							<CircleX class="inline h-4 w-4" />
+							{paths.rejecting.length} Rejecting Path{paths.rejecting.length > 1 ? 's' : ''}
+						</summary>
+						<div class="collapse-content">
+							<p class="mb-2 rounded-box text-xs text-base-content/70 italic">
+								<Info class="inline h-3 w-3" />
+								Click on a path to run a simulation of only the path itself.
+							</p>
+							<PathList
+								leaves={paths.rejecting}
+								tree={controller.tree!}
+								onClick={startPathSimulation}
+							/>
+						</div>
+					</details>
+				{/if}
 
 				<!-- Overlay to cover outdated results -->
 				{#if controller.fsaHasChangedSince(app.fsaGraph)}
