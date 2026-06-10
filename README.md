@@ -20,16 +20,14 @@
 ## Features
 
 - **Four automaton types supported** — DFA, NFA, PDA, and DPDA.
-- **Step-by-step simulation** — compute an input, select from a list of accepting and rejecting paths, then animate it through the automaton.
+- **Step-by-step simulation** — compute an input, then select a path from a list of accepting and rejecting paths to see a step-by-step visualisation of how the input is processed by the automaton.
 - **FSA operations** — NFA to DFA, DFA minimisation, FSA to Regex.
 - **Transition table** — view the corresponding transition table.
 - **Export to various formats** — SVG, LaTeX, save/load to/from disk as `.fsa` file.
 - **Persistence between sessions** — the application state is auto-saved to localStorage, persisting windows layout and automaton between sessions.
 - **Light and dark themes** — adjusted according to your browser settings.
 
-## Try it
-
-The app is available online. It requires no registration, and it is completely free to use.
+## Try it out yourself!
 
 **Live app:** [fsa-toolkit.jacopocalvi.com](https://fsa-toolkit.jacopocalvi.com)
 
@@ -37,7 +35,7 @@ The app is available online. It requires no registration, and it is completely f
 
 ## About
 
-I built this as my university final year project.The main objective was to create a helpful tool to support students learning automata theory, providing an interactive environment for designing automata, testing inputs, and visualising how inputs are processed by the automaton.
+I built this as my university final year project. The main objective was to create a helpful tool to support students learning automata theory, providing an interactive environment for designing automata, testing inputs, and visualising how inputs are processed by the automaton.
 
 This is heavily inspired by two projects:
 
@@ -82,7 +80,7 @@ npm run preview
 
 ## Codebase overview
 
-> Beware, I am fully aware that the codebase is a bit of a mess. I tried my best, but at times that didn't feel like enough! Please be forgiving when reading the code, and feel free to ask me any questions about it.
+> Beware: parts of the codebase are messier than I'd like and could use a refactor. I tried my best, but this was very much a learn as you go experience for me.
 
 ### Main components
 
