@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { BookOpen, PanelLeftOpen, PanelLeftClose, ArrowLeft } from '@lucide/svelte';
+	import { BookOpen, PanelLeftOpen, PanelLeftClose, ArrowLeft, Github } from '@lucide/svelte';
 	import { MANUAL_SECTIONS, type ManualAnchor } from '$lib/utils/manual';
 	import IntroductionSection from './sections/IntroductionSection.svelte';
 	import InterfaceSection from './sections/InterfaceSection.svelte';
@@ -110,17 +110,30 @@
 	<div class="drawer-content flex flex-col overflow-hidden pt-12 md:pt-0">
 		<!-- Top bar -->
 		<header
-			class="fixed top-0 flex h-12 w-full shrink-0 items-center gap-3 border-b-2 border-base-300 bg-base-200 md:static md:px-4"
+			class="fixed top-0 flex h-12 w-full shrink-0 items-center justify-between border-b-2 border-base-300 bg-base-200 px-2 md:static md:px-4"
 		>
-			<label
-				for="manual-drawer"
-				class="flex h-12 w-12 items-center justify-center self-start border-r-2 border-base-300 p-0! md:hidden"
-				aria-label="Open navigation"
+			<div class="flex items-center gap-3">
+				<label
+					for="manual-drawer"
+					class="flex h-12 w-12 items-center justify-center self-start border-r-2 border-base-300 p-0! md:hidden"
+					aria-label="Open navigation"
+				>
+					<PanelLeftOpen class="h-5 w-5" />
+				</label>
+				<BookOpen class="h-5 w-5 shrink-0 text-primary" />
+				<span class="font-bold">FSA Toolkit — Manual</span>
+			</div>
+
+			<a
+				href="https://github.com/cactuuus/FSA-simulator"
+				target="_blank"
+				rel="noopener noreferrer"
+				title="View on GitHub"
+				class="flex items-center gap-1 px-2 py-1 text-primary hover:text-secondary"
 			>
-				<PanelLeftOpen class="h-5 w-5" />
-			</label>
-			<BookOpen class="h-5 w-5 shrink-0 text-primary" />
-			<span class="font-bold">FSA Toolkit — Manual</span>
+				<Github class="h-4 w-4" />
+				<span class="hidden sm:inline">GitHub</span>
+			</a>
 		</header>
 
 		<main bind:this={mainElement} class="flex-1 overflow-y-auto">
@@ -195,11 +208,13 @@
 				</ul>
 			</nav>
 			<!-- Back to editor -->
-			<div
-				class="flex items-center justify-center border-t-2 border-base-300 px-2 py-1 is-drawer-close:hidden"
-			>
-				<a href="/" class="btn w-full justify-start btn-link" title="Go to editor">
-					<ArrowLeft class="h-5 w-5" />
+			<div class="border-t-2 border-base-300 px-2 py-1 is-drawer-close:hidden">
+				<a
+					href="/"
+					class="flex items-center gap-2 px-2 py-1 text-primary hover:text-secondary"
+					title="Go to editor"
+				>
+					<ArrowLeft class="h-4 w-4" />
 					<span>Back to editor</span>
 				</a>
 			</div>
