@@ -15,7 +15,7 @@
     </a>
 </p>
 
-![Small demo of the editor](https://fsa-toolkit.jacopocalvi.com/manual/how-to-adjust-shape.avif)
+![Small demo of the editor](readme-app-demo.avif)
 
 ## Features
 
