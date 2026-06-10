@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
-	import { CirclePlus, Spline, Hand, MousePointer, BookOpen } from '@lucide/svelte';
+	import { CirclePlus, Spline, Hand, MousePointer, BookOpen, Github } from '@lucide/svelte';
 	import { app } from '$lib/stores/app.svelte';
 	import { TransitionTableWindow } from '$lib/transition-table';
 	import { SelectionArea, SelectionPanel } from '$lib/editor/selection';
@@ -176,16 +176,29 @@
 	</div>
 
 	<!-- Top-right manual button -->
-	<a
-		href={manualHref()}
-		target="_blank"
-		class="controls-container controls top-2 right-2"
-		title="Open manual"
-	>
-		<div class="btn btn-square h-10 gap-2 rounded-box text-primary btn-ghost hover:text-secondary">
-			<BookOpen class="h-4 w-4" />
+
+	<div class="controls-container top-2 right-2">
+		<div class="controls flex items-center gap-0.5 px-3 py-2 text-sm">
+			<a
+				href="https://github.com/cactuuus/FSA-simulator"
+				target="_blank"
+				rel="noopener noreferrer"
+				title="View on GitHub"
+				class="p-0.5 text-primary hover:text-secondary"
+			>
+				<Github class="h-4 w-4" />
+			</a>
+			<div class="divider mx-0.5 divider-horizontal"></div>
+			<a
+				href={manualHref()}
+				target="_blank"
+				title="Open manual"
+				class="p-0.5 text-primary hover:text-secondary"
+			>
+				<BookOpen class="h-4 w-4" />
+			</a>
 		</div>
-	</a>
+	</div>
 
 	<!-- Bottom-right zoom controls -->
 	<div class="controls-container right-2 bottom-2">
