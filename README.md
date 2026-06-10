@@ -8,7 +8,7 @@
         <img src="https://img.shields.io/badge/available_here-blueviolet?logo=netlify" alt="Website" />
     </a>
     <a href="https://apiwatch.eu/status/6fb0f36e-42be-446c-b995-80dd03cf4c02">
-        <img src="https://img.shields.io/website?url=http%3A//fsa-toolkit.jacopocalvi.com&label=Status&up_message=Online&up_color=brightgreen&down_message=Offline&down_color=red" alt="Status" />
+        <img src="https://img.shields.io/website?url=http%3A//fsa-toolkit.jacopocalvi.com&label=status&up_message=online&up_color=brightgreen&down_message=offline&down_color=red" alt="Status" />
     </a>
     <a href="LICENSE">
         <img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="License" />
