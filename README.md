@@ -37,12 +37,12 @@ The app is available online. It requires no registration, and it is completely f
 
 ## About
 
-I built this as my final year project at the University of Sussex. The main objective was to create a helpful tool to support students learning automata theory, providing an interactive environment for designing automata, testing inputs, and visualising how inputs are processed by the automaton.
+I built this as my university final year project.The main objective was to create a helpful tool to support students learning automata theory, providing an interactive environment for designing automata, testing inputs, and visualising how inputs are processed by the automaton.
 
 This is heavily inspired by two projects:
 
 - **[Excalidraw](https://excalidraw.com/)** — my go-to for wireframing, sketching and pretty much anything involving drawing. I absolutely love its UI and UX, so I was very influenced by its design.
-- **[FSM Designer](https://madebyevan.com/fsm/)** — my favorite automaton editor, which helped me greatly when I was learning about automata. I very much appreciate its simplicity and ease of use, I wanted to provide a similar drawing experience.
+- **[FSM Designer](https://madebyevan.com/fsm/)** — my favorite automaton editor, which helped me greatly when I was learning about automata. I very much appreciate its simplicity and ease of use. I wanted to provide a similar drawing experience.
 
 The project is far from perfect: there are many quirks I am aware of, there are always more features to add, and the codebase, well, I tried my best! That said, I am overall very happy and proud with how it turned out. I'd be delighted to know if anyone out there finds this useful, please don't hesitate to reach out if you have any questions or suggestions!
 
